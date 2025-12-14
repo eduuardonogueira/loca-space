@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignupDto {
-  @ApiProperty({ example: 'João da Silva' })
-  name: string;
+  @ApiProperty({ example: 'Paulo Moraes' })
+  fullName: string;
 
-  @ApiProperty({ example: 'joao@email.com' })
+  @ApiProperty({ example: 'pauloMoraes@email.com' })
   email: string;
 
-  @ApiProperty({ example: 'senha123' })
+  @ApiProperty({ example: 'producaoSoftware2025' })
   password: string;
 }
