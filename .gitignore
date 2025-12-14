@@ -1,6 +1,5 @@
 .idea
 .vscode
-# Ignorar todos os módulos dentro de src/modules exceto auth e user
 /backend/src/modules/amenities
 /backend/src/modules/app
 /backend/src/modules/appointments
