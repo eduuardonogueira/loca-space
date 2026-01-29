@@ -8,6 +8,10 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,      
+  UseInterceptors, 
+  UploadedFile,  
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,10 +19,16 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiConsumes,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path'; 
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('user')
 @Controller('user')
@@ -33,6 +43,30 @@ export class UserController {
   })
   create(@Body() userPayload: CreateUserDto) {
     return this.userService.create(userPayload);
+  }
+
+  @Post('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Cria o perfil do usuário com foto' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  async createProfile(
+    @Req() req,
+    @Body() createProfileDto: CreateProfileDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.userService.createProfile(req.user.id, createProfileDto, file);
   }
 
   @Get()
@@ -85,6 +119,6 @@ export class UserController {
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Usuário removido com sucesso.' })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.remove(id);
+   return this.userService.remove(id);
   }
 }

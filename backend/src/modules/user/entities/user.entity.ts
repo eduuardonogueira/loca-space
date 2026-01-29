@@ -1,5 +1,6 @@
 import { EnumUserRole, EnumUserType } from 'src/types/user';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Profile } from './profile.entity';
 
 @Entity('User')
 export class User {
@@ -26,4 +27,7 @@ export class User {
 
   @Column({ type: 'timestamptz', nullable: true })
   updatedAt: Date | null;
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  profile: Profile;
 }
