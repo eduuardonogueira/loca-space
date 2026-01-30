@@ -1,26 +1,27 @@
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import type { Metadata } from "next";
+import { Roboto } from "next/font/google";
 import "./global.css";
-import { Roboto } from 'next/font/google';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const roboto = Roboto({
-  weight: ['400', '700'],
-  subsets: ['latin'],
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
 });
 
-export const metadata = {
-  title: 'Loca Space',
-  description: 'Sistema de reserva de salas comerciais',
+export const metadata: Metadata = {
+  title: "LocaSpace",
+  description: "Seu espaço de coworking",
 };
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="pt-BR">
-      <body className={roboto.className}>
+      <body className={roboto.className} suppressHydrationWarning={true}>
         <ToastContainer position="top-right" autoClose={3000} />
         {children}
       </body>
