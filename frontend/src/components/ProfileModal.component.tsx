@@ -1,11 +1,14 @@
-"use client"
+"use client";
 
 import React, { useState, useRef } from "react";
-import "./ProfileModal.css";
+import "./ProfileModal/ProfileModal";
 import { useProfileModal } from "@/contexts/profileModal/profileModal.provider";
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "flowbite-react";
+import Link from "next/link";
+import { PROFILE_ROUTE } from "@/constants/routes";
 
 export const ProfileModal = () => {
-  const {isOpen, close: onClose} = useProfileModal()
+  const { isOpen, close: onClose } = useProfileModal();
   // 1. Estado para guardar a URL da foto (começa com o placeholder)
   const [profileImage, setProfileImage] = useState(
     "https://via.placeholder.com/150",
@@ -46,15 +49,14 @@ export const ProfileModal = () => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-container">
-        <div className="modal-header">
-          <h2>Editar Perfil</h2>
-          <button className="close-icon" onClick={onClose}>
-            ×
-          </button>
-        </div>
-
+    <Modal show={isOpen} position="center" onClose={onClose}>
+      <ModalHeader>
+        <h4>Editar Perfil</h4>
+        <button className="close-icon" onClick={onClose}>
+          ×
+        </button>
+      </ModalHeader>
+      <ModalBody>
         <div className="profile-section">
           <div className="photo-circle">
             {/* A imagem agora obedece ao estado profileImage */}
@@ -158,16 +160,13 @@ export const ProfileModal = () => {
             </div>
           </div>
         </form>
-
-        <div className="modal-actions">
-          <button className="cancel-btn" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="confirm-btn" onClick={handleSave}>
-            Confirmar
-          </button>
-        </div>
-      </div>
-    </div>
+        <ModalFooter>
+          <Link className="cancel-btn" href={PROFILE_ROUTE}>
+            Ver Perfil
+          </Link>
+        </ModalFooter>
+      </ModalBody>
+    </Modal>
   );
 };
+

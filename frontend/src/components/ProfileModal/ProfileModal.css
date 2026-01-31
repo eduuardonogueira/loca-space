@@ -157,15 +157,6 @@
   margin-top: 30px;
 }
 
-button {
-  padding: 12px 30px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 14px;
-  flex: 1; /* Faz os botões ocuparem o mesmo tamanho */
-}
 
 .cancel-btn {
   background-color: #e0e0e0;

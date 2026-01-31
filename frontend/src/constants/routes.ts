@@ -8,3 +8,4 @@ export const ANNOUNCE_ROUTE = "/anunciar";
 export const MY_ANNOUNCE_ROUTE = "/meus-anuncios";
 export const FAVORITES_ROUTE = "/favoritos";
 export const MESSAGES_ROUTE = "/messages";
+export const PROFILE_ROUTE = "/profile";
