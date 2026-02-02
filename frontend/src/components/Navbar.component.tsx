@@ -28,7 +28,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="flex justify-between px-9 py-8 items-center border-b-gray-300 border-1 bg-red-50">
+    <header className="flex justify-between px-9 py-8 items-center border-b-gray-300 border-1">
       <div className="flex items-center gap-2">
         <House className="text-2xl text-red-400" />
         <Link href={HOME_ROUTE} className="text-2xl font-bold text-red-400">
