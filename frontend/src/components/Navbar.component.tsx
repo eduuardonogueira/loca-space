@@ -7,14 +7,12 @@ import { IUser } from "@/types/user";
 import { getProfile } from "@/api";
 import { CircleUserRound, House } from "lucide-react";
 import { useNavbarLinks } from "../hooks/useNavbarLinks";
-import { useProfileModal } from "@/contexts/profileModal/profileModal.provider";
-import { DarkThemeToggle } from "flowbite-react";
+import { ProfileModal } from "./ProfileModal.component";
 
 export function Navbar() {
-  const { open: openProfileModal } = useProfileModal();
-
   const { navbarLinks } = useNavbarLinks();
   const [user, setUser] = useState<IUser | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -52,12 +50,18 @@ export function Navbar() {
       </nav>
 
       <button
-        className="flex items-center gap-2 border-1 px-6 py-1 rounded-xl border-red-400"
-        onClick={openProfileModal}
+        onClick={() => setIsProfileModalOpen(true)}
+        className="group flex items-center gap-2 border border-red-400 px-4 py-2 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md"
       >
-        <CircleUserRound className="text-red-400" />
-        <p className="text-red-400">{user?.fullName ?? "Usuário"}</p>
+        <CircleUserRound size={20} className="transition-colors" />
+
+        <p className="font-medium">{user?.fullName ?? "Usuário"}</p>
       </button>
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </header>
   );
 }
