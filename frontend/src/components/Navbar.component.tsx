@@ -7,10 +7,12 @@ import { IUser } from "@/types/user";
 import { getProfile } from "@/api";
 import { CircleUserRound, House } from "lucide-react";
 import { useNavbarLinks } from "../hooks/useNavbarLinks";
+import { ProfileModal } from "./ProfileModal.component";
 
 export function Navbar() {
   const { navbarLinks } = useNavbarLinks();
   const [user, setUser] = useState<IUser | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -36,18 +38,32 @@ export function Navbar() {
 
       <nav className="flex justify-between gap-8 w-[50%]">
         {navbarLinks.map((link) => (
-          <Link key={link.route} href={link.route} className="flex gap-2 items-center">
-            <link.icon size={20}/>
+          <Link
+            key={link.route}
+            href={link.route}
+            className="flex gap-2 items-center"
+          >
+            <link.icon size={20} />
             <p>{link.label}</p>
           </Link>
         ))}
       </nav>
 
-      <button className="flex items-center gap-2 border-1 px-6 py-1 rounded-xl border-red-400">
-        <CircleUserRound className="text-red-400" />
-        <p className="text-red-400">{user?.fullName ?? "Usuário"}</p>
+      <button
+        onClick={() => setIsProfileModalOpen(true)}
+        className="group flex items-center gap-2 border border-red-400 px-4 py-2 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md"
+      >
+        {/* O ícone herda a cor do botão agora */}
+        <CircleUserRound size={20} className="transition-colors" />
+
+        {/* O texto também muda de cor suavemente */}
+        <p className="font-medium">{user?.fullName ?? "Usuário"}</p>
       </button>
+      {/* O componente do Modal fica aqui, esperando o estado mudar para aparecer */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </header>
   );
 }
-
