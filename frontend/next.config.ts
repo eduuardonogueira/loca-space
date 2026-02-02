@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
+
+  experimental: {
+    serverActions: {
+      // Isso permite que o servidor aceite requisições vindas da URL do GitHub
+      allowedOrigins: ["localhost:3000", "*.app.github.dev", "*.github.dev"],
+    },
+  },
 };
 
 export default withFlowbiteReact(nextConfig);
+

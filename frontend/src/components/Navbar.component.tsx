@@ -28,10 +28,15 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="flex justify-between px-9 py-8 items-center border-b-gray-300 border-1">
-      <div className="flex items-center gap-2">
-        <House className="text-2xl text-red-400" />
-        <Link href={HOME_ROUTE} className="text-2xl font-bold text-red-400">
+    <header className="flex justify-between px-6 md:px-16 h-[80px] items-center bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+      <div className="flex items-center gap-2 group cursor-pointer">
+        <div className="transition-transform duration-300 group-hover:scale-110 text-red-400">
+          <House className="text-2xl" />
+        </div>
+        <Link
+          href={HOME_ROUTE}
+          className="text-2xl font-bold text-red-400 transition-opacity duration-300 group-hover:opacity-80"
+        >
           LocaSpace
         </Link>
       </div>
@@ -41,7 +46,7 @@ export function Navbar() {
           <Link
             key={link.route}
             href={link.route}
-            className="flex gap-2 items-center"
+            className="flex gap-2 items-center text-gray-700 font-medium transition-all duration-300 hover:text-red-400 hover:scale-105 origin-center"
           >
             <link.icon size={20} />
             <p>{link.label}</p>
