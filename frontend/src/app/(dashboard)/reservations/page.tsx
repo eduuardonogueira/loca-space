@@ -100,7 +100,7 @@ export default function ReservationsPage() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Minhas Reservas</h1>
           </div>
 
-          {/* Dropdown Manual (Sem erros de biblioteca e visual idêntico ao print) */}
+          {/* Dropdown Manual */}
           <div className="relative w-full md:w-auto">
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
