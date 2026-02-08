@@ -18,19 +18,38 @@ export function RoomsFilters({
   onToggleAmenity,
 }: RoomsFiltersProps) {
   return (
-    <aside className="ls-sidebar">
-      {/* ORDENAR POR */}
-      <div className="ls-sidebar-section">
-        <p className="ls-sidebar-title">Ordenar por</p>
+    <aside
+      className="
+        bg-white rounded-[18px] px-[18px] pt-5 pb-[22px]
+        border border-[#e7e7eb]
+        shadow-[0_4px_12px_rgba(15,23,42,0.03)]
+        text-[13px] text-[#333]
+      "
+    >
+      {/* Ordenar por */}
+      <div
+        className="
+          mt-0 pt-0 border-t-0
+          first:mt-0 first:pt-0 first:border-t-0
+        "
+      >
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">Ordenar por</p>
 
-        {/* grid 2x2 para ficar igual à referência */}
-        <div className="ls-pill-group ls-pill-group--grid-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
-            className={
-              "ls-pill-button" +
-              (orderBy === "recent" ? " ls-pill-button--active" : "")
-            }
+            className={`
+              inline-flex items-center justify-center h-9 px-[18px] rounded-full
+              border text-[0.85rem] whitespace-nowrap cursor-pointer transition
+              hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)]
+              focus:outline-none focus:ring-0 active:outline-none active:ring-0
+              ${
+                orderBy === "recent"
+                  ? "bg-[#e53935] border-[#e53935] text-white"
+                  : "bg-white border-[#e5e5e5] text-[#555]"
+              }
+            `}
             onClick={() => onChangeOrderBy("recent")}
           >
             Mais recente
@@ -38,10 +57,18 @@ export function RoomsFilters({
 
           <button
             type="button"
-            className={
-              "ls-pill-button" +
-              (orderBy === "higherPrice" ? " ls-pill-button--active" : "")
-            }
+            className={`
+              inline-flex items-center justify-center h-9 px-[18px] rounded-full
+              border text-[0.85rem] whitespace-nowrap cursor-pointer transition
+              hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)]
+              focus:outline-none focus:ring-0 active:outline-none active:ring-0
+              ${
+                orderBy === "higherPrice"
+                  ? "bg-[#e53935] border-[#e53935] text-white"
+                  : "bg-white border-[#e5e5e5] text-[#555]"
+              }
+            `}
             onClick={() => onChangeOrderBy("higherPrice")}
           >
             Maior preço
@@ -49,92 +76,159 @@ export function RoomsFilters({
 
           <button
             type="button"
-            className={
-              "ls-pill-button" +
-              (orderBy === "lowerPrice" ? " ls-pill-button--active" : "")
-            }
+            className={`
+              inline-flex items-center justify-center h-9 px-[18px] rounded-full
+              border text-[0.85rem] whitespace-nowrap cursor-pointer transition
+              hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)]
+              focus:outline-none focus:ring-0 active:outline-none active:ring-0
+              ${
+                orderBy === "lowerPrice"
+                  ? "bg-[#e53935] border-[#e53935] text-white"
+                  : "bg-white border-[#e5e5e5] text-[#555]"
+              }
+            `}
             onClick={() => onChangeOrderBy("lowerPrice")}
           >
             Menor preço
           </button>
-
-          {/* Se quiser um 4º botão “Mais relevantes” depois,
-              é só criar outro aqui e ajustar o type OrderBy */}
         </div>
       </div>
 
-      {/* PREÇO */}
-      <div className="ls-sidebar-section">
-        <p className="ls-sidebar-title">Preço</p>
-        <div className="ls-range-row">
+      {/* Preço */}
+      <div
+        className="
+          mt-4 pt-3 border-t border-[#f1f1f4]
+          first:mt-0 first:pt-0 first:border-t-0
+        "
+      >
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">Preço</p>
+
+        <div className="flex items-center gap-2">
           <input
             type="number"
-            className="ls-input"
             placeholder="Mín."
-            min={0}
+            className="
+              w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
+              text-[0.85rem] bg-[#fcfcff]
+              placeholder:text-[#b0b0bd] placeholder:text-[0.8rem]
+              focus:outline-none focus:border-[#e53935]
+              focus:ring-1 focus:ring-[#e53935]/40
+            "
           />
-          <span className="ls-range-separator">–</span>
+          <span className="text-[12px] text-[#777]">–</span>
           <input
             type="number"
-            className="ls-input"
             placeholder="Máx."
-            min={0}
+            className="
+              w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
+              text-[0.85rem] bg-[#fcfcff]
+              placeholder:text-[#b0b0bd] placeholder:text-[0.8rem]
+              focus:outline-none focus:border-[#e53935]
+              focus:ring-1 focus:ring-[#e53935]/40
+            "
           />
         </div>
       </div>
 
-      {/* ÁREA ÚTIL */}
-      <div className="ls-sidebar-section">
-        <p className="ls-sidebar-title">Área útil (m²)</p>
-        <div className="ls-range-row">
+      {/* Área útil */}
+      <div
+        className="
+          mt-4 pt-3 border-t border-[#f1f1f4]
+          first:mt-0 first:pt-0 first:border-t-0
+        "
+      >
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">
+          Área útil (m²)
+        </p>
+
+        <div className="flex items-center gap-2">
           <input
             type="number"
-            className="ls-input"
             placeholder="Mín."
-            min={0}
+            className="
+              w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
+              text-[0.85rem] bg-[#fcfcff]
+              placeholder:text-[#b0b0bd] placeholder:text-[0.8rem]
+              focus:outline-none focus:border-[#e53935]
+              focus:ring-1 focus:ring-[#e53935]/40
+            "
           />
-          <span className="ls-range-separator">–</span>
+          <span className="text-[12px] text-[#777]">–</span>
           <input
             type="number"
-            className="ls-input"
             placeholder="Máx."
-            min={0}
+            className="
+              w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
+              text-[0.85rem] bg-[#fcfcff]
+              placeholder:text-[#b0b0bd] placeholder:text-[0.8rem]
+              focus:outline-none focus:border-[#e53935]
+              focus:ring-1 focus:ring-[#e53935]/40
+            "
           />
         </div>
       </div>
 
-      {/* CAPACIDADE */}
-      <div className="ls-sidebar-section">
-        <p className="ls-sidebar-title">Capacidade</p>
-        <div className="ls-range-row">
+      {/* Capacidade */}
+      <div
+        className="
+          mt-4 pt-3 border-t border-[#f1f1f4]
+          first:mt-0 first:pt-0 first:border-t-0
+        "
+      >
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">
+          Capacidade
+        </p>
+
+        <div className="flex items-center gap-2">
           <input
             type="number"
-            className="ls-input"
-            placeholder="Min. pessoas"
-            min={0}
+            placeholder="Mín. pessoas"
+            className="
+              w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
+              text-[0.85rem] bg-[#fcfcff]
+              placeholder:text-[#b0b0bd] placeholder:text-[0.8rem]
+              focus:outline-none focus:border-[#e53935]
+              focus:ring-1 focus:ring-[#e53935]/40
+            "
           />
         </div>
       </div>
 
-      {/* RECURSOS */}
-      <div className="ls-sidebar-section">
-        <p className="ls-sidebar-title">Recursos</p>
-        <div className="ls-pill-group ls-pill-group--wrap">
-          {amenitiesOptions.map((amenity) => (
-            <button
-              key={amenity}
-              type="button"
-              className={
-                "ls-pill-button ls-pill-button--outline" +
-                (selectedAmenities.includes(amenity)
-                  ? " ls-pill-button--outline-active"
-                  : "")
-              }
-              onClick={() => onToggleAmenity(amenity)}
-            >
-              {amenity}
-            </button>
-          ))}
+      {/* Recursos */}
+      <div
+        className="
+          mt-4 pt-3 border-t border-[#f1f1f4]
+          first:mt-0 first:pt-0 first:border-t-0
+        "
+      >
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">Recursos</p>
+
+        <div className="flex flex-wrap gap-2">
+          {amenitiesOptions.map((amenity) => {
+            const selected = selectedAmenities.includes(amenity);
+
+            return (
+              <button
+                key={amenity}
+                type="button"
+                onClick={() => onToggleAmenity(amenity)}
+                className={`
+                  inline-flex items-center justify-center h-9 px-[18px]
+                  rounded-full border text-[0.85rem] whitespace-nowrap
+                  transition cursor-pointer
+                  focus:outline-none focus:ring-0 active:outline-none active:ring-0
+                  ${
+                    selected
+                      ? "bg-[#ffe4e0] border-[#e53935] text-[#e53935] shadow-[0_0_0_1px_rgba(229,57,53,0.06)]"
+                      : "bg-white border-[#e5e5e5] text-[#555] hover:border-[#d6d6dd] hover:bg-[#f5f5f9]"
+                  }
+                `}
+              >
+                {amenity}
+              </button>
+            );
+          })}
         </div>
       </div>
     </aside>
