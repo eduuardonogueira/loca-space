@@ -1,5 +1,6 @@
 import path from "path";
 import { NextConfig } from "next";
+import withFlowbiteReact from "flowbite-react/plugin/nextjs";
 
 const nextConfig: NextConfig = {
   images: {
@@ -17,7 +18,14 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
+
+  experimental: {
+    serverActions: {
+      // Isso permite que o servidor aceite requisições vindas da URL do GitHub
+      allowedOrigins: ["localhost:3000", "*.app.github.dev", "*.github.dev"],
+    },
+  },
 };
 
-export default nextConfig;
+export default withFlowbiteReact(nextConfig);
 

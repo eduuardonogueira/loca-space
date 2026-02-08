@@ -7,11 +7,16 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { AppointmentService } from '../appointments/appointment.service';
 import { UserDetailsDto } from './dto/user-details.dto';
+import { Profile } from './entities/profile.entity';
+import { CreateProfileDto } from './dto/create-profile.dto';
+import { AppointmentStatus } from '../../../../frontend/src/types/appointment';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly appointmentService: AppointmentService,
+    @InjectRepository(Profile) private profileRepository: Repository<Profile>,
     private readonly appointmentService: AppointmentService,
   ) {}
   async getUserDetails(id: number): Promise<UserDetailsDto> {
@@ -118,5 +123,26 @@ export class UserService {
 
   async findByEmail(email: string) {
     return this.userRepository.findOne({ where: { email } });
+  }
+  async createProfile(
+    userId: number,
+    createProfileDto: CreateProfileDto,
+    file?: Express.Multer.File, 
+  ) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const profile = this.profileRepository.create(createProfileDto);
+    
+    profile.user = user;
+
+    if (file) {
+      profile.avatarUrl = file.path; 
+    }
+
+    return await this.profileRepository.save(profile);
   }
 }
