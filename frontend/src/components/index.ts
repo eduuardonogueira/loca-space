@@ -4,3 +4,6 @@ export * from "./Loader.component";
 export * from "./RequireAuth.component";
 export * from "./ProfileModal.component";
 
+export * from "./RoomCard.component";
+export * from "./RoomsFilters.component";
+
