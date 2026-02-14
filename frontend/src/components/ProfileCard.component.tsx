@@ -28,7 +28,7 @@ export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-[30px] w-full max-w-[400px] p-8 relative shadow-2xl font-sans mx-auto">
+    <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-w-100 p-8 relative shadow-2xl font-sans mx-auto">
       {/* Cabeçalho */}
       <div className="flex items-center gap-4 mb-6">
         <div className="relative">
@@ -44,7 +44,7 @@ export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
             {user.name}
           </h2>
           <p className="text-green-500 text-xs font-bold flex items-center gap-1 mt-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             {user.status}
           </p>
         </div>
@@ -72,17 +72,17 @@ export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
           <User size={18} className="text-gray-500" />
           <span>{user.gender}</span>
         </div>
-      </div>
 
-      {/* Botões */}
-      <div className="mt-6">
         {user.isVerified && (
           <div className="flex items-center gap-2 text-green-600 font-bold text-sm mb-4">
             <CheckCircle size={18} />
             <span>Perfil Verificado</span>
           </div>
         )}
+      </div>
 
+      {/* Botões */}
+      <div className="mt-auto">
         <div className="flex gap-3">
           {type === "modal" ? (
             /* Adicionei onClick={onClose} aqui no Link */
@@ -96,12 +96,9 @@ export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
               Editar Perfil
             </button>
           )}
-
-          <button className="p-3 border-2 border-gray-200 rounded-xl text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors">
-            <Share2 size={24} />
-          </button>
         </div>
       </div>
     </div>
   );
 }
+

@@ -1,3 +1,6 @@
+"use server";
+
+import { ProfileCard, ProfileRoomCard } from "@/components";
 import {
   Calendar,
   DollarSign,
@@ -6,15 +9,13 @@ import {
   CheckCircle,
   TrendingUp,
 } from "lucide-react";
-import { ProfileCard } from "../../../components/ProfileCard.component";
-import { RoomCard } from "../../../components/RoomCard.component";
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
   return (
-    <div className="max-w-[1400px] mx-auto p-6 min-h-screen">
+    <div className="max-w-350 mx-auto p-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* COLUNA ESQUERDA: Perfil Fixo (Ocupa 3 ou 4 colunas do grid total) */}
-        <div className="lg:col-span-4 xl:col-span-3 sticky top-8">
+        <div className="lg:col-span-4 xl:col-span-3 sticky top-8 h-full">
           <ProfileCard type="page" />
         </div>
 
@@ -27,12 +28,12 @@ export default function ProfilePage() {
             </div>
             {/* GRID: 2 colunas para ficar lado a lado igual ao Figma */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <RoomCard
+              <ProfileRoomCard
                 title="Sala de Reunião - Executivo"
                 price="R$ 800"
                 image="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=300"
               />
-              <RoomCard
+              <ProfileRoomCard
                 title="Sala Industrial - Prédio A"
                 price="R$ 550"
                 image="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&q=80&w=300"
@@ -46,12 +47,12 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-800">Favoritos</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <RoomCard
+              <ProfileRoomCard
                 title="Sala de Reunião - Executivo"
                 price="R$ 800"
                 image="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=300"
               />
-              <RoomCard
+              <ProfileRoomCard
                 title="Sala Industrial - Prédio A"
                 price="R$ 550"
                 image="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&q=80&w=300"
@@ -133,3 +134,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

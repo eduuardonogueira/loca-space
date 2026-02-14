@@ -1,12 +1,16 @@
 import { ChevronRight } from "lucide-react";
 
-interface RoomCardProps {
+interface IProfileRoomCardProps {
   title: string;
   price: string;
   image: string;
 }
 
-export function RoomCard({ title, price, image }: RoomCardProps) {
+export function ProfileRoomCard({
+  title,
+  price,
+  image,
+}: IProfileRoomCardProps) {
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer group">
       {/* Foto da Sala */}
@@ -33,3 +37,4 @@ export function RoomCard({ title, price, image }: RoomCardProps) {
     </div>
   );
 }
+
