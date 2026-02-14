@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Amenity {
+  id          Int           @id(map: "PK_e19ee5661b265f292e3b67c22df") @default(autoincrement())
+  name        String        @unique(map: "UQ_30f1a562ec2149abb5e31498a8e") @db.VarChar
+  RoomAmenity RoomAmenity[]
+}
+
+model Appointment {
+  id        Int                     @id(map: "PK_b4c282a5c7803f8bd875bc6c4d5") @default(autoincrement())
+  order     Int
+  status    Appointment_status_enum @default(PENDING)
+  date      DateTime                @db.Date
+  startTime DateTime                @db.Time(6)
+  endTime   DateTime                @db.Time(6)
+  details   String?                 @db.VarChar
+  title     String                  @db.VarChar
+  createdAt DateTime                @db.Timestamp(6)
+  updatedAt DateTime?               @db.Timestamp(6)
+  userId    Int?
+  roomId    Int?
+  Room      Room?                   @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_408cabcb229a3c039f46a18b74c")
+  User      User?                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ca0194f46ac284e80c560c34ae4")
+}
+
+model Availability {
+  id        Int       @id(map: "PK_204660663256b7cfc1cbe3ee1f0") @default(autoincrement())
+  weekday   Int
+  startTime DateTime  @db.Time(6)
+  endTime   DateTime  @db.Time(6)
+  createdAt DateTime  @db.Timestamp(6)
+  updatedAt DateTime? @db.Timestamp(6)
+  roomId    Int?
+  Room      Room?     @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_89ec261bbfd68ace74a89a2e2b5")
+}
+
+model Booking {
+  id        Int      @id(map: "PK_d448e3d9fb1fb94ebd66eac73a2") @default(autoincrement())
+  userId    Int
+  roomId    Int
+  startTime DateTime @db.Timestamp(6)
+  endTime   DateTime @db.Timestamp(6)
+  createdAt DateTime @db.Timestamp(6)
+  updatedAt DateTime @db.Timestamp(6)
+}
+
+model Room {
+  id           Int              @id(map: "PK_867d589be92524f89375e2e086d") @default(autoincrement())
+  roomName     String           @db.VarChar
+  capacity     Int
+  location     String           @db.VarChar
+  description  String?
+  imageUrl     String?
+  createdAt    DateTime         @db.Timestamp(6)
+  updatedAt    DateTime?        @db.Timestamp(6)
+  duration     Int
+  status       Room_status_enum @default(available)
+  type         Room_type_enum   @default(room)
+  Appointment  Appointment[]
+  Availability Availability[]
+  RoomAmenity  RoomAmenity[]
+}
+
+model RoomAmenity {
+  id        Int      @id(map: "PK_61a6fdeed05ac80898d3a2916c1") @default(autoincrement())
+  roomId    Int?
+  amenityId Int?
+  Amenity   Amenity? @relation(fields: [amenityId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Amenity_RoomAmenity")
+  Room      Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Room_RoomAmenity")
+}
+
+model User {
+  id          Int            @id(map: "PK_9862f679340fb2388436a5ab3e4") @default(autoincrement())
+  email       String         @unique(map: "UQ_4a257d2c9837248d70640b3e36e") @db.VarChar
+  password    String         @db.VarChar
+  fullName    String         @db.VarChar
+  type        User_type_enum @default(externo)
+  role        User_role_enum @default(user)
+  createdAt   DateTime       @db.Timestamptz(6)
+  updatedAt   DateTime?      @db.Timestamptz(6)
+  Appointment Appointment[]
+}
+
+enum Appointment_status_enum {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum Room_status_enum {
+  available
+  scheduled
+  maintenance
+}
+
+enum Room_type_enum {
+  room
+  laboratory
+}
+
+enum User_role_enum {
+  user
+  admin
+}
+
+enum User_type_enum {
+  discente
+  docente
+  tecnico
+  externo
+}

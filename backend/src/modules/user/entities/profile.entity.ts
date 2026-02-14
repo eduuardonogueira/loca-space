@@ -10,7 +10,7 @@ export class Profile {
     avatarUrl: string;
 
     @Column()
-    zipCode: string: 
+    zipCode: string;
 
     @Column()
     street: string;
@@ -24,7 +24,7 @@ export class Profile {
     @Column()
     state: string;
 
-    @OneToOne(() => User, (user) => user.profile, { oneDelete: 'CASCADE'})
+    @OneToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE'})
     @JoinColumn()
     user: User;
 }

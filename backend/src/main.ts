@@ -1,6 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app/app.module';
+import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import configuration from './config/configuration';
 import { Logger } from '@nestjs/common';
@@ -10,6 +10,7 @@ const logger = new Logger('NestApplication');
 async function bootstrap() {
   const { port } = configuration();
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
