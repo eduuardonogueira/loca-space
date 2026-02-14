@@ -20,7 +20,7 @@ export function RoomsFilters({
   return (
     <aside
       className="
-        bg-white rounded-[18px] px-[18px] pt-5 pb-[22px]
+        bg-white rounded-[18px] px-4.5 pt-5 pb-5.5
         border border-[#e7e7eb]
         shadow-[0_4px_12px_rgba(15,23,42,0.03)]
         text-[13px] text-[#333]
@@ -33,16 +33,18 @@ export function RoomsFilters({
           first:mt-0 first:pt-0 first:border-t-0
         "
       >
-        <p className="text-[13px] font-semibold mb-2 text-[#333]">Ordenar por</p>
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">
+          Ordenar por
+        </p>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             className={`
-              inline-flex items-center justify-center h-9 px-[18px] rounded-full
+              inline-flex items-center justify-center h-9 px-4.5 rounded-full
               border text-[0.85rem] whitespace-nowrap cursor-pointer transition
               hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
-              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
               focus:outline-none focus:ring-0 active:outline-none active:ring-0
               ${
                 orderBy === "recent"
@@ -58,10 +60,10 @@ export function RoomsFilters({
           <button
             type="button"
             className={`
-              inline-flex items-center justify-center h-9 px-[18px] rounded-full
+              inline-flex items-center justify-center h-9 px-4.5 rounded-full
               border text-[0.85rem] whitespace-nowrap cursor-pointer transition
               hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
-              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
               focus:outline-none focus:ring-0 active:outline-none active:ring-0
               ${
                 orderBy === "higherPrice"
@@ -77,10 +79,10 @@ export function RoomsFilters({
           <button
             type="button"
             className={`
-              inline-flex items-center justify-center h-9 px-[18px] rounded-full
+              inline-flex items-center justify-center h-9 px-4.5 rounded-full
               border text-[0.85rem] whitespace-nowrap cursor-pointer transition
               hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
-              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
               focus:outline-none focus:ring-0 active:outline-none active:ring-0
               ${
                 orderBy === "lowerPrice"
@@ -176,9 +178,7 @@ export function RoomsFilters({
           first:mt-0 first:pt-0 first:border-t-0
         "
       >
-        <p className="text-[13px] font-semibold mb-2 text-[#333]">
-          Capacidade
-        </p>
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">Capacidade</p>
 
         <div className="flex items-center gap-2">
           <input
@@ -234,3 +234,4 @@ export function RoomsFilters({
     </aside>
   );
 }
+

@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import {
-  RoomCard,
-  RoomsFilters,
-  type Room,
-  type OrderBy,
-} from "@/components";
+import { RoomCard, RoomsFilters, type Room, type OrderBy } from "@/components";
 
 const allRooms: Room[] = [
   {
@@ -57,13 +52,13 @@ export default function RoomsPage() {
     if (locationQuery.trim()) {
       const query = locationQuery.toLowerCase();
       rooms = rooms.filter((room) =>
-        room.location.toLowerCase().includes(query)
+        room.location.toLowerCase().includes(query),
       );
     }
 
     if (selectedAmenities.length > 0) {
       rooms = rooms.filter((room) =>
-        selectedAmenities.every((am) => room.amenities.includes(am))
+        selectedAmenities.every((am) => room.amenities.includes(am)),
       );
     }
 
@@ -82,7 +77,7 @@ export default function RoomsPage() {
     setSelectedAmenities((prev) =>
       prev.includes(amenity)
         ? prev.filter((a) => a !== amenity)
-        : [...prev, amenity]
+        : [...prev, amenity],
     );
   }
 
@@ -266,3 +261,4 @@ export default function RoomsPage() {
     </div>
   );
 }
+
