@@ -5,6 +5,7 @@ export enum EnumRoomStatus {
 }
 
 export enum EnumRoomType {
-  ROOM = 'room',
-  LABORATORY = 'laboratory',
+  SalaReuniao = 'SalaReuniao',
+  Escritorio = 'Escritorio',
+  Gerais = 'Gerais',
 }
