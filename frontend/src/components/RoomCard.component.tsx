@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { Heart, Ruler, Users, MessageCircle, ArrowRight } from "lucide-react";
 
 export type Room = {
   id: number;
@@ -24,10 +27,7 @@ type RoomCardProps = {
 
 export function RoomCard({ room }: RoomCardProps) {
   return (
-    <Link
-      href={`/rooms/${room.id}`}
-      className="block"
-    >
+    <Link href={`/rooms/${room.id}`} className="block">
       <article
         className="
           bg-white rounded-[14px] overflow-hidden
@@ -40,6 +40,7 @@ export function RoomCard({ room }: RoomCardProps) {
           cursor-pointer
         "
       >
+        {/* IMAGEM */}
         <div className="relative h-[170px] overflow-hidden">
           <img
             src={room.imageUrl}
@@ -47,26 +48,29 @@ export function RoomCard({ room }: RoomCardProps) {
             className="w-full h-full object-cover"
           />
 
-          {/* Botão favorito NÃO deve navegar */}
+          {/* FAVORITO (não navega) */}
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
             className="
-              absolute top-[10px] right-[10px]
-              w-[26px] h-[26px] rounded-full
-              bg-white/90 text-[14px]
+              absolute top-3 right-3
+              w-8 h-8 rounded-full
+              bg-white/95 text-[#333]
               flex items-center justify-center
+              shadow-sm
+              transition hover:scale-105 active:scale-95
             "
             aria-label="Favoritar"
             type="button"
           >
-            ♡
+            <Heart size={16} strokeWidth={1.8} />
           </button>
         </div>
 
-        <div className="px-[14px] pt-3 pb-3.5 flex flex-col gap-1.5">
+        {/* CONTEÚDO */}
+        <div className="px-4 pt-3 pb-4 flex flex-col gap-1.5">
           <h2 className="text-[14px] font-semibold text-[#222]">
             {room.title}
           </h2>
@@ -80,12 +84,21 @@ export function RoomCard({ room }: RoomCardProps) {
             })}
           </p>
 
-          <div className="flex gap-3 mt-1 text-[12px] text-[#555]">
-            <span>{room.area} m²</span>
-            <span>{room.capacity} pessoas</span>
+          {/* ÁREA E CAPACIDADE COM ÍCONES */}
+          <div className="flex gap-4 mt-1 text-[12px] text-[#555] items-center">
+            <div className="flex items-center gap-1">
+              <Ruler size={14} strokeWidth={1.8} className="text-[#e53935]" />
+              <span>{room.area} m²</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <Users size={14} strokeWidth={1.8} className="text-[#e53935]" />
+              <span>{room.capacity} pessoas</span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-1.5 mt-1.5">
+          {/* AMENITIES */}
+          <div className="flex flex-wrap gap-1.5 mt-2">
             {room.amenities.map((a) => (
               <span
                 key={a}
@@ -99,7 +112,8 @@ export function RoomCard({ room }: RoomCardProps) {
             ))}
           </div>
 
-          <div className="flex gap-2 mt-3">
+          {/* BOTÕES EMPILHADOS */}
+          <div className="flex flex-col gap-2 mt-3">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -107,23 +121,29 @@ export function RoomCard({ room }: RoomCardProps) {
               }}
               type="button"
               className="
-                flex-1 h-8 rounded-full
+                w-full h-9 rounded-full
                 bg-[#f2f2f5] text-[13px] font-semibold
                 text-[#555]
+                flex items-center justify-center gap-2
+                transition hover:bg-[#e7e7eb]
               "
             >
+              <MessageCircle size={16} strokeWidth={1.8} />
               Enviar mensagem
             </button>
 
+            {/* "Ver detalhes" é só visual (Link já cobre o card) */}
             <span
               className="
-                flex-1 h-8 rounded-full
+                w-full h-9 rounded-full
                 bg-[#e53935] text-[13px] font-semibold
                 text-white
-                flex items-center justify-center
+                flex items-center justify-center gap-2
+                transition hover:bg-[#d32f2f]
               "
             >
               Ver detalhes
+              <ArrowRight size={16} strokeWidth={1.8} />
             </span>
           </div>
         </div>

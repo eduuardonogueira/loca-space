@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Heart } from "lucide-react";
 
 type RoomGalleryProps = {
   images?: string[];
@@ -21,6 +22,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
 
   return (
     <div className="rounded-2xl border border-[#e7e7eb] bg-white p-4 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
+      {/* Imagem principal */}
       <div className="relative">
         <img
           src={list[activeIndex]}
@@ -28,6 +30,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
           className="h-[420px] w-full rounded-2xl object-cover"
         />
 
+        {/* Botão Favoritar */}
         <button
           type="button"
           aria-label="Favoritar"
@@ -40,10 +43,11 @@ export function RoomGallery({ images }: RoomGalleryProps) {
             transition hover:scale-105 active:scale-95
           "
         >
-          ❤
+          <Heart size={18} strokeWidth={1.8} />
         </button>
       </div>
 
+      {/* Miniaturas */}
       <div className="mt-4 grid grid-cols-3 gap-3">
         {list.map((src, i) => {
           const active = i === activeIndex;
@@ -56,14 +60,21 @@ export function RoomGallery({ images }: RoomGalleryProps) {
               onClick={() => setActiveIndex(i)}
               className={`
                 overflow-hidden rounded-xl ring-2 transition
-                ${active ? "ring-[#e53935]" : "ring-transparent hover:ring-[#e53935]/30"}
+                ${
+                  active
+                    ? "ring-[#e53935]"
+                    : "ring-transparent hover:ring-[#e53935]/30"
+                }
                 active:translate-y-[1px]
               `}
             >
               <img
                 src={src}
-                alt="Miniatura"
-                className={`h-24 w-full object-cover transition ${active ? "" : "hover:opacity-90"}`}
+                alt={`Miniatura ${i + 1}`}
+                className={`
+                  h-24 w-full object-cover transition
+                  ${active ? "" : "hover:opacity-90"}
+                `}
               />
             </button>
           );
