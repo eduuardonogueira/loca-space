@@ -5,11 +5,29 @@ import { CalendarDays, Filter, ChevronDown } from "lucide-react";
 import { ReservationCard } from "@/components/ReservationCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Reservation } from "@/types/reservation";
+import { CancelModal } from "@/components/CancelModal";
 
 export default function ReservationsPage() {
   // 1. Estados
   const [filterStatus, setFilterStatus] = useState<"ALL" | "CONFIRMED" | "PENDING" | "CANCELLED">("ALL");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Estado para controlar abertura do menu
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [reservationToDelete, setReservationToDelete] = useState<number | null>(null);
+
+  // Função para abrir o modal
+  const handleDeleteRequest = (id: number) => {
+    setReservationToDelete(id);
+    setIsCancelModalOpen(true);
+  };
+
+  // Função para confirmar a exclusão
+  const confirmDelete = () => {
+    if (reservationToDelete) {
+      setReservations((prev) => prev.filter((item) => item.id !== reservationToDelete));
+      setIsCancelModalOpen(false);
+      setReservationToDelete(null);
+    }
+  };
 
   // 2. Dados Fictícios (MOCK)
   const [reservations, setReservations] = useState<Reservation[]>([
@@ -62,10 +80,6 @@ export default function ReservationsPage() {
       roomId: 20,
     }
   ]);
-
-  const handleDelete = (id: number) => {
-    setReservations((prev) => prev.filter((item) => item.id !== id));
-  };
 
   // Lógica de Filtragem
   const filteredReservations = reservations.filter((reservation) => {
@@ -149,13 +163,19 @@ export default function ReservationsPage() {
               <ReservationCard 
                 key={reservation.id} 
                 reservation={reservation} 
-                onDelete={handleDelete}
+                onDeleteClick={handleDeleteRequest}
               />
             ))}
           </div>
         ) : (
           <EmptyState />
         )}
+
+        <CancelModal 
+        isOpen={isCancelModalOpen} 
+        onClose={() => setIsCancelModalOpen(false)} 
+        onConfirm={confirmDelete} 
+      />
 
       </div>
     </main>
