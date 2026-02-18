@@ -52,8 +52,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               <Calendar size={16} /> Data de Nascimento
             </label>
             <input
-              type="text"
-              defaultValue="17/04/2000"
+              type="date"
+              defaultValue="2000-04-17"
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
           </div>
@@ -75,6 +75,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
             </label>
             <input
               type="email"
+              required
+              pattern=".*@.*"
               defaultValue="teosilva@email.com.br"
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
@@ -85,8 +87,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               <Phone size={16} /> Celular
             </label>
             <input
-              type="text"
-              defaultValue="(91) 99222-4455"
+              type="number"
+              defaultValue="91992224455"
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
           </div>

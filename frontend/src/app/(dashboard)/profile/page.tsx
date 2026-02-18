@@ -10,7 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { ProfileCard } from "../../../components/ProfileCard.component";
-import { RoomCard } from "../../../components/RoomCard.component";
+import { ProfileRoomCard } from "../../../components/ProfileRoomCard.component";
 import { EditProfileModal } from "../../../components/EditProfileModal.component";
 
 export default function ProfilePage() {
@@ -53,8 +53,16 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-800">Histórico</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <RoomCard room={salaExecutiva} />
-              <RoomCard room={salaIndustrial} />
+              <ProfileRoomCard
+                title={salaExecutiva.title}
+                price={salaExecutiva.price}
+                image={salaExecutiva.imageUrl}
+              />
+              <ProfileRoomCard
+                title={salaIndustrial.title}
+                price={salaIndustrial.price}
+                image={salaIndustrial.imageUrl}
+              />
             </div>
           </section>
 
@@ -63,8 +71,16 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-800">Favoritos</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <RoomCard room={salaExecutiva} />
-              <RoomCard room={salaIndustrial} />
+              <ProfileRoomCard
+                title={salaExecutiva.title}
+                price={salaExecutiva.price}
+                image={salaExecutiva.imageUrl}
+              />
+              <ProfileRoomCard
+                title={salaIndustrial.title}
+                price={salaIndustrial.price}
+                image={salaIndustrial.imageUrl}
+              />
             </div>
           </section>
 
