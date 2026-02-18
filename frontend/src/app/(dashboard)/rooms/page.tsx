@@ -1,43 +1,9 @@
 "use client";
 
+import { allRooms } from "@/mocks/rooms.mocks";
 import React, { useMemo, useState } from "react";
-import { RoomCard, RoomsFilters, type Room, type OrderBy } from "@/components";
+import { RoomCard, RoomsFilters, type OrderBy } from "@/components";
 
-const allRooms: Room[] = [
-  {
-    id: 1,
-    title: "Sala de Reunião - Prédio Executivo",
-    location: "Belém - PA",
-    price: 1000,
-    imageUrl:
-      "https://images.pexels.com/photos/1181400/pexels-photo-1181400.jpeg?auto=compress&cs=tinysrgb&w=800",
-    area: 22,
-    capacity: 8,
-    amenities: ["Wi-Fi", "Projetor", "Climatizada"],
-  },
-  {
-    id: 2,
-    title: "Sala Industrial - Condomínio",
-    location: "Ananindeua - PA",
-    price: 850,
-    imageUrl:
-      "https://images.pexels.com/photos/3182763/pexels-photo-3182763.jpeg?auto=compress&cs=tinysrgb&w=800",
-    area: 32,
-    capacity: 12,
-    amenities: ["Wi-Fi", "Garagem"],
-  },
-  {
-    id: 3,
-    title: "Sala de Treinamento - Coworking",
-    location: "Belém - PA",
-    price: 950,
-    imageUrl:
-      "https://images.pexels.com/photos/3182743/pexels-photo-3182743.jpeg",
-    area: 28,
-    capacity: 15,
-    amenities: ["Wi-Fi", "Ar-condicionado"],
-  },
-];
 
 export default function RoomsPage() {
   const [orderBy, setOrderBy] = useState<OrderBy>("recent");
