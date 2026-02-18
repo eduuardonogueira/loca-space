@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+
+import { ReservationDetailsModal } from "../../../components/ReservationDetailsModal";
 import { CalendarDays, Filter, ChevronDown } from "lucide-react";
 import { ReservationCard } from "@/components/ReservationCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -9,77 +11,58 @@ import { CancelModal } from "@/components/CancelModal";
 
 export default function ReservationsPage() {
   // 1. Estados
-  const [filterStatus, setFilterStatus] = useState<"ALL" | "CONFIRMED" | "PENDING" | "CANCELLED">("ALL");
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedRes, setSelectedRes] = useState<Reservation | null>(null);
+  const [filterStatus, setFilterStatus] = useState<
+    "ALL" | "CONFIRMED" | "PENDING" | "CANCELLED"
+  >("ALL");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [reservationToDelete, setReservationToDelete] = useState<number | null>(null);
+  const [reservationToDelete, setReservationToDelete] = useState<number | null>(
+    null,
+  );
 
-  // Função para abrir o modal
-  const handleDeleteRequest = (id: number) => {
-    setReservationToDelete(id);
-    setIsCancelModalOpen(true);
-  };
-
-  // Função para confirmar a exclusão
-  const confirmDelete = () => {
-    if (reservationToDelete) {
-      setReservations((prev) => prev.filter((item) => item.id !== reservationToDelete));
-      setIsCancelModalOpen(false);
-      setReservationToDelete(null);
-    }
-  };
-
-  // 2. Dados Fictícios (MOCK)
   const [reservations, setReservations] = useState<Reservation[]>([
     {
       id: 1,
+      title: "Sala de Reunião - Prédio Executivo",
       order: 101,
       status: "CONFIRMED",
-      date: "2025-08-10",
-      startTime: "14:00",
-      endTime: "16:00",
-      details: "Reunião de alinhamento",
-      title: "Sala de Reunião - Prédio Executivo",
+      date: "Terça Feira, Agosto 10, 2025",
+      startTime: "11:00 AM",
+      endTime: "12:00 PM",
+      details: "",
       userId: 1,
       roomId: 10,
     },
     {
       id: 2,
+      title: "Sala Industrial - Prédio",
       order: 102,
       status: "PENDING",
-      date: "2025-08-11",
-      startTime: "09:00",
-      endTime: "11:00",
-      details: "Workshop de Design",
-      title: "Sala Industrial - Prédio",
+      date: "Segunda Feira, Agosto 9, 2025",
+      startTime: "15:30 PM",
+      endTime: "18:30 PM",
+      details: "",
       userId: 1,
       roomId: 15,
     },
-    {
-      id: 3,
-      order: 103,
-      status: "CANCELLED",
-      date: "2025-08-12",
-      startTime: "13:00",
-      endTime: "14:00",
-      details: "Entrevista Candidato",
-      title: "Sala Pequena - Coworking",
-      userId: 1,
-      roomId: 5,
-    },
-    {
-      id: 4,
-      order: 104,
-      status: "CONFIRMED",
-      date: "2025-08-15",
-      startTime: "10:00",
-      endTime: "12:00",
-      details: "Apresentação",
-      title: "Auditório Principal",
-      userId: 1,
-      roomId: 20,
-    }
   ]);
+
+  const handleOpenCancelFlow = (id: number) => {
+    setReservationToDelete(id);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (reservationToDelete) {
+      setReservations((prev) =>
+        prev.filter((r) => r.id !== reservationToDelete),
+      );
+      setIsCancelModalOpen(false);
+      setReservationToDelete(null);
+    }
+  };
 
   // Lógica de Filtragem
   const filteredReservations = reservations.filter((reservation) => {
@@ -90,80 +73,72 @@ export default function ReservationsPage() {
   // Label do Filtro
   const getFilterLabel = () => {
     switch (filterStatus) {
-      case "CONFIRMED": return "Confirmadas";
-      case "PENDING": return "Pendentes";
-      case "CANCELLED": return "Canceladas";
-      default: return "Filtros";
+      case "CONFIRMED":
+        return "Confirmadas";
+      case "PENDING":
+        return "Pendentes";
+      case "CANCELLED":
+        return "Canceladas";
+      default:
+        return "Filtros";
     }
   };
 
-  // Função para selecionar uma opção e fechar o menu
-  const handleSelectFilter = (status: typeof filterStatus) => {
-    setFilterStatus(status);
-    setIsDropdownOpen(false);
-  };
-
   return (
-    <main className="min-h-screen bg-[#F8F9FA] p-6 md:p-10 font-sans">
+    <main className="min-h-screen bg-[#F5F5F5] p-6 md:p-12 font-sans">
       <div className="max-w-7xl mx-auto">
-        
-        {/* Cabeçalho */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex justify-between items-center mb-10">
           <div className="flex items-center gap-3">
-            <CalendarDays className="text-[#E85D46]" size={28} />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Minhas Reservas</h1>
+            <CalendarDays size={28} />
+            <h1 className="text-2xl font-bold text-gray-800">
+              Minhas Reservas
+            </h1>
           </div>
-
-          {/* Dropdown Manual */}
-          <div className="relative w-full md:w-auto">
-            <button 
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center justify-between w-full md:w-48 px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:border-[#E85D46] text-gray-700 shadow-sm transition-all group"
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors"
             >
-              <div className="flex items-center gap-2">
-                <Filter size={18} className="text-gray-500 group-hover:text-[#E85D46]" />
-                <span className="font-medium text-sm">{getFilterLabel()}</span>
-              </div>
-              <ChevronDown size={16} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <Filter size={18} />
+              {getFilterLabel()}
+              <ChevronDown size={16} />
             </button>
-
-            {/* Menu Dropdown */}
             {isDropdownOpen && (
-              <>
-                {/* Overlay transparente para fechar ao clicar fora */}
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setIsDropdownOpen(false)}
-                ></div>
-                
-                {/* Lista de Opções */}
-                <div className="absolute right-0 mt-2 w-full md:w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
-                  <button onClick={() => handleSelectFilter("ALL")} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#E85D46]">
-                    Todas as reservas
+              <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-md z-10">
+                {["ALL", "CONFIRMED", "PENDING", "CANCELLED"].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => {
+                      setFilterStatus(status as any);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    {status === "ALL"
+                      ? "Todas"
+                      : status === "CONFIRMED"
+                        ? "Confirmadas"
+                        : status === "PENDING"
+                          ? "Pendentes"
+                          : "Canceladas"}
                   </button>
-                  <button onClick={() => handleSelectFilter("CONFIRMED")} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#E85D46]">
-                    Confirmadas
-                  </button>
-                  <button onClick={() => handleSelectFilter("PENDING")} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#E85D46]">
-                    Pendentes
-                  </button>
-                  <button onClick={() => handleSelectFilter("CANCELLED")} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#E85D46]">
-                    Canceladas
-                  </button>
-                </div>
-              </>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Lista ou Empty State */}
         {filteredReservations.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredReservations.map((reservation) => (
-              <ReservationCard 
-                key={reservation.id} 
-                reservation={reservation} 
-                onDeleteClick={handleDeleteRequest}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-10">
+            {filteredReservations.map((res: Reservation) => (
+              <ReservationCard
+                key={res.id}
+                reservation={res}
+                onDeleteClick={handleOpenCancelFlow}
+                onDetailsClick={(r: Reservation) => {
+                  setSelectedRes(r);
+                  setIsDetailsModalOpen(true);
+                }}
               />
             ))}
           </div>
@@ -171,13 +146,20 @@ export default function ReservationsPage() {
           <EmptyState />
         )}
 
-        <CancelModal 
-        isOpen={isCancelModalOpen} 
-        onClose={() => setIsCancelModalOpen(false)} 
-        onConfirm={confirmDelete} 
-      />
+        <CancelModal
+          isOpen={isCancelModalOpen}
+          onClose={() => setIsCancelModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+        />
 
+        <ReservationDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={() => setIsDetailsModalOpen(false)}
+          reservation={selectedRes}
+          onCancelClick={handleOpenCancelFlow}
+        />
       </div>
     </main>
   );
 }
+
