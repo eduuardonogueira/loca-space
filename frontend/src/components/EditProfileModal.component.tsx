@@ -149,3 +149,4 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     </div>
   );
 }
+

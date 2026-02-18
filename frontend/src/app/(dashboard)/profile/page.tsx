@@ -9,37 +9,46 @@ import {
   CheckCircle,
   TrendingUp,
 } from "lucide-react";
-import { ProfileCard } from "../../../components/ProfileCard.component";
-import { ProfileRoomCard } from "../../../components/ProfileRoomCard.component";
+import { ProfileCard, ProfileRoomCard } from "@/components";
 import { EditProfileModal } from "../../../components/EditProfileModal.component";
+import { IRoomWithAmenities } from "@/types/room";
 
 export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Criei essas "salas falsas" aqui em cima para o código ficar mais limpo lá embaixo!
-  const salaExecutiva = {
-    title: "Sala de Reunião - Executivo",
-    price: "R$ 800",
-    location: "Belém, Umarizal",
-    imageUrl:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=300",
-    amenities: ["Wi-Fi", "Ar Condicionado", "TV"], // <-- ISSO AQUI RESOLVE O ERRO!
-  };
-
-  const salaIndustrial = {
-    title: "Sala Industrial - Prédio A",
-    price: "R$ 550",
-    location: "Belém, Umarizal",
-    imageUrl:
-      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&q=80&w=300",
-    amenities: ["Quadro Branco", "Café"], // <-- ISSO AQUI RESOLVE O ERRO!
-  };
+  const rooms: IRoomWithAmenities[] = [
+    {
+      id: 1,
+      title: "Sala de Reunião - Executivo",
+      price: 800,
+      location: "Belém, Umarizal",
+      imageUrl:
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=300",
+      amenities: [
+        { id: 1, name: "Wi-Fi" },
+        { id: 2, name: "Ar condicionado" },
+        { id: 3, name: "TV" },
+      ],
+    },
+    {
+      id: 2,
+      title: "Sala Industrial - Prédio A",
+      price: 800,
+      location: "Belém, Umarizal",
+      imageUrl:
+        "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&q=80&w=300",
+      amenities: [
+        { id: 4, name: "Quadro Branco" },
+        { id: 5, name: "Café" },
+      ],
+    },
+  ];
 
   return (
     <div className="max-w-[1400px] mx-auto p-6 min-h-screen relative">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* COLUNA ESQUERDA: Perfil Fixo */}
-        <div className="lg:col-span-4 xl:col-span-3 sticky top-8">
+        <div className="lg:col-span-4 xl:col-span-3 sticky top-8 h-full">
           <ProfileCard
             type="page"
             onEditClick={() => setIsEditModalOpen(true)}
@@ -53,16 +62,9 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-800">Histórico</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ProfileRoomCard
-                title={salaExecutiva.title}
-                price={salaExecutiva.price}
-                image={salaExecutiva.imageUrl}
-              />
-              <ProfileRoomCard
-                title={salaIndustrial.title}
-                price={salaIndustrial.price}
-                image={salaIndustrial.imageUrl}
-              />
+              {rooms.map((room) => (
+                <ProfileRoomCard key={room.id} room={room} />
+              ))}
             </div>
           </section>
 
@@ -71,16 +73,9 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-800">Favoritos</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ProfileRoomCard
-                title={salaExecutiva.title}
-                price={salaExecutiva.price}
-                image={salaExecutiva.imageUrl}
-              />
-              <ProfileRoomCard
-                title={salaIndustrial.title}
-                price={salaIndustrial.price}
-                image={salaIndustrial.imageUrl}
-              />
+              {rooms.map((room) => (
+                <ProfileRoomCard key={room.id} room={room} />
+              ))}
             </div>
           </section>
 
@@ -155,3 +150,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

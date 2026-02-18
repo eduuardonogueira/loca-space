@@ -22,7 +22,7 @@ export enum EnumRoomType {
 
 export interface IRoom {
   id: number;
-  name: string;
+  title: string;
   location: string;
   capacity: number;
   duration: number;
@@ -30,6 +30,7 @@ export interface IRoom {
   status: RoomStatus;
   type: RoomType;
   imageUrl?: string;
+  price: number;
 }
 
 export type IRoomWithAmenities = IRoom & {

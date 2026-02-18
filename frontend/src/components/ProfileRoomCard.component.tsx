@@ -1,31 +1,26 @@
+import { IRoom } from "@/types/room";
 import { ChevronRight } from "lucide-react";
 
 interface IProfileRoomCardProps {
-  title: string;
-  price: string;
-  image: string;
+  room: IRoom;
 }
 
-export function ProfileRoomCard({
-  title,
-  price,
-  image,
-}: IProfileRoomCardProps) {
+export function ProfileRoomCard({ room }: IProfileRoomCardProps) {
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer group">
       {/* Foto da Sala */}
       <img
-        src={image}
-        alt={title}
+        src={room.imageUrl}
+        alt={room.title}
         className="w-24 h-20 rounded-lg object-cover bg-gray-200"
       />
 
       {/* Informações */}
       <div className="flex-1">
-        <h3 className="font-bold text-gray-800 text-sm mb-1">{title}</h3>
+        <h3 className="font-bold text-gray-800 text-sm mb-1">{room.title}</h3>
         <p className="text-gray-500 text-xs">A partir de</p>
         <p className="font-bold text-gray-900">
-          {price}{" "}
+          {room.price}{" "}
           <span className="text-xs font-normal text-gray-400">/ hora</span>
         </p>
       </div>
