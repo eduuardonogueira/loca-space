@@ -7,7 +7,8 @@ export class SelfConsultService {
   private readonly logger = new Logger(SelfConsultService.name);
 
   // Executa a cada minuto (Usando Enum do CronExpression)
-  @Cron(CronExpression.EVERY_MINUTE)
+  // Executa a cada 30 segundos
+  @Cron('*/30 * * * * *')
   async keepAlivePing() {
     try {
       const config = configuration();
