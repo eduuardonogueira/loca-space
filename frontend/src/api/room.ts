@@ -21,8 +21,26 @@ export async function getRooms(): Promise<IRoomWithAmenities[] | null> {
   }
 }
 
+export async function getRoomsByUser(): Promise<IRoomWithAmenities[] | null> {
+  try {
+    const response = await authFetch("/room", {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      console.error("Erro na requisição:", response.status);
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro ao buscar rooms:", error);
+    return null;
+  }
+}
+
 export async function createRoom(
-  roomData: ICreateRoom
+  roomData: ICreateRoom,
 ): Promise<IRoomWithAmenities[] | null> {
   try {
     const response = await authFetch("/room", {
@@ -47,7 +65,7 @@ export async function createRoom(
 
 export async function updateRoom(
   roomData: Partial<ICreateRoom>,
-  roomId: number
+  roomId: number,
 ): Promise<IRoomWithAmenities[] | null> {
   try {
     const response = await authFetch(`/room/${roomId}`, {
