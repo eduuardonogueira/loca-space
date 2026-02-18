@@ -4,6 +4,7 @@ import { Profile } from './profile.entity';
 
 import { Room } from '../../room/entities/room.entity';
 import { Favorite } from '../../favorite/entities/favorite.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity';
 
 @Entity('User')
 export class User {
@@ -39,4 +40,8 @@ export class User {
 
   @OneToMany(() => Favorite, (favorite) => favorite.user)
   favorites: Favorite[];
+
+  @OneToMany(() => Appointment, (appointment) => appointment.user)
+  appointments: Appointment[];
 }
+

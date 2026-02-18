@@ -6,15 +6,14 @@ import configuration from 'src/config/configuration';
 export class SelfConsultService {
   private readonly logger = new Logger(SelfConsultService.name);
 
-  // Executa a cada minuto (Usando Enum do CronExpression)
-  // Executa a cada 30 segundos
   @Cron('*/30 * * * * *')
   async keepAlivePing() {
     try {
       const config = configuration();
 
-      const url = config.backendUrl;
-      const res = await fetch(url); // O endpoint raiz (/) retorna 200 se o backend estiver vivo
+      const baseUrl = config.backendUrl.replace(/\/api\/?$/, '');
+      const url = `${baseUrl}/api`;
+      const res = await fetch(url);
       this.logger.log(`Keep-alive ping sent to ${url} - status: ${res.status}`);
     } catch (err) {
       this.logger.warn('Keep-alive ping failed: ' + err?.message);

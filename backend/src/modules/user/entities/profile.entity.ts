@@ -30,6 +30,15 @@ export class Profile {
     @Column()
     state: string;
 
+    @Column({ nullable: true })
+    phone: string;
+
+    @Column({ nullable: true })
+    gender: string;
+
+    @Column({ type: 'date', nullable: true })
+    birthDate: Date;
+
     @OneToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE' })
     @JoinColumn()
     user: User;

@@ -10,6 +10,8 @@ import { RoomModule } from '../room/room.module';
 import { AmenitiesModule } from '../amenities/amenities.module';
 import { FavoriteModule } from '../favorite/favorite.module';
 import { SelfConsultModule } from '../../tasks/self-consult/self-consult.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EmailModule } from '../email/email/email.module';
 
 @Module({
   imports: [
@@ -38,6 +40,24 @@ import { SelfConsultModule } from '../../tasks/self-consult/self-consult.module'
     AmenitiesModule,
     FavoriteModule,
     SelfConsultModule,
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: 'jardimpaulodev@gmail.com', 
+          pass: 'xfae zign rmco yygk', //colocar aqui a senha do gmail
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      },
+      defaults: {
+        from: '"Equipe Local Space" <jardimpaulodev@gmail.com>',
+      },
+    }),
+    EmailModule,
   ],
 })
 export class AppModule {}

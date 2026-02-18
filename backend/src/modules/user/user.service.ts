@@ -6,12 +6,14 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
 import { CreateProfileDto } from './dto/create-profile.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Profile) private profileRepository: Repository<Profile>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async getUserDetails(id: number) {
@@ -28,6 +30,28 @@ export class UserService {
     }
 
     return user;
+  }
+
+  async getProfile(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: [
+        'profile',
+        'rooms',
+        'rooms.address',
+        'favorites',
+        'favorites.room',
+        'appointments',
+        'appointments.room',
+      ],
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const { password, ...result } = user;
+    return result;
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -95,10 +119,20 @@ export class UserService {
     createProfileDto: CreateProfileDto,
     file?: Express.Multer.File,
   ) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profile'],
+    });
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.profile) {
+      throw new HttpException(
+        'Este usuário já possui um perfil cadastrado.',
+        HttpStatus.CONFLICT,
+      );
     }
 
     const profile = this.profileRepository.create(createProfileDto);
@@ -106,7 +140,8 @@ export class UserService {
     profile.user = user;
 
     if (file) {
-      profile.avatarUrl = file.path;
+      const uploadResult = await this.cloudinaryService.uploadFile(file);
+      profile.avatarUrl = uploadResult.secure_url;
     }
 
     return await this.profileRepository.save(profile);

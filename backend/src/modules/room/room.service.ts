@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { FilterRoomDto } from './dto/filter-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
@@ -8,18 +8,24 @@ import { Repository, ILike } from 'typeorm';
 import { RoomAmenitiesService } from '../room-amenities/room-amenities.service';
 import { AvailabilityService } from '../availability/availability.service';
 import { AppointmentService } from '../appointments/appointment.service';
-
+import { EmailService } from '../email/email/email.service';
 import { UserService } from '../user/user.service';
+import { Favorite } from '../favorite/entities/favorite.entity';
 
 @Injectable()
 export class RoomService {
+  private readonly logger = new Logger(RoomService.name);
+
   constructor(
     @InjectRepository(Room)
     private roomRepository: Repository<Room>,
+    @InjectRepository(Favorite)
+    private favoriteRepository: Repository<Favorite>,
     private roomAmenitiesService: RoomAmenitiesService,
     private readonly availabilityService: AvailabilityService,
     private readonly appointmentService: AppointmentService,
     private readonly userService: UserService,
+    private readonly emailService: EmailService,
   ) {}
 
   async getRoomDetails(id: number) {
@@ -242,6 +248,11 @@ export class RoomService {
       }
     }
 
+    const salaAntes = await this.roomRepository.findOne({ where: { id: roomId } });
+    const precoAntigo = salaAntes?.price;
+    if (!precoAntigo) {
+      throw new HttpException(`Room with ID ${roomId} not found`, 404);
+    } 
     const room = await this.roomRepository.preload({
       id: roomId,
       ...updateRoomDto,
@@ -252,7 +263,37 @@ export class RoomService {
       throw new HttpException(`Room with ID ${roomId} not found`, 404);
     }
 
-    return this.roomRepository.save(room);
+    const savedRoom = await this.roomRepository.save(room);
+
+    if (updateRoomDto.price < precoAntigo) {
+      const favorites = await this.favoriteRepository.find({
+        where: { room: { id: roomId } },
+        relations: ['user'],
+      });
+
+      if (favorites.length > 0) {
+        const roomName = room.name || `Sala #${roomId}`;
+        this.logger.log(
+          `Price drop detected for "${roomName}": R$${precoAntigo} → R$${updateRoomDto.price}. Notifying ${favorites.length} user(s).`,
+        );
+
+        Promise.all(
+          favorites.map((fav) =>
+            this.emailService.sendPriceDropNotification(
+              fav.user.email,
+              roomName,
+              precoAntigo,
+              updateRoomDto.price,
+              fav.user.fullName,  
+            ),
+          ),
+        ).catch((err) =>
+          this.logger.warn(`Error sending price drop emails: ${err?.message}`),
+        );
+      }
+    }
+
+    return savedRoom;
   }
 
   async remove(id: number) {
