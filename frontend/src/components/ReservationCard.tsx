@@ -6,28 +6,25 @@ import { Reservation } from "@/types/reservation";
 
 interface ReservationCardProps {
   reservation: Reservation;
-  onDelete: (id: number) => void;
+  onDeleteClick: (id: number) => void;
 }
 
-// CORREÇÃO AQUI: Função segura contra fuso horário
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
   
-  // Divide a string "YYYY-MM-DD" manualmente para evitar conversão de timezone
   const parts = dateString.split('-');
   if (parts.length !== 3) return dateString;
   
   const year = parseInt(parts[0]);
-  const month = parseInt(parts[1]) - 1; // Mês no JS começa em 0
+  const month = parseInt(parts[1]) - 1; 
   const day = parseInt(parts[2]);
   
-  // Cria a data no horário local do usuário, garantindo que o dia permaneça o mesmo
   const date = new Date(year, month, day);
   
   return new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
 };
 
-export function ReservationCard({ reservation, onDelete }: ReservationCardProps) {
+export function ReservationCard({ reservation, onDeleteClick }: ReservationCardProps) {
   return (
     <div className="group relative flex flex-col md:flex-row bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden min-h-[180px]">
       
@@ -56,10 +53,13 @@ export function ReservationCard({ reservation, onDelete }: ReservationCardProps)
           </div>
         </div>
 
-        {/* Botão Deletar */}
+        {/* Botão Deletar - Atualizado */}
         <button 
-          onClick={() => onDelete(reservation.id)}
-          className="absolute top-4 right-4 text-red-300 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors border border-transparent hover:border-red-100"
+          onClick={(e) => {
+            e.stopPropagation(); // Previne conflitos de clique
+            onDeleteClick(reservation.id);
+          }}
+          className="absolute top-4 right-4 text-gray-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors border border-transparent hover:border-red-100"
           title="Cancelar Reserva"
         >
           <Trash2 size={20} />
