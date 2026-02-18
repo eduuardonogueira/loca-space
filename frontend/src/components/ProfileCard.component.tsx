@@ -12,9 +12,14 @@ import Link from "next/link";
 interface ProfileCardProps {
   type?: "modal" | "page";
   onClose?: () => void; // NOVO: O Card agora aceita uma função de fechar
+  onEditClick?: () => void;
 }
 
-export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
+export function ProfileCard({
+  type = "page",
+  onClose,
+  onEditClick,
+}: ProfileCardProps) {
   // Dados simulados
   const user = {
     name: "Teodoro da Silva Teobaldo",
@@ -92,7 +97,10 @@ export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
               </button>
             </Link>
           ) : (
-            <button className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+            <button
+              onClick={onEditClick}
+              className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+            >
               Editar Perfil
             </button>
           )}
@@ -101,4 +109,3 @@ export function ProfileCard({ type = "page", onClose }: ProfileCardProps) {
     </div>
   );
 }
-
