@@ -52,18 +52,23 @@ export class RoomController {
     return this.roomService.update(id, updateRoomDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Lista todos os espaços disponíveis' })
   @ApiResponse({
     status: 200,
     description: 'Lista de espaços retornados com sucesso.',
   })
-  findAll() {
-    return this.roomService.findAll();
+  findAll(@Req() req: any) {
+    const userId = +req.user.userId;
+    return this.roomService.findAll(userId);
   }
 
   @Get('searchLocation')
-  @ApiOperation({ summary: 'Busca salas por endereço (rua, bairro, cidade, estado)' })
+  @ApiOperation({
+    summary: 'Busca salas por endereço (rua, bairro, cidade, estado)',
+  })
   @ApiQuery({
     name: 'address',
     required: true,
@@ -109,6 +114,8 @@ export class RoomController {
     return this.roomService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get(':id/details')
   @ApiOperation({
     summary: 'Retorna detalhes de um espaço, disponibilidade e agendamentos',
@@ -118,8 +125,12 @@ export class RoomController {
     status: 200,
     description: 'Detalhes do espaço retornados com sucesso.',
   })
-  async getRoomDetails(@Param('id', ParseIntPipe) id: number) {
-    return await this.roomService.getRoomDetails(id);
+  async getRoomDetails(
+    @Param('id', ParseIntPipe) roomId: number,
+    @Req() req: any,
+  ) {
+    const userId = +req.user.userId;
+    return await this.roomService.getRoomDetails(roomId, userId);
   }
 
   @Delete(':id')

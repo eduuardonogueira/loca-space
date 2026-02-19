@@ -1,4 +1,4 @@
-import { IRoom } from "./room";
+import { IAddress, IRoom } from "./room";
 
 export enum EnumUserRole {
   USER = "user",
@@ -17,29 +17,19 @@ export interface IFavorite {
 export interface IUser {
   id: number;
   fullName: string;
+  avatarUrl: string;
   email: string;
   type: UserType;
   role: UserRole;
-  createdAt: string;
-  updatedAt: string | null;
-  profile: IProfile;
-  rooms: IRoom[];
-  favorites: IFavorite[];
-  appointments: any[];
-}
-export interface IProfile {
-  id: number;
-  avatarUrl: string;
-  zipCode: string;
-  street: string;
-  number: string;
-  complement: string;
-  city: string;
-  neighborhood: string;
-  state: string;
   phone: string | null;
   gender: string | null;
   birthDate: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+  rooms: IRoom[];
+  address: IAddress;
+  favorites: IFavorite[];
+  appointments: any[];
 }
 
 export interface ICreateUser {

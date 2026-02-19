@@ -131,6 +131,9 @@ export async function addFavorite(roomId: number): Promise<any> {
     const data = { roomId };
     const response = await authFetch(`/favorite`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
 

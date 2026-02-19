@@ -22,11 +22,10 @@ import {
   ApiConsumes,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express'; 
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateProfileDto } from './dto/create-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('user')
@@ -36,56 +35,36 @@ export class UserController {
 
   @Post()
   @ApiOperation({ summary: 'Cria um usuário' })
-  @ApiResponse({
-    status: 200,
-    description: 'Usuário criado com sucesso.',
-  })
+  @ApiResponse({ status: 200, description: 'Usuário criado com sucesso.' })
   create(@Body() userPayload: CreateUserDto) {
     return this.userService.create(userPayload);
   }
 
-  @Post('profile')
+  @Patch('me/upload-avatar')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Cria o perfil do usuário com foto' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', format: 'binary', description: 'Foto de perfil' },
-        zipCode: { type: 'string', example: '66014-180' },
-        street: { type: 'string', example: 'Av. Perimetral' },
-        number: { type: 'string', example: '3004' },
-        complement: { type: 'string', example: 'Apto 716' },
-        neighborhood: { type: 'string', example: 'Guamá' },
-        city: { type: 'string', example: 'Pará' },
-        state: { type: 'string', example: 'PA' },
-        phone: { type: 'string', example: '91988887777' },
-        gender: { type: 'string', example: 'Masculino' },
-        birthDate: { type: 'string', example: '1998-05-15' },
-      },
-    },
+  @ApiOperation({
+    summary: 'Atualiza o avatar do usuário',
   })
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
-  async createProfile(
-    @Req() req,
-    @Body() createProfileDto: CreateProfileDto,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    return this.userService.createProfile(req.user.userId, createProfileDto, file);
+  uploadAvatar(@Req() req, @UploadedFile() file: Express.Multer.File) {
+    return this.userService.uploadAvatar(req.user.userId, file);
   }
 
-  @Get('profile')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Retorna o perfil do usuário logado com salas, favoritos e agendamentos' })
+  @ApiOperation({
+    summary:
+      'Retorna os dados do usuário logado, incluindo salas, favoritos e agendamentos',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Perfil do usuário retornado com sucesso.',
+    description: 'Dados do usuário retornados com sucesso.',
   })
-  async getProfile(@Req() req) {
-    return this.userService.getProfile(req.user.userId);
+  getMe(@Req() req) {
+    return this.userService.getUserProfile(req.user.userId);
   }
 
   @Get()
@@ -94,11 +73,10 @@ export class UserController {
     status: 200,
     description: 'Lista de usuários retornada com sucesso.',
   })
-  async findAll(@Query('page') page?: number, @Query('size') size?: number) {
-    let pageNumber = page ? Number(page) : 1;
-    if (pageNumber < 1) pageNumber = 1;
-    const sizeNumber = size ? Number(size) : 10;
-    return await this.userService.findAll(pageNumber, sizeNumber);
+  findAll(@Query('page') page?: number, @Query('size') size?: number) {
+    const pageNumber = page && page > 0 ? Number(page) : 1;
+    const sizeNumber = size && size > 0 ? Number(size) : 10;
+    return this.userService.findAll(pageNumber, sizeNumber);
   }
 
   @Get(':id')
@@ -129,8 +107,8 @@ export class UserController {
     status: 200,
     description: 'Detalhes do usuário retornados com sucesso.',
   })
-  async getUserDetails(@Param('id', ParseIntPipe) id: number) {
-    return await this.userService.getUserDetails(id);
+  getUserDetails(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getUserDetails(id);
   }
 
   @Delete(':id')
@@ -138,6 +116,6 @@ export class UserController {
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Usuário removido com sucesso.' })
   remove(@Param('id', ParseIntPipe) id: number) {
-   return this.userService.remove(id);
+    return this.userService.remove(id);
   }
 }

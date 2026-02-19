@@ -1,4 +1,9 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { FilterRoomDto } from './dto/filter-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
@@ -28,34 +33,86 @@ export class RoomService {
     private readonly emailService: EmailService,
   ) {}
 
-  async getRoomDetails(id: number) {
-    const room = await this.findOne(id);
-    const availability = await this.availabilityService.findByRoom(id);
-    const appointments = await this.appointmentService.findByRoom(id);
+  async getRoomDetails(roomId: number, userId: number) {
+    const room = await this.roomRepository.findOne({
+      where: { id: roomId },
+      relations: {
+        user: true,
+        roomAmenities: {
+          amenity: true,
+        },
+        address: true,
+        favorites: true,
+      },
+    });
+
+    if (!room) {
+      throw new NotFoundException('Sala não encontrada');
+    }
+
+    const isFavorite = userId
+      ? room.favorites.some((fav) => fav.user.id === userId)
+      : false;
+
+    const availability = await this.availabilityService.findByRoom(roomId);
+    const appointments = await this.appointmentService.findByRoom(roomId);
+
     return {
-      room,
+      room: {
+        ...room,
+        amenities:
+          room.roomAmenities?.map((ra) => ({
+            id: ra.amenity.id,
+            name: ra.amenity.name,
+          })) ?? [],
+        advertise: {
+          email: room.user.email,
+          name: room.user.fullName,
+          phone: room.user.phone,
+        },
+        isFavorite,
+      },
       availability,
       appointments,
     };
   }
 
-  async findAll() {
+  async findAll(userId: number) {
     const findedRooms = await this.roomRepository.find({
-      relations: ['roomAmenities', 'roomAmenities.amenity'],
+      relations: {
+        roomAmenities: {
+          amenity: true,
+        },
+        address: true,
+        favorites: {
+          user: true,
+        }, // carrega favoritos, mas user dentro pode ser undefined
+      },
     });
-    if (!findedRooms) {
+
+    if (!findedRooms || findedRooms.length === 0) {
       throw new HttpException(`Rooms Not Found`, 404);
     }
-    const formatedAmenities = findedRooms.map((room) => ({
-      ...room,
-      amenities: room.roomAmenities.map((ra) => ({
-        id: ra.amenity.id,
-        name: ra.amenity.name,
-      })),
-      roomAmenities: undefined,
-    }));
 
-    return formatedAmenities;
+    const formattedRooms = findedRooms.map((room) => {
+      const isFavorite = userId
+        ? room.favorites.some((fav) => fav.user.id === userId)
+        : false;
+
+      return {
+        ...room,
+        amenities:
+          room.roomAmenities?.map((ra) => ({
+            id: ra.amenity.id,
+            name: ra.amenity.name,
+          })) ?? [],
+        isFavorite,
+        roomAmenities: undefined,
+        favorites: undefined,
+      };
+    });
+
+    return formattedRooms;
   }
 
   async findByUser(userId: number) {
@@ -65,7 +122,10 @@ export class RoomService {
     });
 
     if (!rooms || rooms.length === 0) {
-      throw new HttpException('Nenhum espaço encontrado para este usuário', 404);
+      throw new HttpException(
+        'Nenhum espaço encontrado para este usuário',
+        404,
+      );
     }
 
     return rooms.map((room) => ({
@@ -202,7 +262,7 @@ export class RoomService {
     if (!user) {
       throw new HttpException('User not found', 404);
     }
-    console.log('User passado:',userId)
+    console.log('User passado:', userId);
     const room = this.roomRepository.create({
       ...createRoomDto,
       user,
@@ -268,11 +328,13 @@ export class RoomService {
       }
     }
 
-    const salaAntes = await this.roomRepository.findOne({ where: { id: roomId } });
+    const salaAntes = await this.roomRepository.findOne({
+      where: { id: roomId },
+    });
     const precoAntigo = salaAntes?.price;
     if (!precoAntigo) {
       throw new HttpException(`Room with ID ${roomId} not found`, 404);
-    } 
+    }
     const room = await this.roomRepository.preload({
       id: roomId,
       ...updateRoomDto,
@@ -304,7 +366,7 @@ export class RoomService {
               roomName,
               precoAntigo,
               updateRoomDto.price,
-              fav.user.fullName,  
+              fav.user.fullName,
             ),
           ),
         ).catch((err) =>

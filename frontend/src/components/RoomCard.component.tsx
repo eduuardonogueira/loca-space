@@ -15,6 +15,7 @@ type RoomCardProps = {
 export function RoomCard({ room }: RoomCardProps) {
   async function handleToggleFavorites(room: IRoomWithAmenities) {
     if (room.isFavorite) {
+      console.log(room.id)
       await removeFavorite(room.id);
     } else {
       await addFavorite(room.id);
@@ -22,10 +23,7 @@ export function RoomCard({ room }: RoomCardProps) {
   }
 
   return (
-    <Link
-      href={ROOM_ROUTE.replace("[id]", room.id.toString())}
-      className="block"
-    >
+    <div className="block">
       <article
         className="
           bg-white rounded-[14px] overflow-hidden
@@ -61,7 +59,11 @@ export function RoomCard({ room }: RoomCardProps) {
             aria-label="Favoritar"
             type="button"
           >
-            <Heart size={16} strokeWidth={1.8} />
+            <Heart
+              size={16}
+              strokeWidth={1.8}
+              color={room.isFavorite ? "white" : "black"}
+            />
           </button>
         </div>
 
@@ -129,7 +131,8 @@ export function RoomCard({ room }: RoomCardProps) {
               Enviar mensagem
             </button>
 
-            <span
+            <Link
+              href={ROOM_ROUTE.replace("[id]", room.id.toString())}
               className="
                 w-full h-9 rounded-full
                 bg-[#e53935] text-[13px] font-semibold
@@ -140,11 +143,11 @@ export function RoomCard({ room }: RoomCardProps) {
             >
               Ver detalhes
               <ArrowRight size={16} strokeWidth={1.8} />
-            </span>
+            </Link>
           </div>
         </div>
       </article>
-    </Link>
+    </div>
   );
 }
 

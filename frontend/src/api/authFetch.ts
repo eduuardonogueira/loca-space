@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 export async function authFetch(
   path: string | URL | globalThis.Request,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ) {
   const cookieStore = await cookies();
   const authToken = cookieStore.get(AUTH_COOKIE_KEY)?.value;
@@ -25,6 +25,8 @@ export async function authFetch(
   };
 
   const mountedUrl = `${process.env.BACKEND_URL}${path}`;
+
+  console.log(mountedUrl);
 
   return fetch(mountedUrl, fetchOptions);
 }

@@ -80,7 +80,7 @@ export async function getProfile(): Promise<IUser | null> {
 
 export async function getUserProfile(): Promise<IUser | null> {
   try {
-    const response = await authFetch("/user/profile", {
+    const response = await authFetch("/user/me", {
       method: "GET",
     });
 

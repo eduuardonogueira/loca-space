@@ -9,10 +9,13 @@ import {
   CheckCircle,
   TrendingUp,
 } from "lucide-react";
-import { Loader, ProfileCard, ProfileRoomCard } from "@/components";
-import { EditProfileModal } from "../../../components/EditProfileModal.component";
-import { IRoomWithAmenities } from "@/types/room";
-import { useProfile } from "../../../hooks/useProfile";
+import {
+  Loader,
+  ProfileCard,
+  ProfileRoomCard,
+  EditProfileModal,
+} from "@/components";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

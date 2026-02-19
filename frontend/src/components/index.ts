@@ -10,3 +10,5 @@ export * from "./RoomCard.component";
 export * from "./RoomsFilters.component";
 
 export * from "./AvailabilityModal.component";
+export * from "./EditProfileModal.component";
+
