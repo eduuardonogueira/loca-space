@@ -17,7 +17,7 @@ export function useRooms() {
       }
     } catch (error) {
       toast.error("Erro ao buscar salas");
-      console.error("Erro ao buscar perfil do usuário:", error);
+      console.error("Erro ao buscar salas:", error);
     }
     setIsLoading(false);
   }

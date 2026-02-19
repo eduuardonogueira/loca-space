@@ -15,22 +15,33 @@ export enum EnumRoomStatus {
   MAINTENANCE = "maintenance",
 }
 
-export enum EnumRoomType {
-  ROOM = "room",
-  LABORATORY = "laboratory",
+export type IRoomStatus = "available" | "unavailable" | "maintenance";
+
+export interface IAddress {
+  id: number;
+  street: string;
+  number: string;
+  complement: string;
+  bairro: string;
+  city: string;
+  state: string;
 }
 
 export interface IRoom {
   id: number;
+  userId: number;
   name: string;
-  location: string;
-  capacity: number;
-  duration: number;
-  description: string;
-  status: RoomStatus;
-  type: RoomType;
-  imageUrl?: string;
+  size: number;
+  totalSpace: number;
   price: number;
+  status: IRoomStatus;
+  description: string;
+  imageUrl: string;
+  parkingSlots: number;
+  createdAt: string;
+  updatedAt: string | null;
+  type: RoomType;
+  address: IAddress;
 }
 
 export type IRoomWithAmenities = IRoom & {

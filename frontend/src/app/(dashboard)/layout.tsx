@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/index";
+import { Navbar, RequireAuth } from "@/components/index";
 
 export default function DashboardLayout({
   children,
@@ -6,10 +6,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <RequireAuth>
       <Navbar />
       {children}
-    </>
+    </RequireAuth>
   );
 }
 
