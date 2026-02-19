@@ -58,6 +58,26 @@ export class RoomService {
     return formatedAmenities;
   }
 
+  async findByUser(userId: number) {
+    const rooms = await this.roomRepository.find({
+      where: { user: { id: userId } },
+      relations: ['roomAmenities', 'roomAmenities.amenity'],
+    });
+
+    if (!rooms || rooms.length === 0) {
+      throw new HttpException('Nenhum espaço encontrado para este usuário', 404);
+    }
+
+    return rooms.map((room) => ({
+      ...room,
+      amenities: room.roomAmenities.map((ra) => ({
+        id: ra.amenity.id,
+        name: ra.amenity.name,
+      })),
+      roomAmenities: undefined,
+    }));
+  }
+
   async findByAddress(term: string) {
     const termLike = `%${term}%`;
     const findedRooms = await this.roomRepository.find({

@@ -11,6 +11,12 @@ export class SelfConsultService {
     try {
       const config = configuration();
 
+      if (!process.env.BACKEND_URL) {
+        this.logger.warn(
+          'BACKEND_URL não está definida! O keep-alive está pingando localhost. Configure BACKEND_URL com a URL pública da API em produção.',
+        );
+      }
+
       const baseUrl = config.backendUrl.replace(/\/api\/?$/, '');
       const url = `${baseUrl}/api`;
       const res = await fetch(url);

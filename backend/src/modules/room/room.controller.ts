@@ -87,6 +87,19 @@ export class RoomController {
     return this.roomService.filterRooms(filters);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('my-rooms')
+  @ApiOperation({ summary: 'Lista os espaços criados pelo usuário logado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de espaços do usuário retornada com sucesso.',
+  })
+  @ApiResponse({ status: 404, description: 'Nenhum espaço encontrado.' })
+  findMyRooms(@Req() req: any) {
+    return this.roomService.findByUser(+req.user.userId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Busca um espaço pelo ID' })
   @ApiParam({ name: 'id', type: Number })
