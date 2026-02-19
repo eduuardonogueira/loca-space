@@ -28,7 +28,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="flex justify-between px-6 md:px-16 h-[80px] items-center bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+    <header className="flex justify-between px-6 md:px-16 h-20 items-center bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
       <div className="flex items-center gap-2 group cursor-pointer">
         <div className="transition-transform duration-300 group-hover:scale-110 text-red-400">
           <House className="text-2xl" />

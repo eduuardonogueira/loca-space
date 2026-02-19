@@ -1,13 +1,13 @@
 "use server";
 
-import { ICreateUser, IUser } from "@/types/user";
+import { ICreateUser, IProfile, IUser } from "@/types/user";
 import { cookies } from "next/headers";
 import { authFetch } from "./authFetch.ts";
 import { AUTH_COOKIE_KEY } from "@/constants/cookies.ts";
 
 export async function login(
   username: string,
-  password: string
+  password: string,
 ): Promise<boolean> {
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
@@ -71,6 +71,23 @@ export async function getProfile(): Promise<IUser | null> {
     if (!response || response.status === 401) return null;
 
     const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
+export async function getUserProfile(): Promise<IUser | null> {
+  try {
+    const response = await authFetch("/user/profile", {
+      method: "GET",
+    });
+
+    if (!response || response.status === 401) return null;
+
+    const data = await response.json();
+    console.log(data);
     return data;
   } catch (error) {
     console.log(error);
