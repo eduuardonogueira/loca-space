@@ -36,4 +36,19 @@ export class CreateProfileDto {
   @IsNotEmpty()
   @IsString()
   state: string;
+
+  @ApiProperty({ example: '91988887777', required: false })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiProperty({ example: 'Masculino', required: false })
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @ApiProperty({ example: '1998-05-15', required: false })
+  @IsOptional()
+  @IsString()
+  birthDate?: string;
 }

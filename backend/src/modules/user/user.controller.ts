@@ -8,9 +8,9 @@ import {
   Delete,
   ParseIntPipe,
   Query,
-  UseGuards,      
-  UseInterceptors, 
-  UploadedFile,  
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
   Req,
 } from '@nestjs/common';
 import {
@@ -20,10 +20,9 @@ import {
   ApiBody,
   ApiParam,
   ApiConsumes,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path'; 
+import { FileInterceptor } from '@nestjs/platform-express'; 
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -47,26 +46,46 @@ export class UserController {
 
   @Post('profile')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Cria o perfil do usuário com foto' })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${uniqueSuffix}${ext}`);
-        },
-      }),
-    }),
-  )
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary', description: 'Foto de perfil' },
+        zipCode: { type: 'string', example: '66014-180' },
+        street: { type: 'string', example: 'Av. Perimetral' },
+        number: { type: 'string', example: '3004' },
+        complement: { type: 'string', example: 'Apto 716' },
+        neighborhood: { type: 'string', example: 'Guamá' },
+        city: { type: 'string', example: 'Pará' },
+        state: { type: 'string', example: 'PA' },
+        phone: { type: 'string', example: '91988887777' },
+        gender: { type: 'string', example: 'Masculino' },
+        birthDate: { type: 'string', example: '1998-05-15' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
   async createProfile(
     @Req() req,
     @Body() createProfileDto: CreateProfileDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.userService.createProfile(req.user.id, createProfileDto, file);
+    return this.userService.createProfile(req.user.userId, createProfileDto, file);
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Retorna o perfil do usuário logado com salas, favoritos e agendamentos' })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil do usuário retornado com sucesso.',
+  })
+  async getProfile(@Req() req) {
+    return this.userService.getProfile(req.user.userId);
   }
 
   @Get()
