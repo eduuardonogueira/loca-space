@@ -1,6 +1,10 @@
 import { EnumUserRole, EnumUserType } from 'src/types/user';
-import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne, OneToMany } from 'typeorm';
 import { Profile } from './profile.entity';
+
+import { Room } from '../../room/entities/room.entity';
+import { Favorite } from '../../favorite/entities/favorite.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity';
 
 @Entity('User')
 export class User {
@@ -30,4 +34,14 @@ export class User {
 
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
+
+  @OneToMany(() => Room, (room) => room.user)
+  rooms: Room[];
+
+  @OneToMany(() => Favorite, (favorite) => favorite.user)
+  favorites: Favorite[];
+
+  @OneToMany(() => Appointment, (appointment) => appointment.user)
+  appointments: Appointment[];
 }
+

@@ -20,9 +20,9 @@ async function bootstrap() {
 
   // Swagger config
   const config = new DocumentBuilder()
-    .setTitle('Campus Click API')
-    .setDescription('Documentação da API Campus Click')
-    .setVersion('1.0')
+    .setTitle('API Loca-Space')
+    .setDescription('Documentação da API Loca-Space')
+    .setVersion('Paulo Moraes')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
