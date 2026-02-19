@@ -41,7 +41,7 @@ export function Navbar() {
         </Link>
       </div>
 
-      <nav className="flex justify-between gap-8 w-[50%]">
+      <nav className="flex justify-between gap-8 w-[70%]">
         {navbarLinks.map((link) => (
           <Link
             key={link.route}

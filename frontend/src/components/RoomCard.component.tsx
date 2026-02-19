@@ -10,12 +10,13 @@ import { addFavorite, removeFavorite } from "@/api";
 
 type RoomCardProps = {
   room: IRoomWithAmenities;
+  mode: "edit" | "view";
 };
 
-export function RoomCard({ room }: RoomCardProps) {
+export function RoomCard({ room, mode = "view" }: RoomCardProps) {
   async function handleToggleFavorites(room: IRoomWithAmenities) {
     if (room.isFavorite) {
-      console.log(room.id)
+      console.log(room.id);
       await removeFavorite(room.id);
     } else {
       await addFavorite(room.id);
@@ -110,15 +111,17 @@ export function RoomCard({ room }: RoomCardProps) {
             ))}
           </div>
 
-          {/* BOTÕES EMPILHADOS */}
-          <div className="flex flex-col gap-2 mt-3">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              type="button"
-              className="
+          {/* BOTÕES DE VIEW EMPILHADOS */}
+
+          {mode === "view" ? (
+            <div className="flex flex-col gap-2 mt-3">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                type="button"
+                className="
                 w-full h-9 rounded-full
                 bg-[#f2f2f5] text-[13px] font-semibold
                 text-[#555]
@@ -126,25 +129,57 @@ export function RoomCard({ room }: RoomCardProps) {
                 transition hover:bg-[#e7e7eb]
                 hover:cursor-pointer
               "
-            >
-              <MessageCircle size={16} strokeWidth={1.8} />
-              Enviar mensagem
-            </button>
+              >
+                <MessageCircle size={16} strokeWidth={1.8} />
+                Enviar mensagem
+              </button>
 
-            <Link
-              href={ROOM_ROUTE.replace("[id]", room.id.toString())}
-              className="
+              <Link
+                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                className="
                 w-full h-9 rounded-full
                 bg-[#e53935] text-[13px] font-semibold
                 text-white
                 flex items-center justify-center gap-2
                 transition hover:bg-[#d32f2f]
               "
-            >
-              Ver detalhes
-              <ArrowRight size={16} strokeWidth={1.8} />
-            </Link>
-          </div>
+              >
+                Ver detalhes
+                <ArrowRight size={16} strokeWidth={1.8} />
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 mt-3">
+              <Link
+                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                className="
+                w-full h-9 rounded-full
+                bg-[#e53935] text-[13px] font-semibold
+                text-white
+                flex items-center justify-center gap-2
+                transition hover:bg-[#d32f2f]
+              "
+              >
+                Editar Anúncio
+                <ArrowRight size={16} strokeWidth={1.8} />
+              </Link>
+
+              <Link
+                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                className="
+                w-full h-9 rounded-full
+                bg-[#f2f2f5] text-[13px] font-semibold
+                text-[#555]
+                flex items-center justify-center gap-2
+                transition hover:bg-[#e7e7eb]
+                hover:cursor-pointer
+              "
+              >
+                Ver detalhes
+                <ArrowRight size={16} strokeWidth={1.8} />
+              </Link>
+            </div>
+          )}
         </div>
       </article>
     </div>
