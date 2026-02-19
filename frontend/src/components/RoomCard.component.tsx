@@ -3,31 +3,28 @@
 import React from "react";
 import Link from "next/link";
 import { Heart, Ruler, Users, MessageCircle, ArrowRight } from "lucide-react";
-
-export type Room = {
-  id: number;
-  title: string;
-  location: string;
-  price: number;
-  imageUrl: string;
-  area: number;
-  capacity: number;
-  amenities: string[];
-
-  description: string;
-  address: string;
-  type: string;
-  rules: string;
-  schedule: string;
-};
+import { IRoomWithAmenities } from "@/types/room";
+import { ROOM_ROUTE } from "@/constants/routes";
+import { formatRoomAddress } from "../utils/formatRoomAddress";
+import { addFavorite, removeFavorite } from "@/api";
 
 type RoomCardProps = {
-  room: Room;
+  room: IRoomWithAmenities;
+  mode: "edit" | "view";
 };
 
-export function RoomCard({ room }: RoomCardProps) {
+export function RoomCard({ room, mode = "view" }: RoomCardProps) {
+  async function handleToggleFavorites(room: IRoomWithAmenities) {
+    if (room.isFavorite) {
+      console.log(room.id);
+      await removeFavorite(room.id);
+    } else {
+      await addFavorite(room.id);
+    }
+  }
+
   return (
-    <Link href={`/rooms/${room.id}`} className="block">
+    <div className="block">
       <article
         className="
           bg-white rounded-[14px] overflow-hidden
@@ -41,41 +38,43 @@ export function RoomCard({ room }: RoomCardProps) {
         "
       >
         {/* IMAGEM */}
-        <div className="relative h-[170px] overflow-hidden">
+        <div className="relative h-42.5 overflow-hidden">
           <img
             src={room.imageUrl}
-            alt={room.title}
+            alt={room.name}
             className="w-full h-full object-cover"
           />
 
           {/* FAVORITO (não navega) */}
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            className="
+            onClick={() => handleToggleFavorites(room)}
+            className={`
               absolute top-3 right-3
               w-8 h-8 rounded-full
-              bg-white/95 text-[#333]
+            text-[#333]
               flex items-center justify-center
               shadow-sm
               transition hover:scale-105 active:scale-95
-            "
+              ${room.isFavorite ? "bg-red-500" : "bg-white"}
+            `}
             aria-label="Favoritar"
             type="button"
           >
-            <Heart size={16} strokeWidth={1.8} />
+            <Heart
+              size={16}
+              strokeWidth={1.8}
+              color={room.isFavorite ? "white" : "black"}
+            />
           </button>
         </div>
 
         {/* CONTEÚDO */}
         <div className="px-4 pt-3 pb-4 flex flex-col gap-1.5">
-          <h2 className="text-[14px] font-semibold text-[#222]">
-            {room.title}
-          </h2>
+          <h2 className="text-[14px] font-semibold text-[#222]">{room.name}</h2>
 
-          <p className="text-[12px] text-[#777]">{room.location}</p>
+          <p className="text-[12px] text-[#777]">
+            {formatRoomAddress(room.address)}
+          </p>
 
           <p className="text-[16px] font-bold text-[#e53935] mt-1">
             R{"$ "}
@@ -88,12 +87,12 @@ export function RoomCard({ room }: RoomCardProps) {
           <div className="flex gap-4 mt-1 text-[12px] text-[#555] items-center">
             <div className="flex items-center gap-1">
               <Ruler size={14} strokeWidth={1.8} className="text-[#e53935]" />
-              <span>{room.area} m²</span>
+              <span>{room.size} m²</span>
             </div>
 
             <div className="flex items-center gap-1">
               <Users size={14} strokeWidth={1.8} className="text-[#e53935]" />
-              <span>{room.capacity} pessoas</span>
+              <span>{room.totalSpace} pessoas</span>
             </div>
           </div>
 
@@ -101,53 +100,89 @@ export function RoomCard({ room }: RoomCardProps) {
           <div className="flex flex-wrap gap-1.5 mt-2">
             {room.amenities.map((a) => (
               <span
-                key={a}
+                key={a.id}
                 className="
-                  text-[11px] px-2 py-[3px] rounded-full
+                  text-[11px] px-2 py-0.75 rounded-full
                   bg-[#f2f4fb] text-[#555]
                 "
               >
-                {a}
+                {a.name}
               </span>
             ))}
           </div>
 
-          {/* BOTÕES EMPILHADOS */}
-          <div className="flex flex-col gap-2 mt-3">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              type="button"
-              className="
+          {/* BOTÕES DE VIEW EMPILHADOS */}
+
+          {mode === "view" ? (
+            <div className="flex flex-col gap-2 mt-3">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                type="button"
+                className="
                 w-full h-9 rounded-full
                 bg-[#f2f2f5] text-[13px] font-semibold
                 text-[#555]
                 flex items-center justify-center gap-2
                 transition hover:bg-[#e7e7eb]
+                hover:cursor-pointer
               "
-            >
-              <MessageCircle size={16} strokeWidth={1.8} />
-              Enviar mensagem
-            </button>
+              >
+                <MessageCircle size={16} strokeWidth={1.8} />
+                Enviar mensagem
+              </button>
 
-            {/* "Ver detalhes" é só visual (Link já cobre o card) */}
-            <span
-              className="
+              <Link
+                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                className="
                 w-full h-9 rounded-full
                 bg-[#e53935] text-[13px] font-semibold
                 text-white
                 flex items-center justify-center gap-2
                 transition hover:bg-[#d32f2f]
               "
-            >
-              Ver detalhes
-              <ArrowRight size={16} strokeWidth={1.8} />
-            </span>
-          </div>
+              >
+                Ver detalhes
+                <ArrowRight size={16} strokeWidth={1.8} />
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 mt-3">
+              <Link
+                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                className="
+                w-full h-9 rounded-full
+                bg-[#e53935] text-[13px] font-semibold
+                text-white
+                flex items-center justify-center gap-2
+                transition hover:bg-[#d32f2f]
+              "
+              >
+                Editar Anúncio
+                <ArrowRight size={16} strokeWidth={1.8} />
+              </Link>
+
+              <Link
+                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                className="
+                w-full h-9 rounded-full
+                bg-[#f2f2f5] text-[13px] font-semibold
+                text-[#555]
+                flex items-center justify-center gap-2
+                transition hover:bg-[#e7e7eb]
+                hover:cursor-pointer
+              "
+              >
+                Ver detalhes
+                <ArrowRight size={16} strokeWidth={1.8} />
+              </Link>
+            </div>
+          )}
         </div>
       </article>
-    </Link>
+    </div>
   );
 }
+

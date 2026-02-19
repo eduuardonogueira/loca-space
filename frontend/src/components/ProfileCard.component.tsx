@@ -34,14 +34,12 @@ export function ProfileCard({
     );
   }
 
-  const { profile } = user;
-
   return (
     <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-w-100 p-8 relative shadow-2xl font-sans mx-auto gap-4">
       <div className="flex items-center gap-4">
         <div className="relative">
           <img
-            src={profile.avatarUrl || "https://github.com/shadcn.png"}
+            src={user.avatarUrl || "https://github.com/shadcn.png"}
             alt="Foto de Perfil"
             className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
           />
@@ -58,19 +56,17 @@ export function ProfileCard({
       </div>
 
       <div className="space-y-4 text-sm text-gray-700">
-        {profile.birthDate && (
+        {user.birthDate && (
           <div className="flex items-center gap-3">
             <Calendar size={18} className="text-gray-500" />
-            <span>
-              {new Date(profile.birthDate).toLocaleDateString("pt-BR")}
-            </span>
+            <span>{new Date(user.birthDate).toLocaleDateString("pt-BR")}</span>
           </div>
         )}
 
         <div className="flex items-center gap-3">
           <MapPin size={18} className="text-gray-500" />
           <span>
-            {profile.city} - {profile.state}
+            {user.address.city} - {user.address.state}
           </span>
         </div>
 
@@ -79,17 +75,17 @@ export function ProfileCard({
           <span className="truncate w-60">{user.email}</span>
         </div>
 
-        {profile.phone && (
+        {user.phone && (
           <div className="flex items-center gap-3">
             <Phone size={18} className="text-gray-500" />
-            <span>{profile.phone}</span>
+            <span>{user.phone}</span>
           </div>
         )}
 
-        {profile.gender && (
+        {user.gender && (
           <div className="flex items-center gap-3">
             <User size={18} className="text-gray-500" />
-            <span>{profile.gender}</span>
+            <span>{user.gender}</span>
           </div>
         )}
       </div>

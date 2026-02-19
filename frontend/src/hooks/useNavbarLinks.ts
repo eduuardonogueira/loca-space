@@ -3,20 +3,22 @@ import {
   CirclePlus,
   MessageCircleCode,
   BriefcaseBusiness,
+  Warehouse,
 } from "lucide-react";
 import {
-  ANNOUNCE_ROUTE,
+  CREATE_ROOM_ROUTE,
   FAVORITES_ROUTE,
   MESSAGES_ROUTE,
   MY_ANNOUNCE_ROUTE,
+  ROOMS_ROUTE,
 } from "@/constants/routes";
 
 export function useNavbarLinks() {
   const navbarLinks = [
     {
-      route: ANNOUNCE_ROUTE,
-      label: "Anunciar",
-      icon: CirclePlus,
+      route: ROOMS_ROUTE,
+      label: "Salas",
+      icon: Warehouse,
     },
     {
       route: FAVORITES_ROUTE,
@@ -32,6 +34,11 @@ export function useNavbarLinks() {
       route: MY_ANNOUNCE_ROUTE,
       label: "Meus Anúncios",
       icon: BriefcaseBusiness,
+    },
+    {
+      route: CREATE_ROOM_ROUTE,
+      label: "Anunciar",
+      icon: CirclePlus,
     },
   ];
 

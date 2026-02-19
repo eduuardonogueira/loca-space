@@ -1,41 +1,47 @@
 "use client";
 
-import { allRooms } from "@/mocks/rooms.mocks";
 import React, { useMemo, useState } from "react";
-import { RoomCard, RoomsFilters, type OrderBy } from "@/components";
-
+import { Loader, RoomCard, RoomsFilters, type OrderBy } from "@/components";
+import { useRooms } from "@/hooks/useRooms";
 
 export default function RoomsPage() {
+  const { rooms, isLoading } = useRooms();
+
   const [orderBy, setOrderBy] = useState<OrderBy>("recent");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [locationQuery, setLocationQuery] = useState("");
 
-  const hasAnyRoom = allRooms.length > 0;
+  const hasAnyRoom = rooms.length > 0;
 
   const filteredRooms = useMemo(() => {
-    let rooms = [...allRooms];
+    let filtered = [...rooms];
 
     if (locationQuery.trim()) {
       const query = locationQuery.toLowerCase();
-      rooms = rooms.filter((room) =>
-        room.location.toLowerCase().includes(query),
+
+      filtered = filtered.filter((room) =>
+        `${room.address?.city} ${room.address?.state}`
+          .toLowerCase()
+          .includes(query),
       );
     }
 
     if (selectedAmenities.length > 0) {
-      rooms = rooms.filter((room) =>
-        selectedAmenities.every((am) => room.amenities.includes(am)),
+      filtered = filtered.filter((room) =>
+        selectedAmenities.every((am) =>
+          room.amenities?.some((a) => a.name === am),
+        ),
       );
     }
 
-    rooms.sort((a, b) => {
+    filtered.sort((a, b) => {
       if (orderBy === "higherPrice") return b.price - a.price;
       if (orderBy === "lowerPrice") return a.price - b.price;
       return 0;
     });
 
-    return rooms;
-  }, [orderBy, selectedAmenities, locationQuery]);
+    return filtered;
+  }, [rooms, orderBy, selectedAmenities, locationQuery]);
 
   const hasFilteredRooms = filteredRooms.length > 0;
 
@@ -52,6 +58,8 @@ export default function RoomsPage() {
     setSelectedAmenities([]);
     setOrderBy("recent");
   }
+
+  if (isLoading) return <Loader text="Carregando salas..." />;
 
   return (
     <div
@@ -83,7 +91,7 @@ export default function RoomsPage() {
           {/* Barra de localização */}
           <section
             className="
-              bg-white rounded-[16px]
+              bg-white rounded-2xl
               px-4 py-3.5
               shadow-[0_8px_18px_rgba(15,23,42,0.04)]
               border border-[#e0e0e4]
@@ -126,7 +134,7 @@ export default function RoomsPage() {
                     transition
                     hover:bg-[#d32f2f]
                     hover:shadow-[0_4px_10px_rgba(211,47,47,0.4)]
-                    active:translate-y-[1px]
+                    active:translate-y-px
                     active:shadow-[0_2px_5px_rgba(211,47,47,0.3)]
                     max-[600px]:w-full
                   "
@@ -150,7 +158,7 @@ export default function RoomsPage() {
               <p className="text-[18px] font-bold text-[#333] mb-2">
                 Nenhuma sala cadastrada ainda
               </p>
-              <p className="text-[14px] text-[#666] max-w-[640px]">
+              <p className="text-[14px] text-[#666] max-w-160">
                 Ainda não há salas anunciadas na plataforma. Assim que alguém
                 anunciar, elas aparecerão aqui.
               </p>
@@ -173,7 +181,7 @@ export default function RoomsPage() {
                 <p className="text-[18px] font-bold text-[#333]">
                   Nenhuma sala disponível
                 </p>
-                <p className="text-[14px] text-[#666] max-w-[480px]">
+                <p className="text-[14px] text-[#666] max-w-120">
                   Não encontramos salas com os filtros selecionados. Tente
                   remover alguns filtros ou ajustar a busca.
                 </p>
@@ -201,14 +209,13 @@ export default function RoomsPage() {
                   max-[840px]:grid-cols-1
                 "
               >
-                {allRooms.map((room) => (
+                {rooms.map((room) => (
                   <RoomCard key={room.id} room={room} />
                 ))}
               </div>
             </>
           )}
 
-          {/* 3) Lista normal */}
           {hasAnyRoom && hasFilteredRooms && (
             <div
               className="

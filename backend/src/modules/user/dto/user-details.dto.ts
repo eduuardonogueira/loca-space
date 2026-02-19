@@ -2,6 +2,9 @@ export class UserDetailsDto {
   user: {
     id: number;
     fullName: string;
+    phone: number;
+    gender: string;
+    birthDate: string;
     email: string;
     type: string;
     role: string;

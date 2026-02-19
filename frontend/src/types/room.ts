@@ -37,6 +37,7 @@ export interface IRoom {
   status: IRoomStatus;
   description: string;
   imageUrl: string;
+  isFavorite: boolean;
   parkingSlots: number;
   createdAt: string;
   updatedAt: string | null;
@@ -63,8 +64,14 @@ export interface ICreateRoom {
   amenities?: number[];
 }
 
+export interface IAdvertise {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export interface IRoomDetails {
-  room: IRoomWithAmenities;
+  room: IRoomWithAmenities & { advertise: IAdvertise };
   availability: IAvailability[];
   appointments: IAppointment[];
 }
