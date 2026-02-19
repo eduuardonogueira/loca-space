@@ -10,6 +10,8 @@ export default () => ({
   dbUser: process.env.DB_USER,
   dbPass: process.env.DB_PASS,
   backendUrl: process.env.BACKEND_URL || `http://localhost:${backendPort}`,
+  smtpUser: process.env.SMTP_USER || 'user@teste.com',
+  smtpPassword: process.env.SMTP_PASSWORD || 'asjkdbadwndoalwddw',
 });
 
 export interface ValidationPipeOptions extends ValidatorOptions {

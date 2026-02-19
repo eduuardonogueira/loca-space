@@ -46,15 +46,15 @@ import { EmailModule } from '../email/email/email.module';
         port: 465,
         secure: true,
         auth: {
-          user: 'jardimpaulodev@gmail.com', 
-          pass: 'xfae zign rmco yygk', //colocar aqui a senha do gmail
+          user: configuration().smtpUser,
+          pass: configuration().smtpPassword,
         },
         tls: {
           rejectUnauthorized: false,
         },
       },
       defaults: {
-        from: '"Equipe Local Space" <jardimpaulodev@gmail.com>',
+        from: `"Equipe Local Space" <${configuration().smtpUser}>`,
       },
     }),
     EmailModule,
