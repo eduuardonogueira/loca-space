@@ -1,12 +1,22 @@
 import { IAppointment } from "./appointment";
 import { IAvailability } from "./availability";
 
-export type RoomStatus = "available" | "scheduled" | "maintenance";
-export type RoomType = "room" | "laboratory" | "maintenance";
+export type RoomStatus = "available" | "scheduled" | "maintenance" | string;
+export type RoomType = "room" | "laboratory" | "maintenance" | "SalaReuniao" | string;
 
 export interface IAmenity {
   id: number;
   name: string;
+}
+
+export interface IAddress {
+  id?: number;
+  street: string;
+  number: string;
+  complement: string;
+  bairro: string;
+  city: string;
+  state: string;
 }
 
 export enum EnumRoomStatus {
@@ -22,34 +32,37 @@ export enum EnumRoomType {
 
 export interface IRoom {
   id: number;
+  userId: number;
   name: string;
-  location: string;
-  capacity: number;
-  duration: number;
-  description: string;
-  status: RoomStatus;
-  type: RoomType;
-  imageUrl?: string;
+  size: number;
+  address: IAddress;
+  totalSpace: number;
   price: number;
+  status: RoomStatus;
+  description: string;
+  imageUrl: string;
+  parkingSlots: number;
+  createdAt?: string;
+  updatedAt?: string;
+  type: RoomType;
 }
 
 export type IRoomWithAmenities = IRoom & {
-  amenities: {
-    id: number;
-    name: string;
-  }[];
+  amenities: IAmenity[];
 };
 
 export interface ICreateRoom {
   name: string;
-  location: string;
-  capacity: number;
-  duration: number;
-  description: string;
+  totalSpace: number;
+  price: number;
+  size: number;
+  address: Omit<IAddress, "id">; 
   status: RoomStatus;
+  description: string;
+  imageUrl: string;
+  parkingSlots: number;
   type: RoomType;
-  imageUrl?: string;
-  amenities?: number[];
+  amenities: number[]; 
 }
 
 export interface IRoomDetails {
@@ -57,4 +70,3 @@ export interface IRoomDetails {
   availability: IAvailability[];
   appointments: IAppointment[];
 }
-

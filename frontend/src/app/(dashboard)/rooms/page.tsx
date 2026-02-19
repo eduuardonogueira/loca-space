@@ -1,19 +1,58 @@
 "use client";
 
-import { allRooms } from "@/mocks/rooms.mocks";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { RoomCard, RoomsFilters, type OrderBy } from "@/components";
-
+// Importamos o nosso tradutor e o tipo da API!
+import { mapApiRoomToCardRoom } from "@/mappers/room.mapper";
+import type { IRoomWithAmenities } from "@/types/room";
 
 export default function RoomsPage() {
+  // 1. NOVAS "CAIXAS" PARA GUARDAR OS DADOS DA API
+  const [roomsData, setRoomsData] = useState<any[]>([]); // Guarda as salas reais
+  const [isLoading, setIsLoading] = useState(true);      // Controla o "Carregando..."
+  const [error, setError] = useState<string | null>(null);
+
+  // Estados originais dos seus filtros
   const [orderBy, setOrderBy] = useState<OrderBy>("recent");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [locationQuery, setLocationQuery] = useState("");
 
-  const hasAnyRoom = allRooms.length > 0;
+  // 2. O NOSSO "GARÇOM" QUE BUSCA OS DADOS (Roda só 1 vez quando a tela abre)
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        setIsLoading(true); // Começa a carregar
+        
+        // Vai no seu backend buscar a lista
+        const response = await fetch("/api-backend/room");
+        
+        if (!response.ok) {
+          throw new Error("Erro na requisição ao backend");
+        }
 
+        const data: IRoomWithAmenities[] = await response.json();
+        
+        // Passa todas as salas pelo nosso tradutor
+        const formattedRooms = data.map((room) => mapApiRoomToCardRoom(room));
+        
+        // Guarda as salas prontas para o Card na nossa "caixa"
+        setRoomsData(formattedRooms);
+      } catch (err) {
+        console.error("Erro ao buscar salas:", err);
+        setError("Não foi possível carregar as salas. Tente novamente mais tarde.");
+      } finally {
+        setIsLoading(false); // Termina de carregar, dando certo ou errado
+      }
+    }
+
+    fetchRooms();
+  }, []); // <-- Colchetes vazios significam "Execute apenas ao carregar a página"
+
+  const hasAnyRoom = roomsData.length > 0;
+
+  // 3. SEUS FILTROS (Agora usando os dados reais: roomsData)
   const filteredRooms = useMemo(() => {
-    let rooms = [...allRooms];
+    let rooms = [...roomsData];
 
     if (locationQuery.trim()) {
       const query = locationQuery.toLowerCase();
@@ -35,7 +74,7 @@ export default function RoomsPage() {
     });
 
     return rooms;
-  }, [orderBy, selectedAmenities, locationQuery]);
+  }, [orderBy, selectedAmenities, locationQuery, roomsData]);
 
   const hasFilteredRooms = filteredRooms.length > 0;
 
@@ -53,23 +92,11 @@ export default function RoomsPage() {
     setOrderBy("recent");
   }
 
+  // 4. DESENHANDO A TELA
   return (
-    <div
-      className="
-        min-h-[calc(100vh-64px)]
-        bg-[#f4f4f6] text-[#222] pb-6
-        font-sans
-      "
-    >
-      <div
-        className="
-          grid grid-cols-[280px_minmax(0,1fr)]
-          gap-6 px-10 pt-6 pb-10
-          max-[1100px]:grid-cols-[240px_minmax(0,1fr)]
-          max-[840px]:grid-cols-[minmax(0,1fr)]
-          max-[840px]:px-4
-        "
-      >
+    <div className="min-h-[calc(100vh-64px)] bg-[#f4f4f6] text-[#222] pb-6 font-sans">
+      <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-6 px-10 pt-6 pb-10 max-[1100px]:grid-cols-[240px_minmax(0,1fr)] max-[840px]:grid-cols-[minmax(0,1fr)] max-[840px]:px-4">
+        
         {/* SIDEBAR */}
         <RoomsFilters
           orderBy={orderBy}
@@ -81,55 +108,22 @@ export default function RoomsPage() {
         {/* CONTEÚDO PRINCIPAL */}
         <main className="flex flex-col gap-4">
           {/* Barra de localização */}
-          <section
-            className="
-              bg-white rounded-[16px]
-              px-4 py-3.5
-              shadow-[0_8px_18px_rgba(15,23,42,0.04)]
-              border border-[#e0e0e4]
-            "
-          >
+          <section className="bg-white rounded-[16px] px-4 py-3.5 shadow-[0_8px_18px_rgba(15,23,42,0.04)] border border-[#e0e0e4]">
             <div className="flex flex-col gap-1">
               <span className="text-[13px] font-semibold text-[#444]">
                 Localização
               </span>
-
-              <div
-                className="
-                  flex gap-2.5 mt-1
-                  max-[600px]:flex-col
-                "
-              >
+              <div className="flex gap-2.5 mt-1 max-[600px]:flex-col">
                 <input
                   type="text"
-                  className="
-                    flex-1 h-10 rounded-[10px]
-                    border border-[#dde0ea]
-                    px-3 text-[13px]
-                    bg-white
-                    focus:outline-none
-                    focus:border-[#e53935]
-                    focus:ring-1 focus:ring-[#e53935]/40
-                  "
+                  className="flex-1 h-10 rounded-[10px] border border-[#dde0ea] px-3 text-[13px] bg-white focus:outline-none focus:border-[#e53935] focus:ring-1 focus:ring-[#e53935]/40"
                   placeholder="Ex: Belém - PA"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
                 />
-
                 <button
                   type="button"
-                  className="
-                    h-10 px-6 rounded-[10px]
-                    bg-[#e53935] text-white font-semibold text-[13px]
-                    flex items-center justify-center
-                    cursor-pointer
-                    transition
-                    hover:bg-[#d32f2f]
-                    hover:shadow-[0_4px_10px_rgba(211,47,47,0.4)]
-                    active:translate-y-[1px]
-                    active:shadow-[0_2px_5px_rgba(211,47,47,0.3)]
-                    max-[600px]:w-full
-                  "
+                  className="h-10 px-6 rounded-[10px] bg-[#e53935] text-white font-semibold text-[13px] flex items-center justify-center cursor-pointer transition hover:bg-[#d32f2f] max-[600px]:w-full"
                 >
                   Buscar
                 </button>
@@ -137,86 +131,65 @@ export default function RoomsPage() {
             </div>
           </section>
 
+          {/* TELA DE CARREGAMENTO */}
+          {isLoading && (
+            <div className="mt-4 flex justify-center py-10">
+               <p className="text-[#666] font-semibold">Buscando salas na API...</p>
+            </div>
+          )}
+
+          {/* MENSAGEM DE ERRO (Se a API cair) */}
+          {error && !isLoading && (
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-[18px] p-8 text-center">
+               <p className="text-red-600 font-semibold">{error}</p>
+            </div>
+          )}
+
           {/* 1) Banco vazio */}
-          {!hasAnyRoom && (
-            <section
-              className="
-                mt-4 w-full rounded-[18px]
-                border border-[#e0e0e4]
-                bg-white px-8 py-10
-                shadow-[0_10px_25px_rgba(15,23,42,0.06)]
-              "
-            >
+          {!isLoading && !error && !hasAnyRoom && (
+            <section className="mt-4 w-full rounded-[18px] border border-[#e0e0e4] bg-white px-8 py-10 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
               <p className="text-[18px] font-bold text-[#333] mb-2">
                 Nenhuma sala cadastrada ainda
               </p>
               <p className="text-[14px] text-[#666] max-w-[640px]">
-                Ainda não há salas anunciadas na plataforma. Assim que alguém
-                anunciar, elas aparecerão aqui.
+                Ainda não há salas anunciadas na plataforma. Assim que alguém anunciar, elas aparecerão aqui.
               </p>
             </section>
           )}
 
           {/* 2) Tem sala, mas os filtros não retornaram nada */}
-          {hasAnyRoom && !hasFilteredRooms && (
+          {!isLoading && !error && hasAnyRoom && !hasFilteredRooms && (
             <>
-              <section
-                className="
-                  mt-4 w-full rounded-[18px]
-                  border border-[#e0e0e4]
-                  bg-white px-8 py-10
-                  shadow-[0_10px_25px_rgba(15,23,42,0.06)]
-                  flex flex-col items-center text-center gap-3
-                "
-              >
-                {/* Se quiser, mantém seu ícone aqui */}
+              <section className="mt-4 w-full rounded-[18px] border border-[#e0e0e4] bg-white px-8 py-10 shadow-[0_10px_25px_rgba(15,23,42,0.06)] flex flex-col items-center text-center gap-3">
                 <p className="text-[18px] font-bold text-[#333]">
                   Nenhuma sala disponível
                 </p>
                 <p className="text-[14px] text-[#666] max-w-[480px]">
-                  Não encontramos salas com os filtros selecionados. Tente
-                  remover alguns filtros ou ajustar a busca.
+                  Não encontramos salas com os filtros selecionados. Tente remover alguns filtros ou ajustar a busca.
                 </p>
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="
-                    mt-2 px-6 py-2.5 rounded-full
-                    bg-[#e53935] text-white text-[14px] font-semibold
-                    transition hover:bg-[#d32f2f]
-                  "
+                  className="mt-2 px-6 py-2.5 rounded-full bg-[#e53935] text-white text-[14px] font-semibold transition hover:bg-[#d32f2f]"
                 >
                   Limpar filtros
                 </button>
               </section>
 
               <h2 className="text-[14px] font-semibold text-[#444] mt-6 mb-3">
-                Mais procurados na sua região
+                Salas disponíveis:
               </h2>
-
-              <div
-                className="
-                  grid grid-cols-3 gap-4
-                  max-[1100px]:grid-cols-2
-                  max-[840px]:grid-cols-1
-                "
-              >
-                {allRooms.map((room) => (
+              <div className="grid grid-cols-3 gap-4 max-[1100px]:grid-cols-2 max-[840px]:grid-cols-1">
+                {roomsData.map((room) => (
                   <RoomCard key={room.id} room={room} />
                 ))}
               </div>
             </>
           )}
 
-          {/* 3) Lista normal */}
-          {hasAnyRoom && hasFilteredRooms && (
-            <div
-              className="
-                grid grid-cols-3 gap-4
-                max-[1100px]:grid-cols-2
-                max-[840px]:grid-cols-1
-              "
-            >
+          {/* 3) Lista normal com resultados */}
+          {!isLoading && !error && hasAnyRoom && hasFilteredRooms && (
+            <div className="grid grid-cols-3 gap-4 max-[1100px]:grid-cols-2 max-[840px]:grid-cols-1">
               {filteredRooms.map((room) => (
                 <RoomCard key={room.id} room={room} />
               ))}
@@ -227,4 +200,3 @@ export default function RoomsPage() {
     </div>
   );
 }
-
