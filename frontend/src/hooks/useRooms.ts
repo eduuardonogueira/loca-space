@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 export function useRooms() {
   const [isLoading, setIsLoading] = useState(false);
-  const [rooms, setRooms] = useState<IRoomWithAmenities[] | undefined>();
+  const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
 
   async function fetchRooms() {
     setIsLoading(true);

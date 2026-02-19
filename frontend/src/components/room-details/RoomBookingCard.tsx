@@ -1,25 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Heart,
-  Share2,
-  Users,
-  Ruler,
-  Wifi,
-  Monitor,
-  Car,
-  Video,
-} from "lucide-react";
-import { RoomCalendar } from "./RoomCalendar";
+import { Heart, Share2 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-
-type RoomBookingCardProps = {
-  price?: number;
-  email?: string;
-  advertiser?: string;
-  chips?: string[];
-};
+import { IRoomDetails } from "@/types/room";
+import { RoomCalendar } from "./RoomCalendar";
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -38,12 +23,11 @@ function daysBetweenInclusive(from: Date, to: Date) {
   return diff + 1;
 }
 
-export function RoomBookingCard({
-  price = 1300,
-  email = "workingplus@gmail.com",
-  advertiser = "Working Plus",
-  chips = ["10 Pessoas", "22 m²", "WiFi", "TV", "3 Vagas", "Projetor"],
-}: RoomBookingCardProps) {
+interface IRoomBookingCardProps {
+  roomDetails: IRoomDetails;
+}
+
+export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
   // ✅ seleção livre: 1 dia ou vários dias
   const [range, setRange] = useState<DateRange | undefined>(undefined);
 
@@ -58,17 +42,6 @@ export function RoomBookingCard({
     if (to.getTime() < from.getTime()) return { from: to, to: from };
     return { from, to };
   }, [range]);
-
-  function getChipIcon(label: string) {
-    const lower = label.toLowerCase();
-    if (lower.includes("pessoa")) return <Users size={14} strokeWidth={1.8} />;
-    if (label.includes("m²")) return <Ruler size={14} strokeWidth={1.8} />;
-    if (lower.includes("wifi")) return <Wifi size={14} strokeWidth={1.8} />;
-    if (lower.includes("tv")) return <Monitor size={14} strokeWidth={1.8} />;
-    if (lower.includes("vaga")) return <Car size={14} strokeWidth={1.8} />;
-    if (lower.includes("projetor")) return <Video size={14} strokeWidth={1.8} />;
-    return null;
-  }
 
   const rangeText = useMemo(() => {
     if (!normalizedRange?.from) return "nenhum";
@@ -85,6 +58,9 @@ export function RoomBookingCard({
     return daysBetweenInclusive(normalizedRange.from, normalizedRange.to);
   }, [normalizedRange]);
 
+
+  roomDetails
+
   return (
     <div className="rounded-2xl border border-[#e7e7eb] bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
       {/* VALOR + AÇÕES */}
@@ -92,7 +68,7 @@ export function RoomBookingCard({
         <div>
           <p className="text-sm text-[#666]">Valor</p>
           <p className="mt-1 text-xl font-semibold text-[#222]">
-            R$ {price.toLocaleString("pt-BR")}
+            R$ {roomDetails.room.price.toLocaleString("pt-BR")}
           </p>
         </div>
 
@@ -127,28 +103,27 @@ export function RoomBookingCard({
       <div className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between text-[#666]">
           <span className="font-medium text-[#333]">Email:</span>
-          <span className="text-right">{email}</span>
+          <span className="text-right">{roomDetails.room?.advertise?.email}</span>
         </div>
 
         <div className="flex justify-between text-[#666]">
           <span className="font-medium text-[#333]">Anunciante:</span>
-          <span className="text-right">{advertiser}</span>
+          <span className="text-right">{roomDetails.room?.advertise?.name}</span>
         </div>
       </div>
 
-      {/* CHIPS COM ÍCONES */}
+      {/* AMENITIES COM ÍCONES */}
       <div className="mt-4 flex flex-wrap gap-2">
-        {chips.map((chip) => (
+        {roomDetails.room.amenities.map((am) => (
           <span
-            key={chip}
+            key={am.id}
             className="
               inline-flex items-center gap-2 rounded-full
               border border-[#e7e7eb] bg-white px-3 py-1
               text-[12px] leading-none text-[#444]
             "
           >
-            {getChipIcon(chip)}
-            <span>{chip}</span>
+            <span>{am.name}</span>
           </span>
         ))}
       </div>
@@ -164,7 +139,7 @@ export function RoomBookingCard({
           mt-5 h-12 w-full rounded-full bg-[#e53935]
           text-sm font-semibold text-white
           shadow-[0_10px_18px_rgba(229,57,53,0.25)]
-          transition hover:bg-[#d32f2f] active:translate-y-[1px]
+          transition hover:bg-[#d32f2f] active:translate-y-px
           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#e53935]
         "
       >
@@ -188,3 +163,4 @@ export function RoomBookingCard({
     </div>
   );
 }
+

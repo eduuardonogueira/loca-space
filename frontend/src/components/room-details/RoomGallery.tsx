@@ -14,7 +14,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
       "https://images.pexels.com/photos/3182743/pexels-photo-3182743.jpeg?auto=compress&cs=tinysrgb&w=1600",
       "https://images.pexels.com/photos/3182763/pexels-photo-3182763.jpeg?auto=compress&cs=tinysrgb&w=1600",
     ],
-    []
+    [],
   );
 
   const list = images?.length ? images.slice(0, 3) : fallbackImages;
@@ -27,7 +27,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
         <img
           src={list[activeIndex]}
           alt="Sala"
-          className="h-[420px] w-full rounded-2xl object-cover"
+          className="h-105 w-full rounded-2xl object-cover"
         />
 
         {/* Botão Favoritar */}
@@ -65,7 +65,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
                     ? "ring-[#e53935]"
                     : "ring-transparent hover:ring-[#e53935]/30"
                 }
-                active:translate-y-[1px]
+                active:translate-y-px
               `}
             >
               <img
@@ -83,3 +83,4 @@ export function RoomGallery({ images }: RoomGalleryProps) {
     </div>
   );
 }
+

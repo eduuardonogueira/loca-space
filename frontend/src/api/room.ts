@@ -1,6 +1,6 @@
 "use server";
 
-import { ICreateRoom, IRoomWithAmenities } from "@/types/room";
+import { ICreateRoom, IRoomDetails, IRoomWithAmenities } from "@/types/room";
 import { authFetch } from "./authFetch";
 
 export async function getRooms(): Promise<IRoomWithAmenities[] | null> {
@@ -17,6 +17,26 @@ export async function getRooms(): Promise<IRoomWithAmenities[] | null> {
     return response.json();
   } catch (error) {
     console.error("Erro ao buscar rooms:", error);
+    return null;
+  }
+}
+
+export async function getRoomDetails(
+  roomId: number,
+): Promise<IRoomDetails | null> {
+  try {
+    const response = await authFetch(`/room/${roomId}/details`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      console.error("Erro na requisição:", response.status);
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro ao buscar detalhes da sala:", error);
     return null;
   }
 }
@@ -102,6 +122,44 @@ export async function deleteRoom(roomId: number): Promise<boolean> {
     return response.json();
   } catch (error) {
     console.error("Erro ao buscar rooms:", error);
+    return false;
+  }
+}
+
+export async function addFavorite(roomId: number): Promise<any> {
+  try {
+    const data = { roomId };
+    const response = await authFetch(`/favorite`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      console.error("Erro na requisição:", response.status);
+      return false;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro ao adicionar sala aos favoritos:", error);
+    return false;
+  }
+}
+
+export async function removeFavorite(roomId: number): Promise<any> {
+  try {
+    const response = await authFetch(`/favorite/${roomId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      console.error("Erro na requisição:", response.status);
+      return false;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro ao remover sala aos favoritos:", error);
     return false;
   }
 }
