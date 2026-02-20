@@ -58,8 +58,7 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
     return daysBetweenInclusive(normalizedRange.from, normalizedRange.to);
   }, [normalizedRange]);
 
-
-  roomDetails
+  roomDetails;
 
   return (
     <div className="rounded-2xl border border-[#e7e7eb] bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
@@ -103,12 +102,16 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
       <div className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between text-[#666]">
           <span className="font-medium text-[#333]">Email:</span>
-          <span className="text-right">{roomDetails.room?.advertise?.email}</span>
+          <span className="text-right">
+            {roomDetails.room?.advertise?.email}
+          </span>
         </div>
 
         <div className="flex justify-between text-[#666]">
           <span className="font-medium text-[#333]">Anunciante:</span>
-          <span className="text-right">{roomDetails.room?.advertise?.name}</span>
+          <span className="text-right">
+            {roomDetails.room?.advertise?.name}
+          </span>
         </div>
       </div>
 
@@ -129,7 +132,7 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
       </div>
 
       {/* CALENDÁRIO */}
-      <RoomCalendar value={normalizedRange} onChange={setRange} />
+      <RoomCalendar value={normalizedRange} onChange={() => {}} />
 
       {/* BOTÃO (✅ não bloqueia; só desativa se não escolher nada) */}
       <button

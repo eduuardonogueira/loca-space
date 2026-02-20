@@ -6,7 +6,6 @@ export enum EnumUserRole {
 }
 
 export type UserRole = "user" | "admin";
-export type UserType = "externo" | "interno";
 
 export interface IFavorite {
   id: number;
@@ -19,7 +18,6 @@ export interface IUser {
   fullName: string;
   avatarUrl: string;
   email: string;
-  type: UserType;
   role: UserRole;
   phone: string | null;
   gender: string | null;

@@ -49,9 +49,7 @@ export function ProfileCard({
           <h2 className="text-xl font-bold text-gray-900 leading-tight w-40">
             {user.fullName}
           </h2>
-          <p className="text-xs text-gray-500 mt-1 capitalize">
-            {user.type} • {user.role}
-          </p>
+          <p className="text-xs text-gray-500 mt-1 capitalize">{user.role}</p>
         </div>
       </div>
 

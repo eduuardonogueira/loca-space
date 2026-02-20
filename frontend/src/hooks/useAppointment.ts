@@ -15,22 +15,23 @@ function minutesToTime(mins: number) {
 
 export function getAvailableTimes(
   roomDetails: IRoomDetails,
-  date: string // ex: "2025-09-18"
+  date: string, // ex: "2025-09-18"
 ): { start: string; end: string }[] {
   const room = roomDetails.room;
-  const duration = room.duration; // em minutos
+  // const duration = room.duration; // em minutos
+  const duration = 30; // em minutos
   const jsDay = new Date(date).getDay();
   const weekday = (jsDay + 1) % 7;
 
   // pega disponibilidade só do dia escolhido
   const availabilities = roomDetails.availability.filter(
-    (a) => a.weekday === weekday
+    (a) => a.weekday === weekday,
   );
 
   if (!availabilities.length) return [];
 
   const appointments = (roomDetails.appointments || []).filter(
-    (appt) => appt.date === date
+    (appt) => appt.date === date,
   );
 
   const appointmentRanges = appointments.map((appt) => ({
@@ -50,7 +51,7 @@ export function getAvailableTimes(
 
       // verifica conflito com appointments
       const hasConflict = appointmentRanges.some(
-        (appt) => !(slotEnd <= appt.start || slotStart >= appt.end)
+        (appt) => !(slotEnd <= appt.start || slotStart >= appt.end),
       );
 
       if (!hasConflict) {

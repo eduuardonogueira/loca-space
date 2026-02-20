@@ -210,7 +210,7 @@ export default function RoomsPage() {
                 "
               >
                 {rooms.map((room) => (
-                  <RoomCard key={room.id} room={room} />
+                  <RoomCard key={room.id} room={room} mode="view" />
                 ))}
               </div>
             </>
@@ -225,7 +225,7 @@ export default function RoomsPage() {
               "
             >
               {filteredRooms.map((room) => (
-                <RoomCard key={room.id} room={room} />
+                <RoomCard key={room.id} room={room} mode="view" />
               ))}
             </div>
           )}

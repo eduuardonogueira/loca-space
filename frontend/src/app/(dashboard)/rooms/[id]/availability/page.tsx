@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import { getRooms } from "@/api";
 import { IRoomWithAmenities } from "@/types/room";
 import { AVAILABILITY_ROUTE } from "@/constants/routes";
+import { formatRoomAddress } from "../../../../../utils/formatRoomAddress";
 
 export default function Availability() {
   const params = useParams<{ id: string }>();
@@ -143,7 +144,7 @@ export default function Availability() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative w-fit min-w-[280px]">
+            <div className="relative w-fit min-w-70">
               <div
                 className="flex items-center justify-between border border-gray-300 rounded-md cursor-pointer px-4 py-2"
                 onClick={toggleDropdown}
@@ -153,7 +154,7 @@ export default function Availability() {
                 </span>
                 <div className="flex items-center ml-3 px-2 py-1 bg-blue-100 text-blue-600 rounded-md text-sm font-medium">
                   <FaMapMarkerAlt className="mr-1" />
-                  {selectedRoom.location}
+                  {formatRoomAddress(selectedRoom.address)}
                 </div>
                 <FaChevronDown className="ml-3 text-gray-500 text-xs" />
               </div>
@@ -169,7 +170,7 @@ export default function Availability() {
                         {room.name}
                       </span>
                       <span className="block text-xs text-gray-600">
-                        {room.location}
+                        {formatRoomAddress(selectedRoom.address)}
                       </span>
                     </div>
                   ))}
