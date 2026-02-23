@@ -66,8 +66,8 @@ export function Navbar() {
       <ProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+        userData={user}
       />
     </header>
   );
 }
-

@@ -13,20 +13,22 @@ interface ProfileCardProps {
   type?: "modal" | "page";
   onClose?: () => void; // NOVO: O Card agora aceita uma função de fechar
   onEditClick?: () => void;
+  userData?: any;
 }
 
 export function ProfileCard({
   type = "page",
   onClose,
   onEditClick,
+  userData,
 }: ProfileCardProps) {
-  // Dados simulados
+  // Dados mesclados (API + Simulados para não quebrar o layout)
   const user = {
-    name: "Teodoro da Silva Teobaldo",
+    name: userData?.fullName || "Carregando...", // Puxa seu nome real
     status: "Online",
     birthDate: "17/04/1999",
     location: "Cremação, Belém PA",
-    email: "peduardoneivo@email.com.br",
+    email: userData?.email || "Carregando...", // Puxa seu email real
     phone: "919999-8888",
     gender: "Homem",
     isVerified: true,

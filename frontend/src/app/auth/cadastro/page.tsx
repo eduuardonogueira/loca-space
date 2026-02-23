@@ -59,7 +59,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     if (validate()) {
       const data = await signup({
-        name: formData.fullName,
+        fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
       } as any);

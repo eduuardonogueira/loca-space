@@ -3,9 +3,14 @@ import { X, Calendar, MapPin, Mail, Phone } from "lucide-react";
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userData?: any;
 }
 
-export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
+export function EditProfileModal({
+  isOpen,
+  onClose,
+  userData,
+}: EditProfileModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -36,7 +41,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900 leading-tight w-36">
-              Teodoro da Silva Teobaldo
+              {userData?.fullName || "Carregando..."}
             </h3>
             <p className="text-green-500 text-xs font-bold flex items-center gap-1 mt-1">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -77,7 +82,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               type="email"
               required
               pattern=".*@.*"
-              defaultValue="teosilva@email.com.br"
+              defaultValue={userData?.email || ""}
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
           </div>
@@ -149,4 +154,3 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     </div>
   );
 }
-

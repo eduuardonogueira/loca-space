@@ -4,9 +4,10 @@ import { ProfileCard } from "./ProfileCard.component"; // Importamos nossa peça
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userData?: any;
 }
 
-export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+export function ProfileModal({ isOpen, onClose, userData }: ProfileModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -21,7 +22,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         </button>
 
         {/* MESMO card da página */}
-        <ProfileCard type="modal" onClose={onClose} />
+        <ProfileCard type="modal" onClose={onClose} userData={userData} />
       </div>
     </div>
   );

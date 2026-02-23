@@ -64,6 +64,7 @@ export default function ProfilePage() {
           <ProfileCard
             type="page"
             onEditClick={() => setIsEditModalOpen(true)}
+            userData={userData}
           />
         </div>
 
@@ -158,6 +159,7 @@ export default function ProfilePage() {
       <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        userData={userData}
       />
     </div>
   );
