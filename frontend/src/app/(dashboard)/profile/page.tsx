@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar,
   DollarSign,
@@ -12,9 +12,21 @@ import {
 import { ProfileCard, ProfileRoomCard } from "@/components";
 import { EditProfileModal } from "../../../components/EditProfileModal.component";
 import { IRoomWithAmenities } from "@/types/room";
+import { getProfile } from "@/api/auth";
 
 export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(null); // <-- Estado novo aqui
+
+  // <-- Bloco useEffect novo aqui
+  useEffect(() => {
+    async function fetchUserData() {
+      const data = await getProfile();
+      console.log("DADOS DO USUÁRIO VINDOS DA API:", data);
+      setUserData(data);
+    }
+    fetchUserData();
+  }, []);
 
   const rooms: IRoomWithAmenities[] = [
     {
@@ -150,4 +162,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

@@ -84,7 +84,8 @@ export default function LoginPage() {
                 Email:
               </label>
               <input
-                type="username"
+                name="username"
+                type="email"
                 placeholder="Digite seu email"
                 className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               />
@@ -98,6 +99,7 @@ export default function LoginPage() {
                 Senha:
               </label>
               <input
+                name="password"
                 type="password"
                 placeholder="Digite sua senha"
                 className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
@@ -127,4 +129,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

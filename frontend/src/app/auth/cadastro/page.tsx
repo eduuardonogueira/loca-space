@@ -29,7 +29,7 @@ export default function RegisterPage() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -58,15 +58,21 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     if (validate()) {
-      const data = await signup(formData);
+      const data = await signup({
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      } as any);
 
-      if (!data || data.id) {
+      if (data && data.id) {
         toast.success("Cadastro realizado com sucesso!");
         router.push(LOGIN_ROUTE);
         return;
       }
-
+      console.log("Resposta de erro da API:", data);
       toast.error("Erro ao criar cadastro!");
+      setIsLoading(false);
+
       return;
     }
 
@@ -185,4 +191,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
