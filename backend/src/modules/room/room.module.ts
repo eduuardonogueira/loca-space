@@ -13,6 +13,8 @@ import { UserModule } from '../user/user.module';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { EmailModule } from '../email/email/email.module';
 
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Room, Amenity, RoomAmenity, Favorite]),
@@ -20,6 +22,7 @@ import { EmailModule } from '../email/email/email.module';
     AppointmentModule,
     UserModule,
     EmailModule,
+    CloudinaryModule,
   ],
   controllers: [RoomController],
   providers: [RoomService, RoomAmenitiesService],

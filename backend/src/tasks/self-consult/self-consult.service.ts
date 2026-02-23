@@ -13,7 +13,7 @@ export class SelfConsultService {
 
       if (!process.env.BACKEND_URL) {
         this.logger.warn(
-          'BACKEND_URL não está definida! O keep-alive está pingando localhost. Configure BACKEND_URL com a URL pública da API em produção.',
+          'Rota URL nao definida',
         );
       }
 

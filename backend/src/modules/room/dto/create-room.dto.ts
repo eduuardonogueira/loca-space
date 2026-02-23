@@ -46,6 +46,7 @@ export class CreateRoomDto {
   @ValidateNested()
   @Type(() => CreateAddressDto)
   @IsNotEmpty()
+  
   address: CreateAddressDto;
 
   @ApiProperty({ example: 'available' })
@@ -60,10 +61,15 @@ export class CreateRoomDto {
   @IsString()
   description: string | null;
 
-  @ApiPropertyOptional({ example: 'https://imagem.com/sala.jpg' })
+  @ApiPropertyOptional({ example: 'https://imagem.com/banner.jpg' })
   @IsOptional()
   @IsString()
-  imageUrl: string | null;
+  bannerUrl: string | null;
+
+  @ApiPropertyOptional({ example: ['https://imagem.com/photo1.jpg', 'https://imagem.com/photo2.jpg'] })
+  @IsOptional()
+  @IsArray()
+  photoUrls: string[] | null;
 
   @ApiPropertyOptional({ example: 2, description: 'Número de vagas de estacionamento disponíveis' })
   @IsOptional()

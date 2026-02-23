@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration from '../../config/configuration';
@@ -40,21 +40,27 @@ import { EmailModule } from '../email/email/email.module';
     AmenitiesModule,
     FavoriteModule,
     SelfConsultModule,
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: configuration().smtpUser,
-          pass: configuration().smtpPassword,
-        },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      },
-      defaults: {
-        from: `"Equipe Local Space" <${configuration().smtpUser}>`,
+    MailerModule.forRootAsync({
+      useFactory: () => {
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPassword = process.env.SMTP_PASSWORD;
+        return {
+          transport: {
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+              user: smtpUser,
+              pass: smtpPassword,
+            },
+            tls: {
+              rejectUnauthorized: false,
+            },
+          },
+          defaults: {
+            from: `"Equipe Local Space" <${smtpUser}>`,
+          },
+        };
       },
     }),
     EmailModule,
