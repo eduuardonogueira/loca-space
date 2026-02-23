@@ -3,6 +3,10 @@
 import Image from "next/image";
 import { Trash2, MapPin, Users, Calendar, Clock } from "lucide-react";
 import { Reservation } from "@/types/reservation";
+import {
+  getRoomImageList,
+  getRoomPlaceholderImage,
+} from "@/utils/roomImages";
 
 interface ReservationCardProps {
   reservation: Reservation;
@@ -23,23 +27,42 @@ const formatDate = (dateString: string) => {
   const date = new Date(year, month, day);
 
   return new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(date);
 };
 
+function getLocationText(reservation: Reservation): string {
+  const city = reservation.room?.address?.city ?? "";
+  const bairro = reservation.room?.address?.bairro ?? "";
+
+  if (city && bairro) return `${city}, ${bairro}`;
+  if (city) return city;
+  if (bairro) return bairro;
+  return "Localização não informada";
+}
+
 export function ReservationCard({
   reservation,
   onDeleteClick,
   onDetailsClick,
 }: ReservationCardProps) {
+  const roomImage =
+    reservation.room?.imageUrl
+      ? getRoomImageList(reservation.room.imageUrl)[0]
+      : undefined;
+
+  const locationText = getLocationText(reservation);
+  const capacity = reservation.room?.totalSpace;
+
   return (
     <div className="bg-white rounded-2xl p-4 flex gap-5 shadow-sm hover:shadow-md transition-shadow relative border border-gray-100">
       <div className="relative w-36 h-36 shrink-0 rounded-xl overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069"
-          alt=""
+          src={roomImage ?? getRoomPlaceholderImage()}
+          alt={reservation.title}
           fill
           className="object-cover"
         />
@@ -52,14 +75,15 @@ export function ReservationCard({
           </h3>
           <div className="flex items-center gap-4 text-[11px] text-gray-400 mt-1 mb-4">
             <div className="flex items-center gap-1">
-              <MapPin size={14} /> <span>Belém, Umarizal</span>
+              <MapPin size={14} /> <span>{locationText}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Users size={14} /> <span>30 Pessoas</span>
+              <Users size={14} />{" "}
+              <span>{typeof capacity === "number" ? `${capacity} Pessoas` : "-"}</span>
             </div>
           </div>
           <p className="text-xs text-gray-500 font-medium">
-            {reservation.date}{" "}
+            {formatDate(reservation.date)}{" "}
             <span className="ml-2 font-bold text-gray-400">
               {reservation.startTime} - {reservation.endTime}
             </span>
@@ -79,7 +103,7 @@ export function ReservationCard({
         </button>
 
         {/* Informações Centrais */}
-        <div className="space-y-3 mb-2">
+        <div className="space-y-3 mb-2 hidden">
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-[#E85D46]" />
@@ -132,4 +156,3 @@ export function ReservationCard({
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -18,12 +18,26 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Reservation } from "../types/reservation";
+import { formatRoomAddress } from "@/utils/formatRoomAddress";
+import { getRoomImageList, getRoomPlaceholderImage } from "@/utils/roomImages";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   reservation: Reservation | null;
   onCancelClick: (id: number) => void;
+}
+
+function formatReservationDate(date: string): string {
+  if (!date) return "";
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return parsed.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 export function ReservationDetailsModal({
@@ -33,12 +47,20 @@ export function ReservationDetailsModal({
   onCancelClick,
 }: ModalProps) {
   const [currentImg, setCurrentImg] = useState(0);
-  const images = [
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069",
-    "https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2070",
-  ];
 
   if (!isOpen || !reservation) return null;
+
+  const images = reservation.room?.imageUrl
+    ? getRoomImageList(reservation.room.imageUrl)
+    : [];
+  const gallery = images.length > 0 ? images : [getRoomPlaceholderImage()];
+  const safeCurrentImageIndex = currentImg % gallery.length;
+  const nextImageIndex = (safeCurrentImageIndex + 1) % gallery.length;
+  const amenities = reservation.room?.amenities ?? [];
+
+  useEffect(() => {
+    setCurrentImg(0);
+  }, [reservation.id, isOpen]);
 
   const handleCancelBtnClick = () => {
     onClose();
@@ -61,7 +83,7 @@ export function ReservationDetailsModal({
         <div className="relative h-60 w-full flex gap-1 p-1 bg-gray-50">
           <div className="relative flex-[2] rounded-l-2xl overflow-hidden">
             <Image
-              src={images[currentImg]}
+              src={gallery[safeCurrentImageIndex]}
               alt="Principal"
               fill
               className="object-cover"
@@ -69,10 +91,10 @@ export function ReservationDetailsModal({
           </div>
           <div
             className="relative flex-1 rounded-r-2xl overflow-hidden cursor-pointer group"
-            onClick={() => setCurrentImg((currentImg + 1) % images.length)}
+            onClick={() => setCurrentImg(nextImageIndex)}
           >
             <Image
-              src={images[(currentImg + 1) % images.length]}
+              src={gallery[nextImageIndex]}
               alt="Próxima"
               fill
               className="object-cover opacity-60 transition-opacity group-hover:opacity-80"
@@ -89,13 +111,16 @@ export function ReservationDetailsModal({
           </h2>
           <div className="flex items-center gap-1 text-[12px] text-gray-400 mb-6">
             <MapPin size={14} />
-            <span>R. Municipalidade, nº 985 - Umarizal, Belém - PA</span>
+            <span>
+              {formatRoomAddress(reservation.room?.address) ||
+                "Localização não informada"}
+            </span>
           </div>
 
           <div className="flex gap-10 mb-8 text-sm font-semibold text-gray-700">
             <div className="flex items-center gap-2">
               <Calendar size={18} className="text-gray-900" />{" "}
-              {reservation.date}
+              {formatReservationDate(reservation.date)}
             </div>
             <div className="flex items-center gap-2 text-gray-400 font-bold">
               <Clock size={18} /> {reservation.startTime} -{" "}
@@ -106,29 +131,47 @@ export function ReservationDetailsModal({
           {/* Grid de Ícones e Comodidades */}
           <div className="grid grid-cols-2 gap-y-4 border-t border-gray-100 pt-6 mb-8 text-[12px] font-bold text-gray-600">
             <div className="flex items-center gap-3">
-              <Users size={18} className="text-gray-300" /> 30 Pessoas
+              <Users size={18} className="text-gray-300" />{" "}
+              {typeof reservation.room?.totalSpace === "number"
+                ? `${reservation.room.totalSpace} Pessoas`
+                : "-"}
             </div>
             <div className="flex items-center gap-3">
-              <Ruler size={18} className="text-gray-300" /> 22 m²
+              <Ruler size={18} className="text-gray-300" />{" "}
+              {typeof reservation.room?.size === "number"
+                ? `${reservation.room.size} m²`
+                : "-"}
             </div>
             <div className="flex items-center gap-3">
-              <Warehouse size={18} className="text-gray-300" /> 1 Banheiro
+              <Warehouse size={18} className="text-gray-300" />{" "}
+              {amenities[0]?.name ?? "-"}
             </div>
             <div className="flex items-center gap-3">
-              <Car size={18} className="text-gray-300" /> 5 Vagas
+              <Car size={18} className="text-gray-300" />{" "}
+              {typeof reservation.room?.parkingSlots === "number"
+                ? `${reservation.room.parkingSlots} Vagas`
+                : "-"}
             </div>
             <div className="flex items-center gap-3">
-              <Wifi size={18} className="text-gray-300" /> Wifi
+              <Wifi size={18} className="text-gray-300" />{" "}
+              {amenities[1]?.name ?? "-"}
             </div>
             <div className="flex items-center gap-3">
-              <Presentation size={18} className="text-gray-300" /> Projetor
+              <Presentation size={18} className="text-gray-300" />{" "}
+              {amenities[2]?.name ?? "-"}
             </div>
           </div>
 
           {/* Preço Alinhado à Esquerda */}
           <div className="mb-8">
             <p className="text-3xl font-[900] text-gray-900 tracking-tight">
-              R$ 1.000
+              {typeof reservation.room?.price === "number"
+                ? reservation.room.price.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                    maximumFractionDigits: 2,
+                  })
+                : "-"}
             </p>
           </div>
 
