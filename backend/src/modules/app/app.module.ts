@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration from '../../config/configuration';
@@ -42,8 +42,7 @@ import { EmailModule } from '../email/email/email.module';
     SelfConsultModule,
     MailerModule.forRootAsync({
       useFactory: () => {
-        const smtpUser = process.env.SMTP_USER;
-        const smtpPassword = process.env.SMTP_PASSWORD;
+        const { smtpPassword, smtpUser } = configuration();
         return {
           transport: {
             host: 'smtp.gmail.com',
