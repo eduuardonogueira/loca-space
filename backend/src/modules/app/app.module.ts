@@ -40,21 +40,26 @@ import { EmailModule } from '../email/email/email.module';
     AmenitiesModule,
     FavoriteModule,
     SelfConsultModule,
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: configuration().smtpUser,
-          pass: configuration().smtpPassword,
-        },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      },
-      defaults: {
-        from: `"Equipe Local Space" <${configuration().smtpUser}>`,
+    MailerModule.forRootAsync({
+      useFactory: () => {
+        const { smtpPassword, smtpUser } = configuration();
+        return {
+          transport: {
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+              user: smtpUser,
+              pass: smtpPassword,
+            },
+            tls: {
+              rejectUnauthorized: false,
+            },
+          },
+          defaults: {
+            from: `"Equipe Local Space" <${smtpUser}>`,
+          },
+        };
       },
     }),
     EmailModule,

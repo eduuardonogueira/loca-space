@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import configuration from 'src/config/configuration';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class SelfConsultService {
       const url = `${baseUrl}/api`;
       const res = await fetch(url);
       this.logger.log(`Keep-alive ping sent to ${url} - status: ${res.status}`);
-    } catch (err) {
+    } catch (err: any) {
       this.logger.warn('Keep-alive ping failed: ' + err?.message);
     }
   }

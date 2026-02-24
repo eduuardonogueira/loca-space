@@ -10,8 +10,12 @@ import {
   UseGuards,
   Req,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,6 +24,7 @@ import {
   ApiParam,
   ApiBearerAuth,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -63,23 +68,6 @@ export class RoomController {
   findAll(@Req() req: any) {
     const userId = +req.user.userId;
     return this.roomService.findAll(userId);
-  }
-
-  @Get('searchLocation')
-  @ApiOperation({
-    summary: 'Busca salas por endereço (rua, bairro, cidade, estado)',
-  })
-  @ApiQuery({
-    name: 'address',
-    required: true,
-    description: 'Termo de busca no endereço',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de salas filtradas.',
-  })
-  search(@Query('address') address: string) {
-    return this.roomService.findByAddress(address);
   }
 
   @Get('filter')
@@ -139,5 +127,33 @@ export class RoomController {
   @ApiResponse({ status: 200, description: 'Espaço removida com sucesso.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.roomService.remove(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/upload-banner')
+  @ApiOperation({ summary: 'Upload do banner do espaco' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('banner'))
+  @ApiResponse({ status: 200, description: 'Banner atualizado com sucesso.' })
+  uploadBanner(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.roomService.uploadBanner(id, file);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/upload-photos')
+  @ApiOperation({ summary: 'Envio de Ftos da Sala' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('photos'))
+  @ApiResponse({ status: 200, description: 'Fotos atualizadas com sucesso.' })
+  uploadPhotos(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.roomService.uploadPhotos(id, files);
   }
 }

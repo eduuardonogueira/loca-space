@@ -60,7 +60,10 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
 
   @IsOptional()
   @IsString()
-  imageUrl: string | null;
+  bannerUrl: string | null;
+
+  @IsOptional()
+  photoUrls: string[] | null;
 
   @IsOptional()
   @IsEnum(EnumRoomType, { message: 'Type must be one of: SalaReuniao, Escritorio, Gerais' })

@@ -16,6 +16,7 @@ import { AppointmentService } from '../appointments/appointment.service';
 import { EmailService } from '../email/email/email.service';
 import { UserService } from '../user/user.service';
 import { Favorite } from '../favorite/entities/favorite.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class RoomService {
@@ -31,6 +32,7 @@ export class RoomService {
     private readonly appointmentService: AppointmentService,
     private readonly userService: UserService,
     private readonly emailService: EmailService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async getRoomDetails(roomId: number, userId: number) {
@@ -173,6 +175,23 @@ export class RoomService {
       .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
       .leftJoinAndSelect('room.address', 'address');
 
+    if (filters.address) {
+      const termLike = `%${filters.address}%`;
+      //select * from address where campos like '%os filtros que vierem%'
+      query.andWhere(
+        '(address.street ILIKE :term OR address.bairro ILIKE :term OR address.city ILIKE :term OR address.state ILIKE :term)',
+        { term: termLike },
+      );
+    }
+
+    if (filters.status) {
+      query.andWhere('room.status = :status', { status: filters.status });
+    }
+
+    if (filters.type) {
+      query.andWhere('room.type = :type', { type: filters.type });
+    }
+
     if (filters.minPrice) {
       query.andWhere('room.price >= :minPrice', {
         minPrice: filters.minPrice,
@@ -210,7 +229,6 @@ export class RoomService {
     }
 
     if (filters.amenities && filters.amenities.length > 0) {
-      // Filter rooms that have AT LEAST ONE of the specified amenities
       query.innerJoin(
         'room.roomAmenities',
         'filterRa',
@@ -355,9 +373,6 @@ export class RoomService {
 
       if (favorites.length > 0) {
         const roomName = room.name || `Sala #${roomId}`;
-        this.logger.log(
-          `Price drop detected for "${roomName}": R$${precoAntigo} → R$${updateRoomDto.price}. Notifying ${favorites.length} user(s).`,
-        );
 
         Promise.all(
           favorites.map((fav) =>
@@ -381,5 +396,33 @@ export class RoomService {
   async remove(id: number) {
     const foundRoom = await this.findOne(id);
     return this.roomRepository.delete(foundRoom.id);
+  }
+
+  async uploadBanner(roomId: number, file: Express.Multer.File) {
+    const room = await this.roomRepository.findOne({ where: { id: roomId } });
+    if (!room) {
+      throw new NotFoundException(`Room with ID ${roomId} not found`);
+    }
+
+    const result = await this.cloudinaryService.uploadFile(file);
+    room.bannerUrl = result.secure_url;
+    room.updatedAt = new Date();
+    return this.roomRepository.save(room);
+  }
+
+  async uploadPhotos(roomId: number, files: Express.Multer.File[]) {
+    const room = await this.roomRepository.findOne({ where: { id: roomId } });
+    if (!room) {
+      throw new NotFoundException(`Room with ID ${roomId} not found`);
+    }
+
+    const uploadResults = await Promise.all(
+      files.map((file) => this.cloudinaryService.uploadFile(file)),
+    );
+
+    const newUrls = uploadResults.map((r) => r.secure_url);
+    room.photoUrls = [...(room.photoUrls || []), ...newUrls];
+    room.updatedAt = new Date();
+    return this.roomRepository.save(room);
   }
 }

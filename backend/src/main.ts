@@ -10,6 +10,7 @@ const logger = new Logger('NestApplication');
 async function bootstrap() {
   const { port } = configuration();
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
