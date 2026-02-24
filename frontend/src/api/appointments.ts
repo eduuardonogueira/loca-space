@@ -3,15 +3,13 @@
 import { ICreateAppointment } from "@/types/appointment";
 import { authFetch } from "./authFetch";
 import { IRoomDetails } from "@/types/room";
-import { BASE_URL } from "./api";
 
 export async function getRoomDetails(
-  roomId: number
+  roomId: number,
 ): Promise<IRoomDetails | null> {
   try {
-    const response = await authFetch(`${BASE_URL}/rooms/${roomId}/details`, {
+    const response = await authFetch(`/rooms/${roomId}/details`, {
       method: "GET",
-      cache: "no-store",
     });
 
     if (!response.ok) {
@@ -27,10 +25,10 @@ export async function getRoomDetails(
 }
 
 export async function createAppointment(
-  appointmentData: ICreateAppointment
+  appointmentData: ICreateAppointment,
 ): Promise<any[] | null> {
   try {
-    const response = await authFetch(`${BASE_URL}/appointments`, {
+    const response = await authFetch(`/appointments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,8 +37,7 @@ export async function createAppointment(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Erro ao criar agendamento:", response.status, errorData);
+      console.error("Erro ao criar agendamento:", response.status);
       return null;
     }
 
@@ -52,10 +49,10 @@ export async function createAppointment(
 }
 
 export async function deleteAppointment(
-  appointmentId: number
+  appointmentId: number,
 ): Promise<boolean> {
   try {
-    const response = await authFetch(`${BASE_URL}/appointments/${appointmentId}`, {
+    const response = await authFetch(`/appointments/${appointmentId}`, {
       method: "DELETE",
     });
 
@@ -69,3 +66,4 @@ export async function deleteAppointment(
     return false;
   }
 }
+

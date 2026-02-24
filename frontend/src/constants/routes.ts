@@ -7,7 +7,7 @@ export const CREATE_ROOM_ROUTE = "/rooms/create";
 
 export const ADMIN_ROUTE = "/admin";
 
-export const RESERVATIONS_ROUTE = "/reservation";
+export const RESERVATIONS_ROUTE = "/reservations";
 
 export const MY_ANNOUNCE_ROUTE = "/my-announces";
 export const FAVORITES_ROUTE = "/favorites";

@@ -1,3 +1,5 @@
+"use client";
+
 import { getUserProfile } from "@/api";
 import { IUser } from "@/types/user";
 import { useEffect, useState } from "react";

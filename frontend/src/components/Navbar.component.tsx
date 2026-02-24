@@ -1,31 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { HOME_ROUTE } from "@/constants/routes";
-import { IUser } from "@/types/user";
-import { getProfile } from "@/api";
 import { CircleUserRound, House } from "lucide-react";
 import { useNavbarLinks } from "../hooks/useNavbarLinks";
 import { ProfileModal } from "./ProfileModal.component";
+import { useProfile } from "@/hooks/useProfile";
 
 export function Navbar() {
   const { navbarLinks } = useNavbarLinks();
-  const [user, setUser] = useState<IUser | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const profile = await getProfile();
-        setUser(profile);
-      } catch (error) {
-        console.error("Erro ao buscar perfil do usuário:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const { profile } = useProfile();
 
   return (
     <header className="flex justify-between px-6 md:px-16 h-20 items-center bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
@@ -41,7 +28,7 @@ export function Navbar() {
         </Link>
       </div>
 
-      <nav className="flex justify-between gap-8 w-[70%]">
+      <nav className="flex justify-center gap-8 w-[70%]">
         {navbarLinks.map((link) => (
           <Link
             key={link.route}
@@ -60,7 +47,7 @@ export function Navbar() {
       >
         <CircleUserRound size={20} className="transition-colors" />
 
-        <p className="font-medium">{user?.fullName ?? "Usuário"}</p>
+        <p className="font-medium">{profile?.fullName ?? "Carregando..."}</p>
       </button>
 
       <ProfileModal

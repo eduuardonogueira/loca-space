@@ -4,12 +4,14 @@ import {
   MessageCircleCode,
   BriefcaseBusiness,
   Warehouse,
+  BookCheckIcon,
 } from "lucide-react";
 import {
   CREATE_ROOM_ROUTE,
   FAVORITES_ROUTE,
   MESSAGES_ROUTE,
   MY_ANNOUNCE_ROUTE,
+  RESERVATIONS_ROUTE,
   ROOMS_ROUTE,
 } from "@/constants/routes";
 
@@ -26,9 +28,9 @@ export function useNavbarLinks() {
       icon: Heart,
     },
     {
-      route: MESSAGES_ROUTE,
-      label: "Mensagens",
-      icon: MessageCircleCode,
+      route: RESERVATIONS_ROUTE,
+      label: "Reservas",
+      icon: BookCheckIcon,
     },
     {
       route: MY_ANNOUNCE_ROUTE,

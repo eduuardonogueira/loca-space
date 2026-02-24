@@ -1,24 +1,23 @@
-import { IUser } from "@/types/user";
-import { Calendar, MapPin, Mail, Phone, User, CheckCircle } from "lucide-react";
+import { Calendar, MapPin, Mail, Phone, User, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "./Loader.component";
 import { PROFILE_ROUTE } from "@/constants/routes";
+import { logout } from "@/app/actions";
+import { useProfile } from "@/hooks/useProfile";
 
 interface ProfileCardProps {
   type?: "modal" | "page";
   onClose?: () => void;
   onEditClick?: () => void;
-  user: IUser | null;
-  isLoading: boolean;
 }
 
 export function ProfileCard({
   type = "page",
   onClose,
   onEditClick,
-  user,
-  isLoading,
 }: ProfileCardProps) {
+  const { profile, isLoading } = useProfile();
+
   if (isLoading)
     return (
       <div className="flex flex-col bg-white h-full w- rounded-[30px]">
@@ -26,10 +25,17 @@ export function ProfileCard({
       </div>
     );
 
-  if (!user) {
+  if (!profile) {
     return (
       <div className="flex items-center justify-center bg-white rounded-[30px] p-4 shadow-2xl">
         <p className="text-gray-500">Usuário não encontrado</p>
+        <button
+          className="w-full border-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+          onClick={() => logout()}
+        >
+          <LogOutIcon />
+          Logout
+        </button>
       </div>
     );
   }
@@ -39,7 +45,7 @@ export function ProfileCard({
       <div className="flex items-center gap-4">
         <div className="relative">
           <img
-            src={user.avatarUrl || "https://github.com/shadcn.png"}
+            src={profile.avatarUrl || "https://github.com/shadcn.png"}
             alt="Foto de Perfil"
             className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
           />
@@ -47,43 +53,47 @@ export function ProfileCard({
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900 leading-tight w-40">
-            {user.fullName}
+            {profile.fullName}
           </h2>
-          <p className="text-xs text-gray-500 mt-1 capitalize">{user.role}</p>
+          <p className="text-xs text-gray-500 mt-1 capitalize">
+            {profile.role}
+          </p>
         </div>
       </div>
 
       <div className="space-y-4 text-sm text-gray-700">
-        {user.birthDate && (
+        {profile.birthDate && (
           <div className="flex items-center gap-3">
             <Calendar size={18} className="text-gray-500" />
-            <span>{new Date(user.birthDate).toLocaleDateString("pt-BR")}</span>
+            <span>
+              {new Date(profile.birthDate).toLocaleDateString("pt-BR")}
+            </span>
           </div>
         )}
 
         <div className="flex items-center gap-3">
           <MapPin size={18} className="text-gray-500" />
           <span>
-            {user.address.city} - {user.address.state}
+            {profile.address.city} - {profile.address.state}
           </span>
         </div>
 
         <div className="flex items-center gap-3">
           <Mail size={18} className="text-gray-500" />
-          <span className="truncate w-60">{user.email}</span>
+          <span className="truncate w-60">{profile.email}</span>
         </div>
 
-        {user.phone && (
+        {profile.phone && (
           <div className="flex items-center gap-3">
             <Phone size={18} className="text-gray-500" />
-            <span>{user.phone}</span>
+            <span>{profile.phone}</span>
           </div>
         )}
 
-        {user.gender && (
+        {profile.gender && (
           <div className="flex items-center gap-3">
             <User size={18} className="text-gray-500" />
-            <span>{user.gender}</span>
+            <span>{profile.gender}</span>
           </div>
         )}
       </div>
@@ -91,11 +101,20 @@ export function ProfileCard({
       <div className="mt-auto">
         <div className="flex gap-3">
           {type === "modal" ? (
-            <Link href={PROFILE_ROUTE} className="flex-1" onClick={onClose}>
-              <button className="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
-                Ver Perfil
+            <div className="flex flex-col gap-2 w-full">
+              <Link href={PROFILE_ROUTE} className="flex-1" onClick={onClose}>
+                <button className="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                  Ver Perfil
+                </button>
+              </Link>
+              <button
+                className="flex justify-center gap-2 w-full border border-red-500 text-red-500 font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-colors"
+                onClick={() => logout()}
+              >
+                <LogOutIcon />
+                Sair da conta
               </button>
-            </Link>
+            </div>
           ) : (
             <button
               onClick={onEditClick}
