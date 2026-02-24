@@ -57,7 +57,10 @@ export class Room {
   description: string | null;
 
   @Column({ type: 'text', nullable: true })
-  imageUrl: string | null;
+  bannerUrl: string | null;
+
+  @Column({ type: 'json', nullable: true })
+  photoUrls: string[] | null;
 
   @Column({ nullable: true })
   parkingSlots: number;

@@ -1,16 +1,40 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { EnumRoomStatus, EnumRoomType } from 'src/types/room';
 
 export class FilterRoomDto {
-  @ApiPropertyOptional({ description: 'Preço mínimo (por hora/período)' })
+  @ApiPropertyOptional({
+    description: 'Busca por endereço (rua, bairro, cidade ou estado)',
+  })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiPropertyOptional({
+    description: 'Status da sala',
+    enum: EnumRoomStatus,
+  })
+  @IsOptional()
+  @IsEnum(EnumRoomStatus)
+  status?: EnumRoomStatus;
+
+  @ApiPropertyOptional({
+    description: 'Tipo da sala',
+    enum: EnumRoomType,
+  })
+  @IsOptional()
+  @IsEnum(EnumRoomType)
+  type?: EnumRoomType;
+
+  @ApiPropertyOptional({ description: 'Preço mínimo' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   minPrice?: number;
 
-  @ApiPropertyOptional({ description: 'Preço máximo (por hora/período)' })
+  @ApiPropertyOptional({ description: 'Preço máximo' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
@@ -46,7 +70,7 @@ export class FilterRoomDto {
   maxTotalSpace?: number;
 
   @ApiPropertyOptional({
-    description: 'IDs de recursos/amenities (ex: 1,2,3)',
+    description: 'Recursos (Ex: 1,3,4) ',
     type: String,
   })
   @IsOptional()
