@@ -27,9 +27,15 @@ export class CreateRoomDto {
   @IsNumber()
   totalSpace: number;
 
-  @ApiProperty({ example: 150.0, description: 'Preço da sala por período/hora' })
+  @ApiProperty({
+    example: 150.0,
+    description: 'Preço da sala por período/hora',
+  })
   @IsNotEmpty()
-  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Price must be a valid number' })
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'Price must be a valid number' },
+  )
   @Type(() => Number)
   price: number;
 
@@ -46,7 +52,6 @@ export class CreateRoomDto {
   @ValidateNested()
   @Type(() => CreateAddressDto)
   @IsNotEmpty()
-  
   address: CreateAddressDto;
 
   @ApiProperty({ example: 'available' })
@@ -56,7 +61,10 @@ export class CreateRoomDto {
   })
   status: EnumRoomStatus;
 
-  @ApiPropertyOptional({ example: 'A Sala de Reunião localizada no Edifício Mirai Offices foi projetada para oferecer conforto, privacidade e eficiência em encontros corporativos.' })
+  @ApiPropertyOptional({
+    example:
+      'A Sala de Reunião localizada no Edifício Mirai Offices foi projetada para oferecer conforto, privacidade e eficiência em encontros corporativos.',
+  })
   @IsOptional()
   @IsString()
   description: string | null;
@@ -66,12 +74,17 @@ export class CreateRoomDto {
   @IsString()
   bannerUrl: string | null;
 
-  @ApiPropertyOptional({ example: ['https://imagem.com/photo1.jpg', 'https://imagem.com/photo2.jpg'] })
+  @ApiPropertyOptional({
+    example: ['https://imagem.com/photo1.jpg', 'https://imagem.com/photo2.jpg'],
+  })
   @IsOptional()
   @IsArray()
   photoUrls: string[] | null;
 
-  @ApiPropertyOptional({ example: 2, description: 'Número de vagas de estacionamento disponíveis' })
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'Número de vagas de estacionamento disponíveis',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber({ allowNaN: false })
@@ -79,7 +92,9 @@ export class CreateRoomDto {
 
   @ApiProperty({ example: 'SalaReuniao' })
   @IsNotEmpty()
-  @IsEnum(EnumRoomType, { message: 'Type must be one of: SalaReuniao, Escritorio, Gerais' })
+  @IsEnum(EnumRoomType, {
+    message: 'Type must be one of: SalaReuniao, Escritorio, Gerais',
+  })
   type: EnumRoomType;
 
   @ApiProperty({ example: [1, 2, 3] })

@@ -1,6 +1,11 @@
 "use server";
 
-import { ICreateRoom, IRoomDetails, IRoomWithAmenities } from "@/types/room";
+import {
+  CreateRoomPayload,
+  ICreateRoom,
+  IRoomDetails,
+  IRoomWithAmenities,
+} from "@/types/room";
 import { authFetch } from "./authFetch";
 
 export async function getRooms(): Promise<IRoomWithAmenities[] | null> {
@@ -59,27 +64,65 @@ export async function getRoomsByUser(): Promise<IRoomWithAmenities[] | null> {
   }
 }
 
-export async function createRoom(
-  roomData: ICreateRoom,
-): Promise<IRoomWithAmenities[] | null> {
+export async function createRoom(data: CreateRoomPayload) {
   try {
     const response = await authFetch("/room", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(roomData),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      console.error("Erro na requisição:", response.status);
-      return null;
+      const errorData = await response.json().catch(() => null);
+      return {
+        success: false,
+        error: errorData?.message || "Erro ao criar sala",
+      };
     }
 
-    return response.json();
+    const room = await response.json();
+    return { success: true, data: room };
   } catch (error) {
     console.error("Erro ao criar sala:", error);
-    return null;
+    return { success: false, error: "Erro ao criar sala" };
+  }
+}
+
+export async function uploadRoomBanner(roomId: number, formData: FormData) {
+  try {
+    const response = await authFetch(`/room/${roomId}/upload-banner`, {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return { success: false, error: "Erro ao enviar banner" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao enviar banner:", error);
+    return { success: false, error: "Erro ao enviar banner" };
+  }
+}
+
+export async function uploadRoomPhotos(roomId: number, formData: FormData) {
+  try {
+    const response = await authFetch(`/room/${roomId}/upload-photos`, {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return { success: false, error: "Erro ao enviar fotos" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao enviar fotos:", error);
+    return { success: false, error: "Erro ao enviar fotos" };
   }
 }
 

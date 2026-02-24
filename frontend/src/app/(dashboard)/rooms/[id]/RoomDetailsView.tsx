@@ -34,14 +34,20 @@ export function RoomDetailsView({ roomId }: RoomDetailsViewProps) {
     );
   }
 
+  const { room } = roomDetails;
+
+  const gallery = [room.bannerUrl, ...room.photoUrls];
+
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#f4f4f6]">
       <div className="mx-auto w-full max-w-300 px-6 py-8">
-        <h1 className="mb-6 text-2xl font-semibold text-[#222]">{roomDetails.room.name}</h1>
+        <h1 className="mb-6 text-2xl font-semibold text-[#222]">
+          {roomDetails.room.name}
+        </h1>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_0.9fr]">
           <section className="flex flex-col gap-6">
-            <RoomGallery images={["galleryImages"]} />
+            <RoomGallery images={gallery} />
 
             <RoomDescription roomDetails={roomDetails} />
           </section>

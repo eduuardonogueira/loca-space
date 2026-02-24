@@ -7,6 +7,8 @@ export function useRooms() {
   const [isLoading, setIsLoading] = useState(false);
   const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
 
+  console.log(rooms);
+
   async function fetchRooms() {
     setIsLoading(true);
     try {

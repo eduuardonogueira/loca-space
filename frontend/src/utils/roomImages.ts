@@ -31,11 +31,12 @@ export function getRoomImageList(imageUrl?: string | null): string[] {
   return normalizeImageValue(imageUrl);
 }
 
-export function getRoomPrimaryImage(room: Pick<IRoom, "imageUrl">): string {
-  const images = getRoomImageList(room.imageUrl);
+export function getRoomPrimaryImage(room: Pick<IRoom, "bannerUrl">): string {
+  const images = getRoomImageList(room.bannerUrl);
   return images[0] ?? PLACEHOLDER_ROOM_IMAGE;
 }
 
 export function getRoomPlaceholderImage(): string {
   return PLACEHOLDER_ROOM_IMAGE;
 }
+

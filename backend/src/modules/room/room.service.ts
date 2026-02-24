@@ -280,14 +280,17 @@ export class RoomService {
     if (!user) {
       throw new HttpException('User not found', 404);
     }
-    console.log('User passado:', userId);
     const room = this.roomRepository.create({
       ...createRoomDto,
       user,
       createdAt: new Date(),
     });
 
-    const createdRoom = await this.roomRepository.save(room);
+    const {
+      user: as,
+      userId: asq,
+      ...createdRoom
+    } = await this.roomRepository.save(room);
 
     const { amenities } = createRoomDto;
 
@@ -302,7 +305,7 @@ export class RoomService {
       );
 
       const formatedRoom = {
-        ...createRoomDto,
+        ...createdRoom,
         amenities: [...roomAmenities.map((roomAmenity) => roomAmenity.amenity)],
       };
 

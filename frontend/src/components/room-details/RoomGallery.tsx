@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
 type RoomGalleryProps = {
@@ -8,21 +8,25 @@ type RoomGalleryProps = {
 };
 
 export function RoomGallery({ images }: RoomGalleryProps) {
-  const fallbackImages = useMemo(
-    () => [
-      "https://images.pexels.com/photos/1181400/pexels-photo-1181400.jpeg?auto=compress&cs=tinysrgb&w=1600",
-      "https://images.pexels.com/photos/3182743/pexels-photo-3182743.jpeg?auto=compress&cs=tinysrgb&w=1600",
-      "https://images.pexels.com/photos/3182763/pexels-photo-3182763.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    ],
-    [],
-  );
-
-  const list = images?.length ? images.slice(0, 3) : fallbackImages;
+  const list = images?.length ? images.slice(0, 3) : [];
   const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeIndex >= list.length) {
+      setActiveIndex(0);
+    }
+  }, [list.length, activeIndex]);
+
+  if (!list.length) {
+    return (
+      <div className="rounded-2xl border border-[#e7e7eb] bg-white p-6 text-center text-muted-foreground shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
+        Nenhuma imagem disponível
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-[#e7e7eb] bg-white p-4 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
-      {/* Imagem principal */}
       <div className="relative">
         <img
           src={list[activeIndex]}
@@ -30,7 +34,6 @@ export function RoomGallery({ images }: RoomGalleryProps) {
           className="h-105 w-full rounded-2xl object-cover"
         />
 
-        {/* Botão Favoritar */}
         <button
           type="button"
           aria-label="Favoritar"
@@ -47,39 +50,40 @@ export function RoomGallery({ images }: RoomGalleryProps) {
         </button>
       </div>
 
-      {/* Miniaturas */}
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        {list.map((src, i) => {
-          const active = i === activeIndex;
+      {list.length > 1 && (
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {list.map((src, i) => {
+            const active = i === activeIndex;
 
-          return (
-            <button
-              key={src}
-              type="button"
-              aria-label={`Selecionar imagem ${i + 1}`}
-              onClick={() => setActiveIndex(i)}
-              className={`
-                overflow-hidden rounded-xl ring-2 transition
-                ${
-                  active
-                    ? "ring-[#e53935]"
-                    : "ring-transparent hover:ring-[#e53935]/30"
-                }
-                active:translate-y-px
-              `}
-            >
-              <img
-                src={src}
-                alt={`Miniatura ${i + 1}`}
+            return (
+              <button
+                key={src}
+                type="button"
+                aria-label={`Selecionar imagem ${i + 1}`}
+                onClick={() => setActiveIndex(i)}
                 className={`
-                  h-24 w-full object-cover transition
-                  ${active ? "" : "hover:opacity-90"}
+                  overflow-hidden rounded-xl ring-2 transition
+                  ${
+                    active
+                      ? "ring-[#e53935]"
+                      : "ring-transparent hover:ring-[#e53935]/30"
+                  }
+                  active:translate-y-px
                 `}
-              />
-            </button>
-          );
-        })}
-      </div>
+              >
+                <img
+                  src={src}
+                  alt={`Miniatura ${i + 1}`}
+                  className={`
+                    h-24 w-full object-cover transition
+                    ${active ? "" : "hover:opacity-90"}
+                  `}
+                />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

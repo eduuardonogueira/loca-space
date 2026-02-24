@@ -39,8 +39,6 @@ export default function ProfilePage() {
           <ProfileCard
             type="page"
             onEditClick={() => setIsEditModalOpen(true)}
-            user={profile}
-            isLoading={isLoading}
           />
         </div>
 

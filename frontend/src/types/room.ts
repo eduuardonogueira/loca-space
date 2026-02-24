@@ -2,7 +2,7 @@ import { IAppointment } from "./appointment";
 import { IAvailability } from "./availability";
 
 export type RoomStatus = "available" | "scheduled" | "maintenance";
-export type RoomType = "room" | "laboratory" | "maintenance";
+export type RoomType = "SalaReuniao" | "Escritorio" | "Gerais";
 
 export interface IAmenity {
   id: number;
@@ -36,7 +36,8 @@ export interface IRoom {
   price: number;
   status: IRoomStatus;
   description: string;
-  imageUrl: string;
+  bannerUrl: string;
+  photoUrls: string[];
   isFavorite: boolean;
   parkingSlots: number;
   createdAt: string;
@@ -52,17 +53,8 @@ export type IRoomWithAmenities = IRoom & {
   }[];
 };
 
-export interface ICreateRoom {
-  name: string;
-  location: string;
-  capacity: number;
-  duration: number;
-  description: string;
-  status: RoomStatus;
-  type: RoomType;
-  imageUrl?: string;
-  amenities?: number[];
-}
+type RoomOmittedProps = "id" | "isFavorite";
+export interface ICreateRoom extends Omit<IRoom, RoomOmittedProps> {}
 
 export interface IAdvertise {
   name: string;
@@ -75,4 +67,36 @@ export interface IRoomDetails {
   availability: IAvailability[];
   appointments: IAppointment[];
 }
+
+export interface CreateRoomPayload {
+  name: string;
+  description: string;
+  status: RoomStatus;
+  address: {
+    cep: string;
+    street: string;
+    number: string;
+    complement?: string;
+    bairro: string;
+    city: string;
+    state: string;
+  };
+  size: number;
+  price: number;
+  totalSpace: number;
+  type: RoomType;
+  amenities: number[];
+}
+
+export enum EnumRoomType {
+  SalaReuniao = "SalaReuniao",
+  Escritorio = "Escritorio",
+  Gerais = "Gerais",
+}
+
+export const RoomTypeLabels: Record<EnumRoomType, string> = {
+  [EnumRoomType.SalaReuniao]: "Sala de Reuniao",
+  [EnumRoomType.Escritorio]: "Escritorio",
+  [EnumRoomType.Gerais]: "Gerais",
+};
 

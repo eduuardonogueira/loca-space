@@ -16,7 +16,6 @@ type RoomCardProps = {
 export function RoomCard({ room, mode = "view" }: RoomCardProps) {
   async function handleToggleFavorites(room: IRoomWithAmenities) {
     if (room.isFavorite) {
-      console.log(room.id);
       await removeFavorite(room.id);
     } else {
       await addFavorite(room.id);
@@ -37,15 +36,13 @@ export function RoomCard({ room, mode = "view" }: RoomCardProps) {
           cursor-pointer
         "
       >
-        {/* IMAGEM */}
         <div className="relative h-42.5 overflow-hidden">
           <img
-            src={room.imageUrl}
+            src={room.bannerUrl}
             alt={room.name}
             className="w-full h-full object-cover"
           />
 
-          {/* FAVORITO (não navega) */}
           <button
             onClick={() => handleToggleFavorites(room)}
             className={`
@@ -144,7 +141,7 @@ export function RoomCard({ room, mode = "view" }: RoomCardProps) {
                 transition hover:bg-[#d32f2f]
               "
               >
-                Ver detalhes
+                Agendar
                 <ArrowRight size={16} strokeWidth={1.8} />
               </Link>
             </div>

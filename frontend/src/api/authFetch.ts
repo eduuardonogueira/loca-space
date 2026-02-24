@@ -26,8 +26,6 @@ export async function authFetch(
 
   const mountedUrl = `${process.env.BACKEND_URL}${path}`;
 
-  console.log(mountedUrl);
-
   return fetch(mountedUrl, fetchOptions);
 }
 
