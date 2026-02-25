@@ -69,14 +69,17 @@ export class RoomController {
     return this.roomService.findAll(userId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('filter')
   @ApiOperation({ summary: 'Filtra salas por preço, capacidade e recursos' })
   @ApiResponse({
     status: 200,
     description: 'Lista de salas filtradas.',
   })
-  filter(@Query() filters: FilterRoomDto) {
-    return this.roomService.filterRooms(filters);
+  filter(@Query() filters: FilterRoomDto, @Req() req: any) {
+    const userId = +req.user.userId;
+    return this.roomService.filterRooms(filters, userId);
   }
 
   @ApiBearerAuth()
@@ -92,13 +95,16 @@ export class RoomController {
     return this.roomService.findByUser(+req.user.userId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Busca um espaço pelo ID' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Espaço encontrado.' })
   @ApiResponse({ status: 404, description: 'Espaço não encontrada.' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roomService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const userId = +req.user.userId;
+    return this.roomService.findOne(id, userId);
   }
 
   @ApiBearerAuth()

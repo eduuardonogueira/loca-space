@@ -88,7 +88,7 @@ export class RoomService {
         address: true,
         favorites: {
           user: true,
-        }, // carrega favoritos, mas user dentro pode ser undefined
+        },
       },
     });
 
@@ -120,7 +120,15 @@ export class RoomService {
   async findByUser(userId: number) {
     const rooms = await this.roomRepository.find({
       where: { user: { id: userId } },
-      relations: ['roomAmenities', 'roomAmenities.amenity'],
+      relations: {
+        roomAmenities: {
+          amenity: true,
+        },
+        address: true,
+        favorites: {
+          user: true,
+        },
+      },
     });
 
     if (!rooms || rooms.length === 0) {
@@ -130,17 +138,25 @@ export class RoomService {
       );
     }
 
-    return rooms.map((room) => ({
-      ...room,
-      amenities: room.roomAmenities.map((ra) => ({
-        id: ra.amenity.id,
-        name: ra.amenity.name,
-      })),
-      roomAmenities: undefined,
-    }));
+    return rooms.map((room) => {
+      const isFavorite = userId
+        ? room.favorites.some((fav) => fav.user.id === userId)
+        : false;
+
+      return {
+        ...room,
+        amenities: room.roomAmenities.map((ra) => ({
+          id: ra.amenity.id,
+          name: ra.amenity.name,
+        })),
+        isFavorite,
+        roomAmenities: undefined,
+        favorites: undefined,
+      };
+    });
   }
 
-  async findByAddress(term: string) {
+  async findByAddress(term: string, userId?: number) {
     const termLike = `%${term}%`;
     const findedRooms = await this.roomRepository.find({
       where: [
@@ -149,31 +165,49 @@ export class RoomService {
         { address: { city: ILike(termLike) } },
         { address: { state: ILike(termLike) } },
       ],
-      relations: ['roomAmenities', 'roomAmenities.amenity', 'address'],
+      relations: {
+        roomAmenities: {
+          amenity: true,
+        },
+        address: true,
+        favorites: {
+          user: true,
+        },
+      },
     });
 
     if (!findedRooms || findedRooms.length === 0) {
       return [];
     }
 
-    const formatedAmenities = findedRooms.map((room) => ({
-      ...room,
-      amenities: room.roomAmenities.map((ra) => ({
-        id: ra.amenity.id,
-        name: ra.amenity.name,
-      })),
-      roomAmenities: undefined,
-    }));
+    const formatedAmenities = findedRooms.map((room) => {
+      const isFavorite = userId
+        ? room.favorites.some((fav) => fav.user.id === userId)
+        : false;
+
+      return {
+        ...room,
+        amenities: room.roomAmenities.map((ra) => ({
+          id: ra.amenity.id,
+          name: ra.amenity.name,
+        })),
+        isFavorite,
+        roomAmenities: undefined,
+        favorites: undefined,
+      };
+    });
 
     return formatedAmenities;
   }
 
-  async filterRooms(filters: FilterRoomDto) {
+  async filterRooms(filters: FilterRoomDto, userId?: number) {
     const query = this.roomRepository
       .createQueryBuilder('room')
       .leftJoinAndSelect('room.roomAmenities', 'roomAmenities')
       .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
-      .leftJoinAndSelect('room.address', 'address');
+      .leftJoinAndSelect('room.address', 'address')
+      .leftJoinAndSelect('room.favorites', 'favorites')
+      .leftJoinAndSelect('favorites.user', 'favUser');
 
     if (filters.address) {
       const termLike = `%${filters.address}%`;
@@ -245,33 +279,56 @@ export class RoomService {
       return [];
     }
 
-    const formatedAmenities = findedRooms.map((room) => ({
-      ...room,
-      amenities: room.roomAmenities.map((ra) => ({
-        id: ra.amenity.id,
-        name: ra.amenity.name,
-      })),
-      roomAmenities: undefined,
-    }));
+    const formatedAmenities = findedRooms.map((room) => {
+      const isFavorite = userId
+        ? room.favorites?.some((fav) => fav.user?.id === userId)
+        : false;
+
+      return {
+        ...room,
+        amenities: room.roomAmenities.map((ra) => ({
+          id: ra.amenity.id,
+          name: ra.amenity.name,
+        })),
+        isFavorite,
+        roomAmenities: undefined,
+        favorites: undefined,
+      };
+    });
 
     return formatedAmenities;
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, userId?: number) {
     const findedRooms = await this.roomRepository.findOne({
       where: { id },
-      relations: ['roomAmenities', 'roomAmenities.amenity'],
+      relations: {
+        roomAmenities: {
+          amenity: true,
+        },
+        address: true,
+        favorites: {
+          user: true,
+        },
+      },
     });
     if (!findedRooms) {
       throw new HttpException(`Room with ID ${id} not found`, 404);
     }
+
+    const isFavorite = userId
+      ? findedRooms.favorites.some((fav) => fav.user.id === userId)
+      : false;
+
     const formatedAmenities = {
       ...findedRooms,
       amenities: findedRooms.roomAmenities.map((ra) => ({
         id: ra.amenity.id,
         name: ra.amenity.name,
       })),
+      isFavorite,
       roomAmenities: undefined,
+      favorites: undefined,
     };
 
     return formatedAmenities;
