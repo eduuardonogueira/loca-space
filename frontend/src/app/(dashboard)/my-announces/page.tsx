@@ -1,17 +1,26 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Loader, RoomCard, RoomsFilters, type OrderBy } from "@/components";
+import { Loader, RoomCard, RoomsFilters } from "@/components";
 import { useAnnouncement } from "@/hooks/useAnnouncement";
 import { ArrowRight } from "lucide-react";
 import { CREATE_ROOM_ROUTE } from "@/constants/routes";
 import Link from "next/link";
+import { IFilterRange } from "@/hooks/useRoomWithFilters";
+
+const DEFAULT_RANGE_VALUE: IFilterRange = {
+  max: null,
+  min: null,
+};
 
 export default function RoomsPage() {
   const { rooms, isLoading } = useAnnouncement();
 
-  const [orderBy, setOrderBy] = useState<OrderBy>("recent");
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [orderBy, setOrderBy] = useState<string | null>("data-recente");
+  const [amenitieIds, setAmenitieIds] = useState<number[]>([]);
+  const [price, setPrice] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
+  const [size, setSize] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
+  const [totalSpace, setTotalSpace] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
   const [locationQuery, setLocationQuery] = useState("");
 
   const hasAnyRoom = rooms.length > 0;
@@ -29,37 +38,55 @@ export default function RoomsPage() {
       );
     }
 
-    if (selectedAmenities.length > 0) {
+    if (amenitieIds.length > 0) {
       filtered = filtered.filter((room) =>
-        selectedAmenities.every((am) =>
-          room.amenities?.some((a) => a.name === am),
+        amenitieIds.every((amenityId) =>
+          room.amenities?.some((amenity) => amenity.id === amenityId),
         ),
       );
     }
 
+    if (price.min) filtered = filtered.filter((room) => room.price >= price.min!);
+    if (price.max) filtered = filtered.filter((room) => room.price <= price.max!);
+    if (size.min) filtered = filtered.filter((room) => room.size >= size.min!);
+    if (size.max) filtered = filtered.filter((room) => room.size <= size.max!);
+    if (totalSpace.min)
+      filtered = filtered.filter((room) => room.totalSpace >= totalSpace.min!);
+    if (totalSpace.max)
+      filtered = filtered.filter((room) => room.totalSpace <= totalSpace.max!);
+
     filtered.sort((a, b) => {
-      if (orderBy === "higherPrice") return b.price - a.price;
-      if (orderBy === "lowerPrice") return a.price - b.price;
+      if (orderBy === "maior-preço") return b.price - a.price;
+      if (orderBy === "menor-preço") return a.price - b.price;
+      if (orderBy === "data-recente") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
+      if (orderBy === "data-antiga") {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      }
       return 0;
     });
 
     return filtered;
-  }, [rooms, orderBy, selectedAmenities, locationQuery]);
+  }, [rooms, orderBy, amenitieIds, locationQuery, price, size, totalSpace]);
 
   const hasFilteredRooms = filteredRooms.length > 0;
 
-  function handleToggleAmenity(amenity: string) {
-    setSelectedAmenities((prev) =>
-      prev.includes(amenity)
-        ? prev.filter((a) => a !== amenity)
-        : [...prev, amenity],
-    );
-  }
-
   function handleClearFilters() {
     setLocationQuery("");
-    setSelectedAmenities([]);
-    setOrderBy("recent");
+    setAmenitieIds([]);
+    setOrderBy("data-recente");
+    setPrice(DEFAULT_RANGE_VALUE);
+    setSize(DEFAULT_RANGE_VALUE);
+    setTotalSpace(DEFAULT_RANGE_VALUE);
+  }
+
+  function handleToggleFavorites() {
+    // página de anúncios não usa favorito no fluxo atual
   }
 
   if (isLoading) return <Loader text="Carregando salas..." />;
@@ -84,9 +111,15 @@ export default function RoomsPage() {
         {/* SIDEBAR */}
         <RoomsFilters
           orderBy={orderBy}
-          onChangeOrderBy={setOrderBy}
-          selectedAmenities={selectedAmenities}
-          onToggleAmenity={handleToggleAmenity}
+          amenitieIds={amenitieIds}
+          price={price}
+          size={size}
+          totalSpace={totalSpace}
+          setOrderBy={setOrderBy}
+          setPrice={setPrice}
+          setSize={setSize}
+          setTotalSpace={setTotalSpace}
+          setAmenitieIds={setAmenitieIds}
         />
 
         {/* CONTEÚDO PRINCIPAL */}
@@ -227,7 +260,12 @@ export default function RoomsPage() {
                 "
               >
                 {rooms.map((room) => (
-                  <RoomCard key={room.id} room={room} mode="edit" />
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    mode="edit"
+                    handleToggleFavorites={handleToggleFavorites}
+                  />
                 ))}
               </div>
             </>
@@ -242,7 +280,12 @@ export default function RoomsPage() {
               "
             >
               {filteredRooms.map((room) => (
-                <RoomCard key={room.id} room={room} mode="edit" />
+                <RoomCard
+                  key={room.id}
+                  room={room}
+                  mode="edit"
+                  handleToggleFavorites={handleToggleFavorites}
+                />
               ))}
             </div>
           )}
@@ -251,4 +294,3 @@ export default function RoomsPage() {
     </div>
   );
 }
-
