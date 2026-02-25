@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserProfile } from "@/api";
+import { getUserProfile } from "@/services";
 import { IUser } from "@/types/user";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";

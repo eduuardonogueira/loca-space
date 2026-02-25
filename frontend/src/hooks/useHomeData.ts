@@ -7,7 +7,7 @@ import {
 import { FaSearch, FaCalendarCheck } from "react-icons/fa";
 import { FaGear } from "react-icons/fa6";
 import type { IconType } from "react-icons";
-import { getProfile } from "@/api";
+import { getProfile } from "@/services";
 import { EnumUserRole } from "@/types/user";
 
 type ActionCardItem = {

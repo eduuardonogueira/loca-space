@@ -1,22 +1,38 @@
-import React from "react";
+"use client";
 
-export type OrderBy = "recent" | "higherPrice" | "lowerPrice";
+import { useAmenities } from "@/hooks/useAmenities";
+import useRoomFilters from "@/hooks/useRoomFilters";
+import { IFilterRange } from "@/hooks/useRoomWithFilters";
+import React, { Dispatch, SetStateAction } from "react";
 
-type RoomsFiltersProps = {
-  orderBy: OrderBy;
-  onChangeOrderBy: (value: OrderBy) => void;
-  selectedAmenities: string[];
-  onToggleAmenity: (amenity: string) => void;
-};
-
-const amenitiesOptions = ["Wi-Fi", "Garagem", "Banheiro", "Ar-condicionado"];
+interface IRoomsFiltersProps {
+  orderBy: string | null;
+  amenitieIds: number[];
+  price: IFilterRange;
+  size: IFilterRange;
+  totalSpace: IFilterRange;
+  setOrderBy: Dispatch<SetStateAction<string | null>>;
+  setPrice: Dispatch<SetStateAction<IFilterRange>>;
+  setSize: Dispatch<SetStateAction<IFilterRange>>;
+  setTotalSpace: Dispatch<SetStateAction<IFilterRange>>;
+  setAmenitieIds: Dispatch<SetStateAction<number[]>>;
+}
 
 export function RoomsFilters({
   orderBy,
-  onChangeOrderBy,
-  selectedAmenities,
-  onToggleAmenity,
-}: RoomsFiltersProps) {
+  amenitieIds,
+  price,
+  size,
+  totalSpace,
+  setOrderBy,
+  setPrice,
+  setSize,
+  setTotalSpace,
+  setAmenitieIds,
+}: IRoomsFiltersProps) {
+  const { orderByOptions } = useRoomFilters();
+  const { amenities } = useAmenities();
+
   return (
     <aside
       className="
@@ -26,7 +42,6 @@ export function RoomsFilters({
         text-[13px] text-[#333]
       "
     >
-      {/* Ordenar por */}
       <div
         className="
           mt-0 pt-0 border-t-0
@@ -34,77 +49,41 @@ export function RoomsFilters({
         "
       >
         <p className="text-[13px] font-semibold mb-2 text-[#333]">
-          Ordenar por
+          Ordenar por:
         </p>
 
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className={`
+          {orderByOptions.map((order) => (
+            <button
+              key={order.label}
+              type="button"
+              className={`
               inline-flex items-center justify-center h-9 px-4.5 rounded-full
               border text-[0.85rem] whitespace-nowrap cursor-pointer transition
               hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
               hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
               focus:outline-none focus:ring-0 active:outline-none active:ring-0
               ${
-                orderBy === "recent"
+                orderBy === order.value
                   ? "bg-[#e53935] border-[#e53935] text-white"
                   : "bg-white border-[#e5e5e5] text-[#555]"
               }
             `}
-            onClick={() => onChangeOrderBy("recent")}
-          >
-            Mais recente
-          </button>
-
-          <button
-            type="button"
-            className={`
-              inline-flex items-center justify-center h-9 px-4.5 rounded-full
-              border text-[0.85rem] whitespace-nowrap cursor-pointer transition
-              hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
-              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
-              focus:outline-none focus:ring-0 active:outline-none active:ring-0
-              ${
-                orderBy === "higherPrice"
-                  ? "bg-[#e53935] border-[#e53935] text-white"
-                  : "bg-white border-[#e5e5e5] text-[#555]"
-              }
-            `}
-            onClick={() => onChangeOrderBy("higherPrice")}
-          >
-            Maior preço
-          </button>
-
-          <button
-            type="button"
-            className={`
-              inline-flex items-center justify-center h-9 px-4.5 rounded-full
-              border text-[0.85rem] whitespace-nowrap cursor-pointer transition
-              hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
-              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
-              focus:outline-none focus:ring-0 active:outline-none active:ring-0
-              ${
-                orderBy === "lowerPrice"
-                  ? "bg-[#e53935] border-[#e53935] text-white"
-                  : "bg-white border-[#e5e5e5] text-[#555]"
-              }
-            `}
-            onClick={() => onChangeOrderBy("lowerPrice")}
-          >
-            Menor preço
-          </button>
+              onClick={() => setOrderBy(order.value)}
+            >
+              {order.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Preço */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
           first:mt-0 first:pt-0 first:border-t-0
         "
       >
-        <p className="text-[13px] font-semibold mb-2 text-[#333]">Preço</p>
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">Preço:</p>
 
         <div className="flex items-center gap-2">
           <input
@@ -117,6 +96,10 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
+            value={price.min?.toString()}
+            onChange={(e) =>
+              setPrice((prev) => ({ ...prev, min: Number(e.target.value) }))
+            }
           />
           <span className="text-[12px] text-[#777]">–</span>
           <input
@@ -129,11 +112,14 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
+            value={price.max?.toString()}
+            onChange={(e) =>
+              setPrice((prev) => ({ ...prev, max: Number(e.target.value) }))
+            }
           />
         </div>
       </div>
 
-      {/* Área útil */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
@@ -141,7 +127,7 @@ export function RoomsFilters({
         "
       >
         <p className="text-[13px] font-semibold mb-2 text-[#333]">
-          Área útil (m²)
+          Área útil (m²):
         </p>
 
         <div className="flex items-center gap-2">
@@ -155,6 +141,10 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
+            value={size.min?.toString()}
+            onChange={(e) =>
+              setSize((prev) => ({ ...prev, min: Number(e.target.value) }))
+            }
           />
           <span className="text-[12px] text-[#777]">–</span>
           <input
@@ -167,23 +157,28 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
+            value={size.max?.toString()}
+            onChange={(e) =>
+              setSize((prev) => ({ ...prev, max: Number(e.target.value) }))
+            }
           />
         </div>
       </div>
 
-      {/* Capacidade */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
           first:mt-0 first:pt-0 first:border-t-0
         "
       >
-        <p className="text-[13px] font-semibold mb-2 text-[#333]">Capacidade</p>
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">
+          Capacidade (Pessoas):
+        </p>
 
         <div className="flex items-center gap-2">
           <input
             type="number"
-            placeholder="Mín. pessoas"
+            placeholder="Mín."
             className="
               w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
               text-[0.85rem] bg-[#fcfcff]
@@ -191,41 +186,76 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
+            value={totalSpace.min?.toString()}
+            onChange={(e) =>
+              setTotalSpace((prev) => ({
+                ...prev,
+                min: Number(e.target.value),
+              }))
+            }
+          />
+          <span className="text-[12px] text-[#777]">–</span>
+          <input
+            type="number"
+            placeholder="Máx."
+            className="
+              w-full px-2.5 py-2 rounded-md border border-[#e5e5e5]
+              text-[0.85rem] bg-[#fcfcff]
+              placeholder:text-[#b0b0bd] placeholder:text-[0.8rem]
+              focus:outline-none focus:border-[#e53935]
+              focus:ring-1 focus:ring-[#e53935]/40
+            "
+            value={totalSpace.max?.toString()}
+            onChange={(e) =>
+              setTotalSpace((prev) => ({
+                ...prev,
+                max: Number(e.target.value),
+              }))
+            }
           />
         </div>
       </div>
 
-      {/* Recursos */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
           first:mt-0 first:pt-0 first:border-t-0
         "
       >
-        <p className="text-[13px] font-semibold mb-2 text-[#333]">Recursos</p>
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">Recursos:</p>
 
         <div className="flex flex-wrap gap-2">
-          {amenitiesOptions.map((amenity) => {
-            const selected = selectedAmenities.includes(amenity);
+          {amenities.map((amenity) => {
+            const isSelected = amenitieIds.includes(amenity.id);
+
+            function handleToggleAmenity() {
+              if (isSelected) {
+                setAmenitieIds((prev) =>
+                  prev.filter((id) => id !== amenity.id),
+                );
+              } else {
+                setAmenitieIds((prev) => [...prev, amenity.id]);
+              }
+            }
 
             return (
               <button
-                key={amenity}
+                key={amenity.id}
                 type="button"
-                onClick={() => onToggleAmenity(amenity)}
+                onClick={handleToggleAmenity}
                 className={`
-                  inline-flex items-center justify-center h-9 px-[18px]
+                  inline-flex items-center justify-center h-9 px-4.5
                   rounded-full border text-[0.85rem] whitespace-nowrap
                   transition cursor-pointer
                   focus:outline-none focus:ring-0 active:outline-none active:ring-0
                   ${
-                    selected
+                    isSelected
                       ? "bg-[#ffe4e0] border-[#e53935] text-[#e53935] shadow-[0_0_0_1px_rgba(229,57,53,0.06)]"
                       : "bg-white border-[#e5e5e5] text-[#555] hover:border-[#d6d6dd] hover:bg-[#f5f5f9]"
                   }
                 `}
               >
-                {amenity}
+                {amenity.name}
               </button>
             );
           })}

@@ -4,7 +4,7 @@ import {
   createAvailability,
   deleteAvailability,
   updateAvailability,
-} from "@/api";
+} from "@/services";
 import { ICreateAvailability } from "@/types/availability";
 import React, { useState } from "react";
 import { FaRegClock } from "react-icons/fa";

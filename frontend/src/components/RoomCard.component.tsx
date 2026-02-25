@@ -6,7 +6,7 @@ import { Heart, Ruler, Users, MessageCircle, ArrowRight } from "lucide-react";
 import { IRoomWithAmenities } from "@/types/room";
 import { ROOM_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../utils/formatRoomAddress";
-import { addFavorite, removeFavorite } from "@/api";
+import { addFavorite, removeFavorite } from "@/services";
 
 type RoomCardProps = {
   room: IRoomWithAmenities;

@@ -26,6 +26,60 @@ export async function getRooms(): Promise<IRoomWithAmenities[] | null> {
   }
 }
 
+export async function getRoomsWithFilters({
+  address,
+  maxSize,
+  minSize,
+  maxPrice,
+  minPrice,
+  maxTotalSpace,
+  minTotalSpace,
+  amenities,
+  orderBy,
+}: {
+  address: string | null;
+  maxSize: number | null;
+  minSize: number | null;
+  maxPrice: number | null;
+  minPrice: number | null;
+  maxTotalSpace: number | null;
+  minTotalSpace: number | null;
+  amenities: number[];
+  orderBy: string | null;
+}): Promise<IRoomWithAmenities[]> {
+  const params = new URLSearchParams();
+
+  if (address) params.append("address", address);
+  if (minSize !== null) params.append("minSize", minSize.toString());
+  if (maxSize !== null) params.append("maxSize", maxSize.toString());
+  if (minPrice !== null) params.append("minPrice", minPrice.toString());
+  if (maxPrice !== null) params.append("maxPrice", maxPrice.toString());
+  if (maxTotalSpace !== null)
+    params.append("maxTotalSpace", maxTotalSpace.toString());
+  if (minTotalSpace !== null)
+    params.append("minTotalSpace", minTotalSpace.toString());
+  if (amenities.length > 0) params.append("amenities", amenities.join(","));
+  if (orderBy) params.append("orderBy", orderBy);
+
+  const queryString = params.toString();
+
+  try {
+    const response = await authFetch(`/room/filter?${queryString}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      console.error("Erro na requisição:", response.status);
+      return [];
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro ao buscar rooms:", error);
+    return [];
+  }
+}
+
 export async function getRoomDetails(
   roomId: number,
 ): Promise<IRoomDetails | null> {

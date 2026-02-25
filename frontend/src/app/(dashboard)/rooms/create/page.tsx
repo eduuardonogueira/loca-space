@@ -1,4 +1,4 @@
-import { getAmenities } from "@/api/amenity";
+import { getAmenities } from "@/services/amenity";
 import { CreateRoomWizard } from "@/components/CreateRoomWizard.component";
 
 export const metadata = {

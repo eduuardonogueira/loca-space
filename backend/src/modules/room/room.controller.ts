@@ -23,7 +23,6 @@ import {
   ApiBody,
   ApiParam,
   ApiBearerAuth,
-  ApiQuery,
   ApiConsumes,
 } from '@nestjs/swagger';
 import { RoomService } from './room.service';

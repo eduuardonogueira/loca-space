@@ -12,10 +12,10 @@ import {
 import { useEffect, useState } from "react";
 import { AvailabilityModal, Loader } from "@/components";
 import { IAvailability } from "@/types/availability";
-import { getAvailabilityByRoom } from "@/api/availability";
+import { getAvailabilityByRoom } from "@/services/availability";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { getRooms } from "@/api";
+import { getRooms } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { AVAILABILITY_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../../../../../utils/formatRoomAddress";

@@ -1,4 +1,4 @@
-import { getRooms, getRoomsByUser } from "@/api";
+import { getRooms, getRoomsByUser } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";

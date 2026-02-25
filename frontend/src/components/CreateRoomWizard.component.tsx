@@ -45,7 +45,7 @@ import {
   RoomTypeLabels,
   type IAmenity,
 } from "@/types/room";
-import { createRoom, uploadRoomBanner, uploadRoomPhotos } from "@/api/room";
+import { createRoom, uploadRoomBanner, uploadRoomPhotos } from "@/services/room";
 import { ImageUpload } from "@/components/ImageUpload.component";
 import { Button } from "./ui/button";
 import { MY_ANNOUNCE_ROUTE } from "@/constants/routes";

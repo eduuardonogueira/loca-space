@@ -1,65 +1,31 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Loader, RoomCard, RoomsFilters, type OrderBy } from "@/components";
-import { useRooms } from "@/hooks/useRooms";
+import { Loader, RoomCard, RoomsFilters } from "@/components";
+import { useRoomsWithFilters } from "@/hooks/useRoomWithFilters";
+import { useState } from "react";
 
 export default function RoomsPage() {
-  const { rooms, isLoading } = useRooms();
+  const {
+    rooms,
+    isLoading,
+    setAddress,
+    handleClearFilters,
+    hasFilters,
+    orderBy,
+    price,
+    size,
+    totalSpace,
+    setOrderBy,
+    setPrice,
+    setSize,
+    setTotalSpace,
+    amenitieIds,
+    setAmenitieIds,
+  } = useRoomsWithFilters();
 
-  const [orderBy, setOrderBy] = useState<OrderBy>("recent");
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [locationQuery, setLocationQuery] = useState("");
+  const [location, setLocation] = useState("");
 
   const hasAnyRoom = rooms.length > 0;
-
-  const filteredRooms = useMemo(() => {
-    let filtered = [...rooms];
-
-    if (locationQuery.trim()) {
-      const query = locationQuery.toLowerCase();
-
-      filtered = filtered.filter((room) =>
-        `${room.address?.city} ${room.address?.state}`
-          .toLowerCase()
-          .includes(query),
-      );
-    }
-
-    if (selectedAmenities.length > 0) {
-      filtered = filtered.filter((room) =>
-        selectedAmenities.every((am) =>
-          room.amenities?.some((a) => a.name === am),
-        ),
-      );
-    }
-
-    filtered.sort((a, b) => {
-      if (orderBy === "higherPrice") return b.price - a.price;
-      if (orderBy === "lowerPrice") return a.price - b.price;
-      return 0;
-    });
-
-    return filtered;
-  }, [rooms, orderBy, selectedAmenities, locationQuery]);
-
-  const hasFilteredRooms = filteredRooms.length > 0;
-
-  function handleToggleAmenity(amenity: string) {
-    setSelectedAmenities((prev) =>
-      prev.includes(amenity)
-        ? prev.filter((a) => a !== amenity)
-        : [...prev, amenity],
-    );
-  }
-
-  function handleClearFilters() {
-    setLocationQuery("");
-    setSelectedAmenities([]);
-    setOrderBy("recent");
-  }
-
-  if (isLoading) return <Loader text="Carregando salas..." />;
 
   return (
     <div
@@ -78,17 +44,21 @@ export default function RoomsPage() {
           max-[840px]:px-4
         "
       >
-        {/* SIDEBAR */}
         <RoomsFilters
+          amenitieIds={amenitieIds}
+          setAmenitieIds={setAmenitieIds}
           orderBy={orderBy}
-          onChangeOrderBy={setOrderBy}
-          selectedAmenities={selectedAmenities}
-          onToggleAmenity={handleToggleAmenity}
+          price={price}
+          size={size}
+          totalSpace={totalSpace}
+          setOrderBy={setOrderBy}
+          setPrice={setPrice}
+          setSize={setSize}
+          setTotalSpace={setTotalSpace}
         />
 
-        {/* CONTEÚDO PRINCIPAL */}
         <main className="flex flex-col gap-4">
-          {/* Barra de localização */}
+          {/* header */}
           <section
             className="
               bg-white rounded-2xl
@@ -120,8 +90,12 @@ export default function RoomsPage() {
                     focus:ring-1 focus:ring-[#e53935]/40
                   "
                   placeholder="Ex: Belém - PA"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
+                  value={location}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setLocation(value);
+                    if (value.length === 0) setAddress(null);
+                  }}
                 />
 
                 <button
@@ -138,6 +112,7 @@ export default function RoomsPage() {
                     active:shadow-[0_2px_5px_rgba(211,47,47,0.3)]
                     max-[600px]:w-full
                   "
+                  onClick={() => setAddress(location)}
                 >
                   Buscar
                 </button>
@@ -145,8 +120,7 @@ export default function RoomsPage() {
             </div>
           </section>
 
-          {/* 1) Banco vazio */}
-          {!hasAnyRoom && (
+          {!hasAnyRoom && !hasFilters && (
             <section
               className="
                 mt-4 w-full rounded-[18px]
@@ -165,9 +139,8 @@ export default function RoomsPage() {
             </section>
           )}
 
-          {/* 2) Tem sala, mas os filtros não retornaram nada */}
-          {hasAnyRoom && !hasFilteredRooms && (
-            <>
+          {!hasAnyRoom && hasFilters && (
+            <div>
               <section
                 className="
                   mt-4 w-full rounded-[18px]
@@ -177,7 +150,6 @@ export default function RoomsPage() {
                   flex flex-col items-center text-center gap-3
                 "
               >
-                {/* Se quiser, mantém seu ícone aqui */}
                 <p className="text-[18px] font-bold text-[#333]">
                   Nenhuma sala disponível
                 </p>
@@ -202,6 +174,8 @@ export default function RoomsPage() {
                 Mais procurados na sua região
               </h2>
 
+              {/* Mais procurados */}
+
               <div
                 className="
                   grid grid-cols-3 gap-4
@@ -213,10 +187,10 @@ export default function RoomsPage() {
                   <RoomCard key={room.id} room={room} mode="view" />
                 ))}
               </div>
-            </>
+            </div>
           )}
 
-          {hasAnyRoom && hasFilteredRooms && (
+          {hasAnyRoom && (
             <div
               className="
                 grid grid-cols-3 gap-4
@@ -224,9 +198,13 @@ export default function RoomsPage() {
                 max-[840px]:grid-cols-1
               "
             >
-              {filteredRooms.map((room) => (
-                <RoomCard key={room.id} room={room} mode="view" />
-              ))}
+              {isLoading ? (
+                <Loader text="Carregando salas..." />
+              ) : (
+                rooms.map((room) => (
+                  <RoomCard key={room.id} room={room} mode="view" />
+                ))
+              )}
             </div>
           )}
         </main>

@@ -8,7 +8,7 @@ import { ReservationCard } from "@/components/ReservationCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Reservation } from "@/types/reservation";
 import { CancelModal } from "@/components/CancelModal";
-import { deleteReservation, fetchReservations } from "@/api/reservation";
+import { deleteReservation, fetchReservations } from "@/services/reservation";
 import { toast } from "react-toastify";
 
 type ReservationOrderBy =

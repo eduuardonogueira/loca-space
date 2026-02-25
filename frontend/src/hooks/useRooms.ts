@@ -1,4 +1,4 @@
-import { getRooms } from "@/api";
+import { getRooms } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -6,8 +6,6 @@ import { toast } from "react-toastify";
 export function useRooms() {
   const [isLoading, setIsLoading] = useState(false);
   const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
-
-  console.log(rooms);
 
   async function fetchRooms() {
     setIsLoading(true);

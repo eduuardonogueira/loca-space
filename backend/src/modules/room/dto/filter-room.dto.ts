@@ -1,7 +1,24 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { EnumRoomStatus, EnumRoomType } from 'src/types/room';
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
+import { EnumRoomType } from 'src/types/room';
+
+export const orderMap = {
+  'data-recente': { createdAt: 'DESC' },
+  'data-antiga': { createdAt: 'ASC' },
+  'maior-preço': { price: 'DESC' },
+  'menor-preço': { price: 'ASC' },
+  default: { createdAt: 'DESC' },
+};
+
+type OrderByType = keyof typeof orderMap;
 
 export class FilterRoomDto {
   @ApiPropertyOptional({
@@ -11,13 +28,9 @@ export class FilterRoomDto {
   @IsString()
   address?: string;
 
-  @ApiPropertyOptional({
-    description: 'Status da sala',
-    enum: EnumRoomStatus,
-  })
   @IsOptional()
-  @IsEnum(EnumRoomStatus)
-  status?: EnumRoomStatus;
+  @IsString()
+  orderBy?: OrderByType | null;
 
   @ApiPropertyOptional({
     description: 'Tipo da sala',
@@ -79,10 +92,10 @@ export class FilterRoomDto {
       return value.map(Number);
     }
     if (typeof value === 'string') {
-        if (value.includes(',')) {
-            return value.split(',').map(Number);
-        }
-        return [Number(value)];
+      if (value.includes(',')) {
+        return value.split(',').map(Number);
+      }
+      return [Number(value)];
     }
     return [Number(value)];
   })

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { FilterRoomDto } from './dto/filter-room.dto';
+import { FilterRoomDto, orderMap } from './dto/filter-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
@@ -184,10 +184,6 @@ export class RoomService {
       );
     }
 
-    if (filters.status) {
-      query.andWhere('room.status = :status', { status: filters.status });
-    }
-
     if (filters.type) {
       query.andWhere('room.type = :type', { type: filters.type });
     }
@@ -235,6 +231,12 @@ export class RoomService {
         'filterRa.amenityId IN (:...amenityIds)',
         { amenityIds: filters.amenities },
       );
+    }
+
+    const order = orderMap[filters.orderBy ?? 'default'];
+
+    for (const [column, direction] of Object.entries(order)) {
+      query.addOrderBy(`room.${column}`, direction as 'ASC' | 'DESC');
     }
 
     const findedRooms = await query.getMany();
