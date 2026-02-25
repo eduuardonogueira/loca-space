@@ -11,4 +11,5 @@ export * from "./RoomsFilters.component";
 
 export * from "./AvailabilityModal.component";
 export * from "./EditProfileModal.component";
+export * from "./AnnouncesFilters.component";
 

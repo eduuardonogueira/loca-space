@@ -70,7 +70,9 @@ export function RoomsFilters({
                   : "bg-white border-[#e5e5e5] text-[#555]"
               }
             `}
-              onClick={() => setOrderBy(order.value)}
+              onClick={() =>
+                setOrderBy(order.value === orderBy ? null : order.value)
+              }
             >
               {order.label}
             </button>

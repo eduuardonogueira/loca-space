@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
@@ -45,10 +49,15 @@ export class FavoriteService {
   async findAll(userId: number) {
     const favorites = await this.favoriteRepository.find({
       where: { user: { id: userId } },
-      relations: ['room', 'room.address', 'room.roomAmenities', 'room.roomAmenities.amenity'],
+      relations: [
+        'room',
+        'room.address',
+        'room.roomAmenities',
+        'room.roomAmenities.amenity',
+      ],
       order: { createdAt: 'DESC' },
     });
-    
+
     // Transform formatting if RoomService has specific formatting logic, but here raw is fine or minimal mapping.
     // Return the room objects directly or the favorite wrapper? Usually return rooms.
     // The user asked "listar favoritos", so returning favorite wrapper is standard REST, included relations.

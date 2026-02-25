@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Heart, Ruler, Users, MessageCircle, ArrowRight } from "lucide-react";
+import { Heart, Ruler, Users, MessageCircle, ArrowRight, EditIcon } from "lucide-react";
 import { IRoomWithAmenities } from "@/types/room";
 import { ROOM_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../utils/formatRoomAddress";
@@ -149,7 +149,7 @@ export function RoomCard({
               "
               >
                 Editar Anúncio
-                <ArrowRight size={16} strokeWidth={1.8} />
+                <EditIcon size={16} strokeWidth={1.8} />
               </Link>
 
               <Link

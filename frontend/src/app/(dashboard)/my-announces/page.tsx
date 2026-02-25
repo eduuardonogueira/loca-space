@@ -1,68 +1,33 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Loader, RoomCard, RoomsFilters, type OrderBy } from "@/components";
-import { useAnnouncement } from "@/hooks/useAnnouncement";
-import { ArrowRight } from "lucide-react";
-import { CREATE_ROOM_ROUTE } from "@/constants/routes";
-import Link from "next/link";
+import { AnnouncesFilters, Loader, RoomCard } from "@/components";
+import { useMyAnnouncement } from "@/hooks/useMyAnnouncement";
+import { useRooms } from "@/hooks/useRooms";
+import { useState } from "react";
 
 export default function RoomsPage() {
-  const { rooms, isLoading } = useAnnouncement();
+  const {
+    rooms,
+    isLoading,
+    name,
+    setName,
+    status,
+    setStatus,
+    handleClearFilters,
+    hasFilters,
+    orderBy,
+    setOrderBy,
+    amenitieIds,
+    setAmenitieIds,
+    handleToggleFavorites,
+    type,
+    setType
+  } = useMyAnnouncement();
+  const { rooms: popularRooms } = useRooms();
 
-  const [orderBy, setOrderBy] = useState<OrderBy>("recent");
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [locationQuery, setLocationQuery] = useState("");
+  const [roomName, setRoomName] = useState("");
 
   const hasAnyRoom = rooms.length > 0;
-
-  const filteredRooms = useMemo(() => {
-    let filtered = [...rooms];
-
-    if (locationQuery.trim()) {
-      const query = locationQuery.toLowerCase();
-
-      filtered = filtered.filter((room) =>
-        `${room.address?.city} ${room.address?.state}`
-          .toLowerCase()
-          .includes(query),
-      );
-    }
-
-    if (selectedAmenities.length > 0) {
-      filtered = filtered.filter((room) =>
-        selectedAmenities.every((am) =>
-          room.amenities?.some((a) => a.name === am),
-        ),
-      );
-    }
-
-    filtered.sort((a, b) => {
-      if (orderBy === "higherPrice") return b.price - a.price;
-      if (orderBy === "lowerPrice") return a.price - b.price;
-      return 0;
-    });
-
-    return filtered;
-  }, [rooms, orderBy, selectedAmenities, locationQuery]);
-
-  const hasFilteredRooms = filteredRooms.length > 0;
-
-  function handleToggleAmenity(amenity: string) {
-    setSelectedAmenities((prev) =>
-      prev.includes(amenity)
-        ? prev.filter((a) => a !== amenity)
-        : [...prev, amenity],
-    );
-  }
-
-  function handleClearFilters() {
-    setLocationQuery("");
-    setSelectedAmenities([]);
-    setOrderBy("recent");
-  }
-
-  if (isLoading) return <Loader text="Carregando salas..." />;
 
   return (
     <div
@@ -81,17 +46,19 @@ export default function RoomsPage() {
           max-[840px]:px-4
         "
       >
-        {/* SIDEBAR */}
-        <RoomsFilters
+        <AnnouncesFilters
           orderBy={orderBy}
-          onChangeOrderBy={setOrderBy}
-          selectedAmenities={selectedAmenities}
-          onToggleAmenity={handleToggleAmenity}
+          amenitieIds={amenitieIds}
+          status={status}
+          setOrderBy={setOrderBy}
+          setAmenitieIds={setAmenitieIds}
+          setStatus={setStatus}
+          type={type}
+          setType={setType}
         />
 
-        {/* CONTEÚDO PRINCIPAL */}
         <main className="flex flex-col gap-4">
-          {/* Barra de localização */}
+          {/* header */}
           <section
             className="
               bg-white rounded-2xl
@@ -102,7 +69,7 @@ export default function RoomsPage() {
           >
             <div className="flex flex-col gap-1">
               <span className="text-[13px] font-semibold text-[#444]">
-                Localização
+                Bucar por Nome
               </span>
 
               <div
@@ -122,9 +89,13 @@ export default function RoomsPage() {
                     focus:border-[#e53935]
                     focus:ring-1 focus:ring-[#e53935]/40
                   "
-                  placeholder="Ex: Belém - PA"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
+                  placeholder="Escritório 204..."
+                  value={roomName}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setRoomName(value);
+                    if (value.length === 0) setName(null);
+                  }}
                 />
 
                 <button
@@ -141,6 +112,7 @@ export default function RoomsPage() {
                     active:shadow-[0_2px_5px_rgba(211,47,47,0.3)]
                     max-[600px]:w-full
                   "
+                  onClick={() => setName(name)}
                 >
                   Buscar
                 </button>
@@ -148,8 +120,30 @@ export default function RoomsPage() {
             </div>
           </section>
 
-          {/* 1) Banco vazio */}
-          {!hasAnyRoom && (
+          <div
+            className="
+                grid grid-cols-3 gap-4
+                max-[1100px]:grid-cols-2
+                max-[840px]:grid-cols-1
+              "
+          >
+            {isLoading ? (
+              <div className="col-span-3">
+                <Loader text="Carregando salas..." />
+              </div>
+            ) : (
+              rooms.map((room) => (
+                <RoomCard
+                  key={room.id}
+                  room={room}
+                  mode="edit"
+                  handleToggleFavorites={handleToggleFavorites}
+                />
+              ))
+            )}
+          </div>
+
+          {!hasAnyRoom && !hasFilters && !isLoading && (
             <section
               className="
                 mt-4 w-full rounded-[18px]
@@ -165,26 +159,11 @@ export default function RoomsPage() {
                 Ainda não há salas anunciadas na plataforma. Assim que alguém
                 anunciar, elas aparecerão aqui.
               </p>
-
-              <Link
-                href={CREATE_ROOM_ROUTE}
-                className="
-                w-full h-9 rounded-full mt-2
-                bg-[#e53935] text-[13px] font-semibold
-                text-white
-                flex items-center justify-center gap-2
-                transition hover:bg-[#d32f2f]
-              "
-              >
-                Criar Anúncio
-                <ArrowRight size={16} strokeWidth={1.8} />
-              </Link>
             </section>
           )}
 
-          {/* 2) Tem sala, mas os filtros não retornaram nada */}
-          {hasAnyRoom && !hasFilteredRooms && (
-            <>
+          {!hasAnyRoom && hasFilters && !isLoading && (
+            <div>
               <section
                 className="
                   mt-4 w-full rounded-[18px]
@@ -194,7 +173,6 @@ export default function RoomsPage() {
                   flex flex-col items-center text-center gap-3
                 "
               >
-                {/* Se quiser, mantém seu ícone aqui */}
                 <p className="text-[18px] font-bold text-[#333]">
                   Nenhuma sala disponível
                 </p>
@@ -226,24 +204,15 @@ export default function RoomsPage() {
                   max-[840px]:grid-cols-1
                 "
               >
-                {rooms.map((room) => (
-                  <RoomCard key={room.id} room={room} mode="edit" />
+                {popularRooms.map((room) => (
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    mode="edit"
+                    handleToggleFavorites={handleToggleFavorites}
+                  />
                 ))}
               </div>
-            </>
-          )}
-
-          {hasAnyRoom && hasFilteredRooms && (
-            <div
-              className="
-                grid grid-cols-3 gap-4
-                max-[1100px]:grid-cols-2
-                max-[840px]:grid-cols-1
-              "
-            >
-              {filteredRooms.map((room) => (
-                <RoomCard key={room.id} room={room} mode="edit" />
-              ))}
             </div>
           )}
         </main>

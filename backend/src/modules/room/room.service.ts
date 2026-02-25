@@ -44,7 +44,9 @@ export class RoomService {
           amenity: true,
         },
         address: true,
-        favorites: true,
+        favorites: {
+          user: true,
+        },
       },
     });
 
