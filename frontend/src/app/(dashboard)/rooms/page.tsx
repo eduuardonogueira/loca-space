@@ -21,6 +21,7 @@ export default function RoomsPage() {
     setTotalSpace,
     amenitieIds,
     setAmenitieIds,
+    handleToggleFavorites,
   } = useRoomsWithFilters();
 
   const [location, setLocation] = useState("");
@@ -184,7 +185,12 @@ export default function RoomsPage() {
                 "
               >
                 {rooms.map((room) => (
-                  <RoomCard key={room.id} room={room} mode="view" />
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    mode="view"
+                    handleToggleFavorites={handleToggleFavorites}
+                  />
                 ))}
               </div>
             </div>
@@ -202,7 +208,12 @@ export default function RoomsPage() {
                 <Loader text="Carregando salas..." />
               ) : (
                 rooms.map((room) => (
-                  <RoomCard key={room.id} room={room} mode="view" />
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    mode="view"
+                    handleToggleFavorites={handleToggleFavorites}
+                  />
                 ))
               )}
             </div>

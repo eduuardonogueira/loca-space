@@ -6,22 +6,18 @@ import { Heart, Ruler, Users, MessageCircle, ArrowRight } from "lucide-react";
 import { IRoomWithAmenities } from "@/types/room";
 import { ROOM_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../utils/formatRoomAddress";
-import { addFavorite, removeFavorite } from "@/services";
 
 type RoomCardProps = {
   room: IRoomWithAmenities;
   mode: "edit" | "view";
+  handleToggleFavorites: (room: IRoomWithAmenities) => void;
 };
 
-export function RoomCard({ room, mode = "view" }: RoomCardProps) {
-  async function handleToggleFavorites(room: IRoomWithAmenities) {
-    if (room.isFavorite) {
-      await removeFavorite(room.id);
-    } else {
-      await addFavorite(room.id);
-    }
-  }
-
+export function RoomCard({
+  room,
+  mode = "view",
+  handleToggleFavorites,
+}: RoomCardProps) {
   return (
     <div className="block">
       <article

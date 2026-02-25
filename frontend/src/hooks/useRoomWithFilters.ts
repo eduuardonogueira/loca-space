@@ -1,6 +1,6 @@
 "use client";
 
-import { getRoomsWithFilters } from "@/services";
+import { addFavorite, getRoomsWithFilters, removeFavorite } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -54,12 +54,30 @@ export function useRoomsWithFilters() {
     fetchRooms();
   }, [size, orderBy, price, totalSpace, address, amenitieIds]);
 
-  async function handleClearFilters() {
+  function handleClearFilters() {
     setAddress(null);
     setOrderBy(null);
     setSize(DEFAULT_RANGE_VALUE);
     setPrice(DEFAULT_RANGE_VALUE);
     setTotalSpace(DEFAULT_RANGE_VALUE);
+  }
+
+  async function handleToggleFavorites(selectedRoom: IRoomWithAmenities) {
+    if (selectedRoom.isFavorite) {
+      setRooms((prev) =>
+        prev.filter((room) =>
+          room.id === selectedRoom.id ? { ...prev, isFavorite: false } : prev,
+        ),
+      );
+      await removeFavorite(selectedRoom.id);
+    } else {
+      setRooms((prev) =>
+        prev.filter((room) =>
+          room.id === selectedRoom.id ? { ...prev, isFavorite: true } : prev,
+        ),
+      );
+      await addFavorite(selectedRoom.id);
+    }
   }
 
   const hasFilters =
@@ -90,6 +108,7 @@ export function useRoomsWithFilters() {
     handleClearFilters,
     hasFilters,
     setAmenitieIds,
+    handleToggleFavorites,
   };
 }
 
