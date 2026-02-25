@@ -1,8 +1,10 @@
 "use client";
 
 import { Loader, RoomCard, RoomsFilters } from "@/components";
+import { ROOMS_ROUTE } from "@/constants/routes";
 import { useRooms } from "@/hooks/useRooms";
 import { useRoomsWithFilters } from "@/hooks/useRoomWithFilters";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function RoomsPage() {
@@ -23,7 +25,7 @@ export default function RoomsPage() {
     amenitieIds,
     setAmenitieIds,
     handleToggleFavorites,
-  } = useRoomsWithFilters("rooms");
+  } = useRoomsWithFilters("favorites");
   const { rooms: popularRooms } = useRooms();
 
   const [location, setLocation] = useState("");
@@ -132,7 +134,7 @@ export default function RoomsPage() {
           >
             {isLoading ? (
               <div className="col-span-3">
-                <Loader text="Carregando salas..." />
+                <Loader text="Carregando favoritos..." />
               </div>
             ) : (
               rooms.map((room) => (
@@ -149,6 +151,7 @@ export default function RoomsPage() {
           {!hasAnyRoom && !hasFilters && !isLoading && (
             <section
               className="
+                flex flex-col items-center
                 mt-4 w-full rounded-[18px]
                 border border-[#e0e0e4]
                 bg-white px-8 py-10
@@ -156,12 +159,22 @@ export default function RoomsPage() {
               "
             >
               <p className="text-[18px] font-bold text-[#333] mb-2">
-                Nenhuma sala cadastrada ainda
+                Nenhuma sala adicionada aos favoritos
               </p>
               <p className="text-[14px] text-[#666] max-w-160">
-                Ainda não há salas anunciadas na plataforma. Assim que alguém
-                anunciar, elas aparecerão aqui.
+                Você ainda não adicionou nenhuma sala aos favoritos, <br /> para
+                que você possa ver as salas, adicione ela aos seus favoritos!
               </p>
+              <Link
+                href={ROOMS_ROUTE}
+                className="
+                    text-center mt-4 px-6 py-2.5 rounded-full
+                    bg-[#e53935] text-white text-[14px] font-semibold
+                    transition hover:bg-[#d32f2f] w-100 hover:cursor-pointer
+                  "
+              >
+                Procurar Salas
+              </Link>
             </section>
           )}
 

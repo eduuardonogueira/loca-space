@@ -1,6 +1,11 @@
 "use client";
 
-import { addFavorite, getRoomsWithFilters, removeFavorite } from "@/services";
+import {
+  addFavorite,
+  getFavoriteRoomsWithFilters,
+  getRoomsWithFilters,
+  removeFavorite,
+} from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -15,7 +20,7 @@ const DEFAULT_RANGE_VALUE = {
   min: null,
 };
 
-export function useRoomsWithFilters() {
+export function useRoomsWithFilters(page: "rooms" | "favorites") {
   const [isLoading, setIsLoading] = useState(false);
   const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
   const [address, setAddress] = useState<string | null>(null);
@@ -28,18 +33,23 @@ export function useRoomsWithFilters() {
 
   const fetchRooms = async () => {
     setIsLoading(true);
+
+    const searchParams = {
+      address,
+      maxSize: size?.max,
+      minSize: size?.min,
+      maxPrice: price?.max,
+      minPrice: price?.min,
+      maxTotalSpace: totalSpace?.max,
+      minTotalSpace: totalSpace?.min,
+      amenities: amenitieIds,
+      orderBy,
+    };
+
     try {
-      const response = await getRoomsWithFilters({
-        address,
-        maxSize: size?.max,
-        minSize: size?.min,
-        maxPrice: price?.max,
-        minPrice: price?.min,
-        maxTotalSpace: totalSpace?.max,
-        minTotalSpace: totalSpace?.min,
-        amenities: amenitieIds,
-        orderBy,
-      });
+      const response = await (page === "rooms"
+        ? getRoomsWithFilters(searchParams)
+        : getFavoriteRoomsWithFilters(searchParams));
 
       setRooms(response);
     } catch (error) {
@@ -65,15 +75,15 @@ export function useRoomsWithFilters() {
   async function handleToggleFavorites(selectedRoom: IRoomWithAmenities) {
     if (selectedRoom.isFavorite) {
       setRooms((prev) =>
-        prev.filter((room) =>
-          room.id === selectedRoom.id ? { ...prev, isFavorite: false } : prev,
+        prev.map((room) =>
+          room.id === selectedRoom.id ? { ...room, isFavorite: false } : room,
         ),
       );
       await removeFavorite(selectedRoom.id);
     } else {
       setRooms((prev) =>
-        prev.filter((room) =>
-          room.id === selectedRoom.id ? { ...prev, isFavorite: true } : prev,
+        prev.map((room) =>
+          room.id === selectedRoom.id ? { ...room, isFavorite: true } : room,
         ),
       );
       await addFavorite(selectedRoom.id);

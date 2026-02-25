@@ -61,7 +61,6 @@ export function RoomCard({
           </button>
         </div>
 
-        {/* CONTEÚDO */}
         <div className="px-4 pt-3 pb-4 flex flex-col gap-1.5">
           <h2 className="text-[14px] font-semibold text-[#222]">{room.name}</h2>
 
@@ -76,7 +75,6 @@ export function RoomCard({
             })}
           </p>
 
-          {/* ÁREA E CAPACIDADE COM ÍCONES */}
           <div className="flex gap-4 mt-1 text-[12px] text-[#555] items-center">
             <div className="flex items-center gap-1">
               <Ruler size={14} strokeWidth={1.8} className="text-[#e53935]" />
@@ -89,7 +87,6 @@ export function RoomCard({
             </div>
           </div>
 
-          {/* AMENITIES */}
           <div className="flex flex-wrap gap-1.5 mt-2">
             {room.amenities.map((a) => (
               <span
@@ -103,8 +100,6 @@ export function RoomCard({
               </span>
             ))}
           </div>
-
-          {/* BOTÕES DE VIEW EMPILHADOS */}
 
           {mode === "view" ? (
             <div className="flex flex-col gap-2 mt-3">
