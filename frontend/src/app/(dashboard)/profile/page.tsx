@@ -8,6 +8,8 @@ import {
   Clock,
   CheckCircle,
   TrendingUp,
+  AlignRight,
+  ChevronRight,
 } from "lucide-react";
 import {
   Loader,
@@ -16,6 +18,8 @@ import {
   EditProfileModal,
 } from "@/components";
 import { useProfile } from "@/hooks/useProfile";
+import Link from "next/link";
+import { FAVORITES_ROUTE, ROOMS_ROUTE } from "@/constants/routes";
 
 export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,6 +43,8 @@ export default function ProfilePage() {
           <ProfileCard
             type="page"
             onEditClick={() => setIsEditModalOpen(true)}
+            profile={profile}
+            isLoading={isLoading}
           />
         </div>
 
@@ -47,13 +53,21 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">Histórico</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               {profile.rooms.length === 0 ? (
                 <p className="text-gray-600">Sem histórico</p>
               ) : (
-                profile.rooms.map((room) => (
-                  <ProfileRoomCard key={room.id} room={room} />
-                ))
+                <div className="flex gap-2">
+                  {profile.rooms.slice(0, 2).map((room) => (
+                    <ProfileRoomCard key={room.id} room={room} />
+                  ))}
+                  <Link
+                    href={ROOMS_ROUTE}
+                    className="flex items-center justify-center h-full bg-gray-100 w-16 rounded-md hover:bg-gray-200"
+                  >
+                    <ChevronRight size={24} />
+                  </Link>
+                </div>
               )}
             </div>
           </section>
@@ -62,16 +76,24 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">Favoritos</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               {profile.favorites.length === 0 ? (
                 <p className="text-gray-600">Sem favoritos</p>
               ) : (
-                profile.favorites.map((favorite) => (
-                  <ProfileRoomCard
-                    key={favorite.room.id}
-                    room={favorite.room}
-                  />
-                ))
+                <div className="flex gap-2">
+                  {profile.favorites.slice(0, 2).map((favorite) => (
+                    <ProfileRoomCard
+                      key={favorite.room.id}
+                      room={favorite.room}
+                    />
+                  ))}
+                  <Link
+                    href={FAVORITES_ROUTE}
+                    className="flex items-center justify-center h-full bg-gray-100 w-16 rounded-md hover:bg-gray-200"
+                  >
+                    <ChevronRight size={24} />
+                  </Link>
+                </div>
               )}
             </div>
           </section>

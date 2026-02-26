@@ -2,13 +2,21 @@
 
 import { X } from "lucide-react";
 import { ProfileCard } from "./ProfileCard.component";
+import { IUser } from "@/types/user";
 
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  profile: IUser | null;
+  isLoading: boolean;
 }
 
-export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+export function ProfileModal({
+  isOpen,
+  onClose,
+  profile,
+  isLoading,
+}: ProfileModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -21,7 +29,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           <X size={20} />
         </button>
 
-        <ProfileCard type="modal" onClose={onClose} />
+        <ProfileCard
+          type="modal"
+          onClose={onClose}
+          isLoading={isLoading}
+          profile={profile}
+        />
       </div>
     </div>
   );

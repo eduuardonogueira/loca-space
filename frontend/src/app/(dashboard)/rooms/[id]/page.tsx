@@ -1,9 +1,10 @@
 import { RoomDetailsView } from "./RoomDetailsView";
 
-export default function RoomDetailsPage({
+export default async function RoomDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  return <RoomDetailsView roomId={params.id} />;
+  const { id } = await params;
+  return <RoomDetailsView roomId={id} />;
 }

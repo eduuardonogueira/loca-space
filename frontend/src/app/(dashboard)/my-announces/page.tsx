@@ -1,6 +1,6 @@
 "use client";
 
-import { AnnouncesFilters, Loader, RoomCard } from "@/components";
+import { Loader, RoomCard, AnnouncesFilters } from "@/components";
 import { useMyAnnouncement } from "@/hooks/useMyAnnouncement";
 import { useRooms } from "@/hooks/useRooms";
 import { useState } from "react";
@@ -21,7 +21,7 @@ export default function RoomsPage() {
     setAmenitieIds,
     handleToggleFavorites,
     type,
-    setType
+    setType,
   } = useMyAnnouncement();
   const { rooms: popularRooms } = useRooms();
 

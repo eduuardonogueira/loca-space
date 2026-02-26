@@ -15,8 +15,6 @@ type RoomDetailsViewProps = {
 export function RoomDetailsView({ roomId }: RoomDetailsViewProps) {
   const { roomDetails, isLoading } = useRoomDetails(Number(roomId));
 
-  console.log(roomDetails);
-
   if (isLoading) return <Loader text="Carregando informações da sala..." />;
 
   if (!roomDetails) {
