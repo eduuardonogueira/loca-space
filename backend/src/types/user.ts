@@ -1,11 +1,10 @@
 export enum EnumUserType {
-  DISCENTE = 'discente',
-  DOCENTE = 'docente',
-  TECNICO = 'tecnico',
-  EXTERNO = 'externo',
+  CLIENT = 'cliente',
+  OWNER = 'locador',
 }
 
 export enum EnumUserRole {
   USER = 'user',
+  MANAGER = 'gerente',
   ADMIN = 'admin',
 }
