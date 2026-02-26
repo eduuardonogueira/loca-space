@@ -91,8 +91,8 @@ export class RoomController {
     description: 'Lista de espaços do usuário retornada com sucesso.',
   })
   @ApiResponse({ status: 404, description: 'Nenhum espaço encontrado.' })
-  findMyRooms(@Req() req: any) {
-    return this.roomService.findByUser(+req.user.userId);
+  findMyRooms(@Req() req: any, @Query() filters: FilterRoomDto) {
+    return this.roomService.findByUser(+req.user.userId, filters);
   }
 
   @ApiBearerAuth()

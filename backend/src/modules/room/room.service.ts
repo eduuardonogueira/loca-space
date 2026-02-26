@@ -121,19 +121,49 @@ export class RoomService {
     return formattedRooms;
   }
 
-  async findByUser(userId: number) {
-    const rooms = await this.roomRepository.find({
-      where: { user: { id: userId } },
-      relations: {
-        roomAmenities: {
-          amenity: true,
-        },
-        address: true,
-        favorites: {
-          user: true,
-        },
-      },
-    });
+  async findByUser(userId: number, filters?: FilterRoomDto) {
+    const query = this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoinAndSelect('room.roomAmenities', 'roomAmenities')
+      .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
+      .leftJoinAndSelect('room.address', 'address')
+      .leftJoinAndSelect('room.favorites', 'favorites')
+      .leftJoinAndSelect('favorites.user', 'favUser')
+      .where('room.userId = :userId', { userId });
+
+    if (filters) {
+      if (filters.address) {
+        const termLike = `%${filters.address}%`;
+        query.andWhere(
+          '(address.street ILIKE :term OR address.bairro ILIKE :term OR address.city ILIKE :term OR address.state ILIKE :term)',
+          { term: termLike },
+        );
+      }
+
+      if (filters.status) {
+        query.andWhere('room.status = :status', { status: filters.status });
+      }
+
+      if (filters.type) {
+        query.andWhere('room.type = :type', { type: filters.type });
+      }
+
+      if (filters.amenities && filters.amenities.length > 0) {
+        query.innerJoin(
+          'room.roomAmenities',
+          'filterRa',
+          'filterRa.amenityId IN (:...amenityIds)',
+          { amenityIds: filters.amenities },
+        );
+      }
+
+      const order = orderMap[filters.orderBy ?? 'default'];
+      for (const [column, direction] of Object.entries(order)) {
+        query.addOrderBy(`room.${column}`, direction as 'ASC' | 'DESC');
+      }
+    }
+
+    const rooms = await query.getMany();
 
     if (!rooms || rooms.length === 0) {
       throw new HttpException(
@@ -144,7 +174,7 @@ export class RoomService {
 
     return rooms.map((room) => {
       const isFavorite = userId
-        ? room.favorites.some((fav) => fav.user.id === userId)
+        ? room.favorites?.some((fav) => fav.user?.id === userId)
         : false;
 
       return {
