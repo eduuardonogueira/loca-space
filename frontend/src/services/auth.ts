@@ -94,4 +94,25 @@ export async function getUserProfile(): Promise<IUser | null> {
     return null;
   }
 }
+export async function updateUserProfile(id: number, userData: any) {
+  try {
+    const response = await authFetch(`/user/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
 
+    if (!response || !response.ok) {
+      console.error("Erro ao atualizar perfil:", response?.statusText);
+      return false;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Erro na requisição de atualização:", error);
+    return false;
+  }
+}

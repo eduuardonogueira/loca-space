@@ -74,7 +74,8 @@ export function ProfileCard({
         <div className="flex items-center gap-3">
           <MapPin size={18} className="text-gray-500" />
           <span>
-            {profile.address.city} - {profile.address.state}
+            {profile?.address?.city || "Cidade não informada"} -{" "}
+            {profile?.address?.state || "UF"}
           </span>
         </div>
 
@@ -128,4 +129,3 @@ export function ProfileCard({
     </div>
   );
 }
-

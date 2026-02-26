@@ -143,8 +143,8 @@ export default function ProfilePage() {
       <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        userData={profile}
       />
     </div>
   );
 }
-

@@ -1,11 +1,49 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { X, Calendar, MapPin, Mail, Phone } from "lucide-react";
+import { updateUserProfile } from "@/services/auth";
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userData?: any;
 }
 
-export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
+export function EditProfileModal({
+  isOpen,
+  onClose,
+  userData,
+}: EditProfileModalProps) {
+  // 1. Estado para guardar o novo e-mail que você digitar
+  const [email, setEmail] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 2. Puxa os dados reais quando o modal abre
+  useEffect(() => {
+    if (userData) {
+      setEmail(userData.email || "");
+    }
+  }, [userData]);
+
+  // 3. A função mágica de envio!
+  const handleConfirm = async () => {
+    if (!userData?.id) return;
+    setIsSaving(true);
+
+    // Bate lá na porta PATCH do back-end entregando o novo e-mail
+    const sucesso = await updateUserProfile(userData.id, { email: email });
+
+    setIsSaving(false);
+
+    if (sucesso) {
+      alert("Perfil atualizado com sucesso!");
+      window.location.reload(); // Atualiza a página para puxarmos os dados frescos!
+    } else {
+      alert("Erro ao atualizar o perfil.");
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -36,7 +74,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900 leading-tight w-36">
-              Teodoro da Silva Teobaldo
+              {userData?.fullName || "Carregando..."}
             </h3>
             <p className="text-green-500 text-xs font-bold flex items-center gap-1 mt-1">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -77,7 +115,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               type="email"
               required
               pattern=".*@.*"
-              defaultValue="teosilva@email.com.br"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
           </div>
@@ -139,7 +178,8 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
             Cancelar
           </button>
           <button
-            onClick={onClose} // <-- ADICIONE ISSO AQUI!
+            onClick={handleConfirm}
+            disabled={isSaving}
             className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
           >
             Confirmar
@@ -149,4 +189,3 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     </div>
   );
 }
-
