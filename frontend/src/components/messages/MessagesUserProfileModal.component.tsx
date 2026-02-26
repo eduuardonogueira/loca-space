@@ -1,5 +1,6 @@
 "use client";
 
+import { MessageUserProfile } from "@/types/messages";
 import {
   Calendar,
   MapPin,
@@ -9,7 +10,6 @@ import {
   X,
   Eye,
 } from "lucide-react";
-import { MessageUserProfile } from "./types";
 
 interface MessagesUserProfileModalProps {
   isOpen: boolean;
@@ -26,11 +26,11 @@ export function MessagesUserProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
+      className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4"
       onClick={onClose}
     >
       <div
-        className="relative flex h-[620px] w-full max-w-[420px] flex-col rounded-2xl bg-white p-6 shadow-2xl"
+        className="relative flex h-155 w-full max-w-105 flex-col rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -45,9 +45,9 @@ export function MessagesUserProfileModal({
           <img
             src={profile.avatarUrl}
             alt={profile.fullName}
-            className="h-[74px] w-[74px] rounded-full border border-[#e5e5e5] object-cover"
+            className="h-18.5 w-18.5 rounded-full border border-[#e5e5e5] object-cover"
           />
-          <div className="max-w-[220px]">
+          <div className="max-w-55">
             <h3 className="text-[40px] font-bold leading-[0.96] text-[#151515]">
               {profile.fullName}
             </h3>
@@ -92,3 +92,4 @@ export function MessagesUserProfileModal({
     </div>
   );
 }
+

@@ -1,33 +1,19 @@
-"use client";
-
 import {
   addFavorite,
-  getFavoriteRoomsWithFilters,
-  getRoomsWithFilters,
+  getRooms,
+  getRoomsByUser,
   removeFavorite,
 } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-export interface IFilterRange {
-  max: number | null;
-  min: number | null;
-}
-
-const DEFAULT_RANGE_VALUE = {
-  max: null,
-  min: null,
-};
-
-export function useRoomsWithFilters(page: "rooms" | "favorites") {
+export function useMyAnnouncement() {
   const [isLoading, setIsLoading] = useState(false);
   const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
-  const [address, setAddress] = useState<string | null>(null);
-  const [size, setSize] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
-  const [price, setPrice] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
-  const [totalSpace, setTotalSpace] =
-    useState<IFilterRange>(DEFAULT_RANGE_VALUE);
+  const [name, setName] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
   const [orderBy, setOrderBy] = useState<string | null>(null);
   const [amenitieIds, setAmenitieIds] = useState<number[]>([]);
 
@@ -35,26 +21,20 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
     setIsLoading(true);
 
     const searchParams = {
-      address,
-      maxSize: size?.max,
-      minSize: size?.min,
-      maxPrice: price?.max,
-      minPrice: price?.min,
-      maxTotalSpace: totalSpace?.max,
-      minTotalSpace: totalSpace?.min,
+      name,
+      status,
+      type,
       amenities: amenitieIds,
       orderBy,
     };
 
     try {
-      const response = await (page === "rooms"
-        ? getRoomsWithFilters(searchParams)
-        : getFavoriteRoomsWithFilters(searchParams));
+      const response = await getRoomsByUser(searchParams);
 
       setRooms(response);
     } catch (error) {
-      toast.error("Erro ao buscar salas");
-      console.error("Erro ao buscar salas:", error);
+      toast.error("Erro ao buscar meus anúncios");
+      console.error("Erro ao buscar meus anúncios:", error);
     } finally {
       setIsLoading(false);
     }
@@ -62,14 +42,13 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
 
   useEffect(() => {
     fetchRooms();
-  }, [size, orderBy, price, totalSpace, address, amenitieIds]);
+  }, [name, status, orderBy, type, amenitieIds]);
 
   function handleClearFilters() {
-    setAddress(null);
+    setName(null);
+    setStatus(null);
+    setType(null);
     setOrderBy(null);
-    setSize(DEFAULT_RANGE_VALUE);
-    setPrice(DEFAULT_RANGE_VALUE);
-    setTotalSpace(DEFAULT_RANGE_VALUE);
     setAmenitieIds([]);
   }
 
@@ -91,31 +70,21 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
     }
   }
 
-  const hasFilters =
-    !!address ||
-    !!orderBy ||
-    size.min !== null ||
-    size.max !== null ||
-    price.min !== null ||
-    price.max !== null ||
-    totalSpace.min !== null ||
-    totalSpace.max !== null;
+  const hasFilters = !!name || !!orderBy || !!status;
 
   return {
     rooms,
     isLoading,
     fetchRooms,
-    size,
+    type,
+    setType,
+    name,
+    status,
+    setName,
+    setStatus,
     orderBy,
-    price,
-    address,
-    totalSpace,
     amenitieIds,
-    setSize,
     setOrderBy,
-    setTotalSpace,
-    setPrice,
-    setAddress,
     handleClearFilters,
     hasFilters,
     setAmenitieIds,

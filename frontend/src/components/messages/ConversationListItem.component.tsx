@@ -1,6 +1,6 @@
 "use client";
 
-import { ConversationPreview } from "./types";
+import { ConversationPreview } from "@/types/messages";
 
 interface ConversationListItemProps {
   conversation: ConversationPreview;
@@ -17,18 +17,18 @@ export function ConversationListItem({
     <button
       type="button"
       onClick={onClick}
-      className={`relative w-full border-b border-[#e3e3e3] px-3 py-3 text-left transition ${
-        isSelected ? "bg-[#ededed]" : "bg-white hover:bg-[#f8f8f8]"
+      className={`relative w-full border-b border-gray-200 px-3 py-3 text-left transition ${
+        isSelected ? "bg-gray-200" : "bg-white hover:bg-gray-50"
       }`}
     >
       {conversation.unreadCount && conversation.unreadCount > 0 ? (
-        <span className="absolute left-1.5 top-3.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f04438] px-1 text-[9px] font-bold text-white">
+        <span className="absolute left-1.5 top-3.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
           {conversation.unreadCount}
         </span>
       ) : null}
 
       <div className="flex items-start gap-2.5">
-        <div className="relative ml-4 h-11 w-11 overflow-hidden rounded-full border border-[#e5e5e5]">
+        <div className="relative ml-4 h-11 w-11 overflow-hidden rounded-full border border-gray-200">
           <img
             src={conversation.userAvatarUrl}
             alt={conversation.userName}
@@ -40,15 +40,17 @@ export function ConversationListItem({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[11px] font-semibold text-[#1f1f1f]">
+          <p className="truncate text-sm font-semibold text-gray-900">
             {conversation.roomTitle}
           </p>
-          <p className="truncate text-[11px] text-[#373737]">{conversation.userName}</p>
+          <p className="truncate text-xs text-gray-700">
+            {conversation.userName}
+          </p>
           <div className="mt-1 flex items-center justify-between">
-            <p className="truncate text-[10px] text-[#a8a8a8]">
+            <p className="truncate text-[11px] text-gray-400">
               {conversation.lastMessage}
             </p>
-            <p className="ml-2 text-[10px] text-[#f16161]">
+            <p className="ml-2 text-[11px] text-red-400">
               {conversation.lastMessageAt}
             </p>
           </div>

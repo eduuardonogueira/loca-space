@@ -12,7 +12,7 @@ import { usePathname } from "next/navigation";
 export function Navbar() {
   const pathname = usePathname();
   const { navbarLinks } = useNavbarLinks();
-  const { profile } = useProfile();
+  const { profile, isLoading } = useProfile();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   return (
@@ -38,12 +38,12 @@ export function Navbar() {
               key={link.route}
               href={link.route}
               className={`
-              flex gap-2 items-center text-gray-700 font-medium
-              transition-all duration-300 hover:text-red-400
-              hover:scale-105 origin-center         ${
-                isActive ? "text-red-500" : "text-gray-700 hover:text-red-400"
-              }
-            `}
+                flex gap-2 items-center text-gray-700 font-medium
+                transition-all duration-300 hover:text-red-400
+                hover:scale-105 origin-center ${
+                  isActive ? "text-red-500" : "text-gray-700 hover:text-red-400"
+                }
+              `}
             >
               <link.icon size={20} />
               <p>{link.label}</p>
@@ -64,6 +64,8 @@ export function Navbar() {
       <ProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+        profile={profile}
+        isLoading={isLoading}
       />
     </header>
   );

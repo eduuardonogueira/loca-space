@@ -9,6 +9,7 @@ export interface ConversationPreview {
   lastMessageAt: string;
   unreadCount?: number;
   online?: boolean;
+  userId: number;
 }
 
 export interface MessageUserProfile {
@@ -21,3 +22,4 @@ export interface MessageUserProfile {
   gender: string;
   online?: boolean;
 }
+

@@ -1,7 +1,11 @@
 import { IAppointment } from "./appointment";
 import { IAvailability } from "./availability";
 
-export type RoomStatus = "available" | "scheduled" | "maintenance";
+export type RoomStatus =
+  | "available"
+  | "scheduled"
+  | "maintenance"
+  | "unavailable";
 export type RoomType = "SalaReuniao" | "Escritorio" | "Gerais";
 
 export interface IAmenity {
@@ -13,9 +17,14 @@ export enum EnumRoomStatus {
   AVAILABLE = "available",
   OCCUPIED = "scheduled",
   MAINTENANCE = "maintenance",
+  UNAVAILABLE = "unavailable",
 }
 
-export type IRoomStatus = "available" | "unavailable" | "maintenance";
+export type IRoomStatus =
+  | "available"
+  | "unavailable"
+  | "maintenance"
+  | "maintenance";
 
 export interface IAddress {
   id: number;
@@ -99,4 +108,24 @@ export const RoomTypeLabels: Record<EnumRoomType, string> = {
   [EnumRoomType.Escritorio]: "Escritorio",
   [EnumRoomType.Gerais]: "Gerais",
 };
+
+export interface IRoomWithFiltersParams {
+  address: string | null;
+  maxSize: number | null;
+  minSize: number | null;
+  maxPrice: number | null;
+  minPrice: number | null;
+  maxTotalSpace: number | null;
+  minTotalSpace: number | null;
+  amenities: number[];
+  orderBy: string | null;
+}
+
+export interface IAnnouncesWithFiltersParams {
+  name: string | null;
+  status: string | null;
+  type: string | null;
+  amenities: number[];
+  orderBy: string | null;
+}
 

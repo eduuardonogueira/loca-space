@@ -6,7 +6,8 @@ import { MessagesChatHeader } from "./MessagesChatHeader.component";
 import { MessagesSafetyNotice } from "./MessagesSafetyNotice.component";
 import { MessagesComposer } from "./MessagesComposer.component";
 import { MessagesUserProfileModal } from "./MessagesUserProfileModal.component";
-import { ConversationPreview, MessageUserProfile } from "./types";
+import { ConversationPreview, MessageUserProfile } from "@/types/messages";
+import { ProfileModal } from "../ProfileModal.component";
 
 const DEMO_CONVERSATIONS: ConversationPreview[] = [
   {
@@ -21,6 +22,7 @@ const DEMO_CONVERSATIONS: ConversationPreview[] = [
     lastMessage: "Teodoro Teobaldo",
     lastMessageAt: "",
     online: true,
+    userId: 8,
   },
   {
     id: 2,
@@ -31,6 +33,7 @@ const DEMO_CONVERSATIONS: ConversationPreview[] = [
     userName: "Fabrício Lima",
     userAvatarUrl:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1170&auto=format&fit=crop",
+    userId: 9,
     lastMessage: "Está disponível sim",
     lastMessageAt: "Agora",
     unreadCount: 1,
@@ -38,24 +41,11 @@ const DEMO_CONVERSATIONS: ConversationPreview[] = [
   },
 ];
 
-const DEMO_PROFILE: MessageUserProfile = {
-  fullName: "Teodoro da Silva Teobaldo",
-  avatarUrl:
-    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=870&auto=format&fit=crop",
-  birthDate: "17/04/1999",
-  location: "Cremação, Belém PA",
-  email: "teobaldo01@gmail.com.br",
-  phone: "919999-8888",
-  gender: "Homem",
-  online: true,
-};
-
 export function MessagesPageView() {
   const [selectedConversationId, setSelectedConversationId] = useState(
     DEMO_CONVERSATIONS[0]?.id ?? 0,
   );
   const [messageDraft, setMessageDraft] = useState("");
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const selectedConversation = useMemo(
     () =>
@@ -67,7 +57,7 @@ export function MessagesPageView() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-[#f4f4f6] px-3 py-4 md:px-5">
-      <div className="mx-auto h-[calc(100vh-115px)] max-w-[1600px] overflow-hidden rounded-[6px] border border-[#d9d9d9] bg-white">
+      <div className="mx-auto h-[calc(100vh-115px)] max-w-400 overflow-hidden rounded-[6px] border border-[#d9d9d9] bg-white">
         <div className="flex h-full max-[980px]:flex-col">
           <MessagesSidebar
             conversations={DEMO_CONVERSATIONS}
@@ -76,25 +66,22 @@ export function MessagesPageView() {
           />
 
           <section className="flex flex-1 flex-col min-h-0">
-            <MessagesChatHeader
-              conversation={selectedConversation}
-              onOpenProfile={() => setIsProfileModalOpen(true)}
-            />
+            <MessagesChatHeader conversation={selectedConversation} />
 
             <div className="flex flex-1 flex-col justify-end bg-[#f3f3f3] px-6 py-5 max-[980px]:px-4">
-              <p className="mb-2 text-center text-[12px] text-[#9d9d9d]">Hoje</p>
+              <p className="mb-2 text-center text-[12px] text-[#9d9d9d]">
+                Hoje
+              </p>
               <MessagesSafetyNotice />
-              <MessagesComposer value={messageDraft} onChange={setMessageDraft} />
+              <MessagesComposer
+                value={messageDraft}
+                onChange={setMessageDraft}
+              />
             </div>
           </section>
         </div>
       </div>
-
-      <MessagesUserProfileModal
-        isOpen={isProfileModalOpen}
-        profile={DEMO_PROFILE}
-        onClose={() => setIsProfileModalOpen(false)}
-      />
     </main>
   );
 }
+

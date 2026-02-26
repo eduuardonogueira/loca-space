@@ -18,6 +18,11 @@ import {
 export function useNavbarLinks() {
   const navbarLinks = [
     {
+      route: ROOMS_ROUTE,
+      label: "Salas",
+      icon: Warehouse,
+    },
+    {
       route: FAVORITES_ROUTE,
       label: "Favoritos",
       icon: Heart,
@@ -33,21 +38,12 @@ export function useNavbarLinks() {
       icon: BookCheckIcon,
     },
     {
-      route: ROOMS_ROUTE,
-      label: "Salas",
-      icon: Warehouse,
-    },
-    {
       route: MY_ANNOUNCE_ROUTE,
       label: "Meus Anúncios",
       icon: BriefcaseBusiness,
-    },
-    {
-      route: CREATE_ROOM_ROUTE,
-      label: "Anunciar",
-      icon: CirclePlus,
     },
   ];
 
   return { navbarLinks };
 }
+
