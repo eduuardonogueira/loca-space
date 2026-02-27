@@ -31,6 +31,8 @@ export function StepsFooter({
   const nextStep = () => goToStep(currentStep + 1);
   const prevStep = () => setCurrentStep((s) => Math.max(0, s - 1));
 
+  const isLastStep = currentStep === steps.length - 1;
+
   return (
     <div className="mt-6 flex items-center justify-between">
       <Button
@@ -44,25 +46,21 @@ export function StepsFooter({
         Voltar
       </Button>
 
-      {currentStep < steps.length - 2 ? (
-        <Button type="button" onClick={nextStep} className="gap-2">
-          Proximo
-          <ArrowRight className="size-4" />
-        </Button>
-      ) : (
+      {isLastStep ? (
         <Button type="submit" disabled={isSubmitting} className="gap-2">
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              {currentStep === steps.length
-                ? "Enviando imagens..."
-                : "Criando..."}
+              Enviando imagem...
             </>
-          ) : currentStep === steps.length ? (
-            "Enviar imagens"
           ) : (
-            "Criar"
+            "Finalizar"
           )}
+        </Button>
+      ) : (
+        <Button type="button" onClick={nextStep} className="gap-2">
+          Próximo
+          <ArrowRight className="size-4" />
         </Button>
       )}
     </div>

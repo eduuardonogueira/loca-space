@@ -1,6 +1,5 @@
-import { ToastContainer } from "react-toastify";
 import "./global.css";
-import { Toaster } from "sonner";
+import { ToastContainer } from "react-toastify";
 import { ThemeInit } from "../../.flowbite-react/init";
 
 export const metadata = {
@@ -18,7 +17,6 @@ export default function RootLayout({
       <body className="font-sans" suppressHydrationWarning>
         <ThemeInit />
         <ToastContainer position="top-right" autoClose={3000} />
-        <Toaster richColors position="top-right" />
         {children}
       </body>
     </html>

@@ -41,15 +41,19 @@ export const stepCredentialsSchema = z
     password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
     confirm: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
   })
-  .refine((data) => data.password === data.confirm, {
-    error: "As senhas não coincidem",
-    path: ["confirm"],
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirm) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "As senhas não coincidem",
+        path: ["confirm"],
+      });
+    }
   });
-
 export const createUserFormSchema = z.object({
   ...stepUserBasicInfoSchema.shape,
   ...stepUserAddressSchema.shape,
-  ...stepCredentialsSchema.def.shape,
+  ...stepCredentialsSchema.shape,
 });
 
 export type CreateUserFormValues = z.infer<typeof createUserFormSchema>;

@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import {
   Building2,
   MapPin,
@@ -51,6 +50,7 @@ import { Button } from "./ui/button";
 import { MY_ANNOUNCE_ROUTE } from "@/constants/routes";
 import { useRouter } from "next/navigation";
 import useCep from "@/hooks/useCep";
+import { toast } from "react-toastify";
 
 const STEPS = [
   { id: 0, label: "Dados Básicos", icon: Building2 },
@@ -74,7 +74,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   const [customAmenities, setCustomAmenities] = useState<string[]>([]);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
 
-  // Image states
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
 
@@ -85,9 +84,11 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     setValue,
     watch,
     getValues,
+    setError,
     formState: { errors },
   } = useForm<CreateRoomFormValues>({
     resolver: zodResolver(createRoomFormSchema) as any,
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -137,7 +138,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     }
   };
 
-  // Amenity toggle
   const toggleAmenity = (amenityId: number) => {
     const current = getValues("amenities");
 
@@ -180,105 +180,132 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     setCustomAmenities((prev) => prev.filter((id) => id !== id));
   };
 
-  // Step navigation
+  // const goToStep = async (targetStep: number) => {
+  //   if (targetStep > currentStep) {
+  //     const schema = stepSchemas[currentStep];
+  //     const fields = Object.keys(schema.shape) as Array<
+  //       keyof CreateRoomFormValues
+  //     >;
+  //     const isValid = await trigger(fields);
+  //     if (!isValid) return;
+  //   }
+  //   setCurrentStep(targetStep);
+  // };
+
   const goToStep = async (targetStep: number) => {
-    if (targetStep > currentStep) {
-      const schema = stepSchemas[currentStep];
-      const fields = Object.keys(schema.shape) as Array<
-        keyof CreateRoomFormValues
-      >;
-      const isValid = await trigger(fields);
-      if (!isValid) return;
+    if (targetStep <= currentStep) {
+      setCurrentStep(targetStep);
+      return;
     }
-    setCurrentStep(targetStep);
-  };
 
-  // Submit
-  const onSubmit = useCallback(
-    async (data: CreateRoomFormValues) => {
-      setIsSubmitting(true);
+    const schema = stepSchemas[currentStep];
+    const values = getValues();
+
+    const result = schema.safeParse(values);
+
+    if (!result.success) {
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as keyof CreateRoomFormValues;
+        setError(field, {
+          type: "manual",
+          message: err.message,
+        });
+      });
+      return;
+    }
+
+    if (currentStep === 2 && !currentRoomId) {
       try {
-        if (currentStep < 3) {
-          const payload: CreateRoomPayload = {
-            name: data.name,
-            description: data.description,
-            type: data.type,
-            price: data.price,
-            size: data.size,
-            status: data.status,
-            totalSpace: data.totalSpace,
-            address: {
-              cep: data.cep.replace(/\D/g, ""),
-              state: data.state,
-              city: data.city,
-              bairro: data.bairro,
-              street: data.street,
-              number: data.number,
-              complement: data.complement || undefined,
-            },
-            amenities: data.amenities.map((id) => id),
-          };
+        setIsSubmitting(true);
 
-          const result = await createRoom(payload);
+        const payload: CreateRoomPayload = {
+          name: values.name,
+          description: values.description,
+          type: values.type,
+          price: values.price,
+          size: values.size,
+          status: values.status,
+          totalSpace: values.totalSpace,
+          address: {
+            cep: values.cep.replace(/\D/g, ""),
+            state: values.state,
+            city: values.city,
+            bairro: values.bairro,
+            street: values.street,
+            number: values.number,
+            complement: values.complement || undefined,
+          },
+          amenities: values.amenities,
+        };
 
-          if (!result.success) {
-            toast.error(result.error || "Erro ao criar espaco");
-            return;
-          }
+        const result = await createRoom(payload);
 
-          const roomId = result.data?.id;
-          setCurrentRoomId(roomId);
-
-          if (roomId) {
-            toast.success("Espaco criado com sucesso!");
-            setCurrentStep(3);
-          }
-        } else {
-          console.log(currentRoomId);
-          if (!currentRoomId) {
-            toast.error("Sala não encontrada para envio das imagens");
-            return;
-          }
-
-          // Upload banner
-          if (bannerFile) {
-            const bannerFormData = new FormData();
-            bannerFormData.append("banner", bannerFile);
-            const bannerResult = await uploadRoomBanner(
-              currentRoomId,
-              bannerFormData,
-            );
-            if (!bannerResult.success) {
-              toast.error("Espaco criado, mas houve erro ao enviar o banner");
-            }
-          }
-
-          // Upload photos
-          if (photoFiles.length > 0) {
-            const photosFormData = new FormData();
-            photoFiles.forEach((file) => {
-              photosFormData.append("photos", file);
-            });
-            const photosResult = await uploadRoomPhotos(
-              currentRoomId,
-              photosFormData,
-            );
-            if (!photosResult.success) {
-              toast.error("Espaco criado, mas houve erro ao enviar as fotos");
-            }
-          }
-
-          toast.success("Espaco criado com sucesso!");
-          router.push(MY_ANNOUNCE_ROUTE);
+        if (!result.success || !result.data?.id) {
+          toast.error(result.error || "Erro ao criar espaço");
+          return;
         }
+
+        setCurrentRoomId(result.data.id);
+        toast.success("Espaço criado com sucesso!");
       } catch {
-        toast.error("Ocorreu um erro inesperado");
+        toast.error("Erro ao criar espaço");
+        return;
       } finally {
         setIsSubmitting(false);
       }
-    },
-    [bannerFile, photoFiles, currentRoomId, currentStep, router],
-  );
+    }
+
+    setCurrentStep(targetStep);
+  };
+
+  const onSubmit = useCallback(async () => {
+    if (!currentRoomId) {
+      toast.error("Sala não encontrada para envio das imagens");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      if (bannerFile) {
+        const bannerFormData = new FormData();
+        bannerFormData.append("banner", bannerFile);
+
+        const bannerResult = await uploadRoomBanner(
+          currentRoomId,
+          bannerFormData,
+        );
+
+        if (!bannerResult.success) {
+          toast.error("Erro ao enviar banner");
+        }
+      }
+
+      if (photoFiles.length > 0) {
+        const photosFormData = new FormData();
+
+        photoFiles.forEach((file) => {
+          photosFormData.append("photos", file);
+        });
+
+        const photosResult = await uploadRoomPhotos(
+          currentRoomId,
+          photosFormData,
+        );
+
+        if (!photosResult.success) {
+          toast.error("Erro ao enviar fotos");
+        }
+      }
+
+      toast.success("Espaço criado com sucesso!");
+      router.push(MY_ANNOUNCE_ROUTE);
+    } catch {
+      toast.error("Erro inesperado ao enviar imagens");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [bannerFile, photoFiles, currentRoomId, router]);
 
   return (
     <div className="flex flex-col gap-8">

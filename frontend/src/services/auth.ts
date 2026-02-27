@@ -35,11 +35,13 @@ export async function login(
 export async function signup(
   userData: CreateUserPayload,
 ): Promise<IUser | null> {
+  const payload = JSON.stringify({ ...userData, role: EnumUserRole.USER });
+
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/user`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...userData, role: EnumUserRole.USER }),
+      body: payload,
     });
 
     if (response.ok) {

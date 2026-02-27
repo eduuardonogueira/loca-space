@@ -15,7 +15,14 @@ import {
   UserGenderLabels,
   UserTypeLabels,
 } from "@/types/user";
-import { Building2, ImageIcon, MapPin, KeyRound, Search } from "lucide-react";
+import {
+  Building2,
+  ImageIcon,
+  MapPin,
+  KeyRound,
+  Search,
+  BookUser,
+} from "lucide-react";
 import { ImageUpload, StepsFooter, StepsHeader } from "@/components";
 import {
   createUserFormSchema,
@@ -41,13 +48,13 @@ export default function RegisterPage() {
   const { formatCep } = useCep();
 
   const STEPS = [
-    { id: 0, label: "Dados Básicos", icon: Building2 },
-    { id: 1, label: "Endereco", icon: MapPin },
+    { id: 0, label: "Dados Básicos", icon: BookUser },
+    { id: 1, label: "Endereço", icon: MapPin },
     { id: 2, label: "Senha", icon: KeyRound },
     { id: 3, label: "Imagem", icon: ImageIcon },
   ];
 
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
@@ -57,13 +64,14 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
-    trigger,
     setValue,
     watch,
     getValues,
+    setError,
     formState: { errors },
   } = useForm<CreateUserFormValues>({
     resolver: zodResolver(createUserFormSchema) as any,
+    mode: "onChange",
     defaultValues: {
       fullName: "",
       email: "",
@@ -112,77 +120,96 @@ export default function RegisterPage() {
     }
   };
 
-  const onSubmit = useCallback(async (data: CreateUserFormValues) => {
-    console.log("chamou");
-
-    const payload: CreateUserPayload = {
-      ...data,
-      address: {
-        state: data.state,
-        city: data.city,
-        bairro: data.bairro,
-        street: data.street,
-        number: data.number,
-        complement: data.complement || undefined,
-      },
-    };
-
+  const onSubmit = async () => {
     if (!userId) {
-      try {
-        setIsSubmitting(true);
-        const response = await signup(payload);
-
-        if (!response) {
-          toast.error("Erro ao realizar cadastro. tente novamente");
-        }
-
-        toast.success("Cadastro realizado com sucesso!");
-        router.push(LOGIN_ROUTE);
-        return;
-      } catch (error) {
-        toast.error(`Erro ao realizar cadastro. ${error}`);
-        console.log(error);
-      } finally {
-        setIsSubmitting(false);
-      }
-
+      toast.error("Erro ao criar usuário, volte um passo e tente novamente");
       return;
     }
 
-    if (!avatarFile) return;
+    if (!avatarFile) {
+      toast.error("Erro ao enviar imagem!");
+      router.push(LOGIN_ROUTE);
+      return;
+    }
 
     try {
       setIsSubmitting(true);
-      const userFormData = new FormData();
-      userFormData.append("avatar", avatarFile);
 
-      const response = await uploadUserAvatar(userId, userFormData);
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+
+      const response = await uploadUserAvatar(userId, formData);
 
       if (!response.success) {
-        toast.error(
-          "cadastro realizado, mas houve erro ao enviar a foto de perfil",
-        );
+        toast.error("Erro ao enviar imagem");
+        return;
       }
 
+      toast.success("Cadastro finalizado!");
       router.push(LOGIN_ROUTE);
-      return;
-    } catch (error) {
-      toast.error(`Erro ao enviar avatar. ${error}`);
-      console.log(error);
+    } catch {
+      toast.error("Erro ao enviar imagem");
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  };
 
   const goToStep = async (targetStep: number) => {
-    if (targetStep > currentStep) {
-      const schema = userStepSchemas[currentStep];
-      const fields = Object.keys(schema.shape) as Array<
-        keyof CreateUserFormValues
-      >;
-      const isValid = await trigger(fields);
-      if (!isValid) return;
+    if (targetStep <= currentStep) {
+      setCurrentStep(targetStep);
+      return;
     }
+
+    const schema = userStepSchemas[currentStep];
+    const values = getValues();
+    const result = schema.safeParse(values);
+
+    if (!result.success) {
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as keyof CreateUserFormValues;
+        setError(field, {
+          type: "onChange",
+          message: err.message,
+        });
+      });
+      return;
+    }
+
+    if (currentStep === 2 && !userId) {
+      try {
+        setIsSubmitting(true);
+
+        const { confirm, ...data } = values;
+
+        const payload: CreateUserPayload = {
+          ...data,
+          address: {
+            state: values.state,
+            city: values.city,
+            bairro: values.bairro,
+            street: values.street,
+            number: values.number,
+            complement: values.complement || undefined,
+          },
+        };
+
+        const response = await signup(payload);
+
+        if (!response?.id) {
+          toast.error("Erro ao criar usuário");
+          return;
+        }
+
+        setUserId(response.id);
+        toast.success("Usuário criado com sucesso!");
+      } catch (error) {
+        toast.error("Erro ao criar usuário");
+        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
     setCurrentStep(targetStep);
   };
 
