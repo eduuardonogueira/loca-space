@@ -15,30 +15,61 @@ export function EditProfileModal({
   onClose,
   userData,
 }: EditProfileModalProps) {
-  // 1. Estado para guardar o novo e-mail que você digitar
+  // 1. Estados para guardar TODOS os dados
   const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("");
+
+  // Novos estados do Endereço divididos!
+  const [street, setStreet] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+
   const [isSaving, setIsSaving] = useState(false);
 
   // 2. Puxa os dados reais quando o modal abre
   useEffect(() => {
     if (userData) {
       setEmail(userData.email || "");
+      setBirthDate(userData.birthDate || "");
+      setPhone(userData.phone || "");
+      setGender(userData.gender || "");
+
+      // Se o usuário já tiver endereço salvo, preenche as 4 caixinhas
+      setStreet(userData.address?.street || "");
+      setBairro(userData.address?.bairro || "");
+      setCity(userData.address?.city || "");
+      setState(userData.address?.state || "");
     }
   }, [userData]);
 
-  // 3. A função mágica de envio!
+  // 3. A função de envio com o Objeto Perfeito!
   const handleConfirm = async () => {
     if (!userData?.id) return;
     setIsSaving(true);
 
-    // Bate lá na porta PATCH do back-end entregando o novo e-mail
-    const sucesso = await updateUserProfile(userData.id, { email: email });
+    const dadosAtualizados = {
+      email: email,
+      birthDate: birthDate,
+      phone: phone,
+      gender: gender,
+      address: {
+        street: street,
+        bairro: bairro,
+        city: city,
+        state: state,
+      },
+    };
+
+    const sucesso = await updateUserProfile(userData.id, dadosAtualizados);
 
     setIsSaving(false);
 
     if (sucesso) {
       alert("Perfil atualizado com sucesso!");
-      window.location.reload(); // Atualiza a página para puxarmos os dados frescos!
+      window.location.reload();
     } else {
       alert("Erro ao atualizar o perfil.");
     }
@@ -91,20 +122,61 @@ export function EditProfileModal({
             </label>
             <input
               type="date"
-              defaultValue="2000-04-17"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
           </div>
 
+          {/* Campo: Rua */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-              <MapPin size={16} /> Endereço
+              <MapPin size={16} /> Rua
             </label>
             <input
               type="text"
-              defaultValue="Cremação, Belém PA"
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
+          </div>
+
+          {/* Campos: Bairro, Cidade e UF (Lado a Lado) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                Bairro
+              </label>
+              <input
+                type="text"
+                value={bairro}
+                onChange={(e) => setBairro(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                Cidade
+              </label>
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                Estado (UF)
+              </label>
+              <input
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                maxLength={2}
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
+              />
+            </div>
           </div>
 
           <div>
@@ -127,7 +199,8 @@ export function EditProfileModal({
             </label>
             <input
               type="number"
-              defaultValue="91992224455"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
           </div>
@@ -142,7 +215,8 @@ export function EditProfileModal({
                   type="radio"
                   name="sexo"
                   value="Homem"
-                  defaultChecked
+                  checked={gender === "Homem"}
+                  onChange={(e) => setGender(e.target.value)}
                   className="accent-red-500"
                 />{" "}
                 Homem
@@ -152,6 +226,8 @@ export function EditProfileModal({
                   type="radio"
                   name="sexo"
                   value="Mulher"
+                  checked={gender === "Mulher"}
+                  onChange={(e) => setGender(e.target.value)}
                   className="accent-red-500"
                 />{" "}
                 Mulher
@@ -161,6 +237,8 @@ export function EditProfileModal({
                   type="radio"
                   name="sexo"
                   value="Outro"
+                  checked={gender === "Outro"}
+                  onChange={(e) => setGender(e.target.value)}
                   className="accent-red-500"
                 />{" "}
                 Outro

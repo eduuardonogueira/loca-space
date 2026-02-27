@@ -95,27 +95,23 @@ export async function getUserProfile(): Promise<IUser | null> {
   }
 }
 export async function updateUserProfile(id: number, userData: any) {
-  try {
-    const response = await authFetch(`/user/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
+  const response = await authFetch(`/user/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  });
 
-    if (!response || !response.ok) {
-      console.error("Erro ao atualizar perfil:", response?.statusText);
-      return false;
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Erro na requisição de atualização:", error);
+  if (!response || !response.ok) {
+    const erroDoBackend = await response.text();
+    console.error("🚨 O Backend recusou! Motivo:", erroDoBackend);
     return false;
   }
+
+  return true;
 }
+
 export async function findUserById(id: number): Promise<IUser | null> {
   try {
     const response = await authFetch(`/user/${id}`, {

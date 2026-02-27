@@ -79,8 +79,12 @@ export function ProfileCard({
         <div className="flex items-center gap-3">
           <MapPin size={18} className="text-gray-500" />
           <span>
-            {profile?.address?.city || "Cidade não informada"} -{" "}
-            {profile?.address?.state || "UF"}
+            <span>
+              {profile?.address?.street && `${profile?.address?.street}, `}
+              {profile?.address?.bairro && `${profile?.address?.bairro} - `}
+              {profile?.address?.city || "Cidade não informada"} /{" "}
+              {profile?.address?.state || "UF"}
+            </span>
           </span>
         </div>
 
