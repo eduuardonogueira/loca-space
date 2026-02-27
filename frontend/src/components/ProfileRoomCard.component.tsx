@@ -11,7 +11,7 @@ export function ProfileRoomCard({ room }: IProfileRoomCardProps) {
   return (
     <Link
       href={ROOM_ROUTE.replace("[id]", room.id.toString())}
-      className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer group"
+      className="bg-white p-4 rounded-xl w-full border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
     >
       <img
         src={room.bannerUrl}
