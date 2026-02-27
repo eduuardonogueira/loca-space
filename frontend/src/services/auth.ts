@@ -1,6 +1,11 @@
 "use server";
 
-import { CreateUserPayload, EnumUserRole, IUser } from "@/types/user";
+import {
+  CreateUserPayload,
+  EnumUserRole,
+  IUser,
+  UpdateUser,
+} from "@/types/user";
 import { cookies } from "next/headers";
 import { authFetch } from "./authFetch.ts";
 import { AUTH_COOKIE_KEY } from "@/constants/cookies.ts";
@@ -98,6 +103,22 @@ export async function getUserProfile(): Promise<IUser | null> {
   } catch (error) {
     console.log(error);
     return null;
+  }
+}
+
+export async function updateUserProfile(id: number, userData: UpdateUser) {
+  try {
+    const response = await authFetch(`/user/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    return response.json();
+  } catch (error) {
+    console.log(error);
   }
 }
 

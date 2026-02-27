@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle,
   TrendingUp,
-  AlignRight,
   ChevronRight,
 } from "lucide-react";
 import {
@@ -165,6 +164,7 @@ export default function ProfilePage() {
       <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        profile={profile}
       />
     </div>
   );

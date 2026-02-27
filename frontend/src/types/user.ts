@@ -46,7 +46,7 @@ export interface IUser {
   role: UserRole;
   phone: string | null;
   gender: UserGender | null;
-  birthDate: string | null;
+  birthDate: Date | string | undefined;
   createdAt: string;
   updatedAt: string | null;
   rooms: IRoom[];
@@ -73,4 +73,12 @@ export interface CreateUserPayload {
     state: string;
   };
 }
+
+type ExcludeUserOptions = "password" | "role";
+
+type UpdateUserRaw = Omit<CreateUserPayload, ExcludeUserOptions>;
+
+export type UpdateUser = Partial<UpdateUserRaw> & {
+  address?: Partial<IAddress>;
+};
 
