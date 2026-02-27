@@ -1,155 +1,190 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { LOGIN_ROUTE } from "@/constants/routes";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { useState } from "react";
 import Image from "next/image";
-import { signup } from "@/services";
-import { EnumUserRole, EnumUserType, ICreateUser } from "@/types/user";
-
-interface IFormData {
-  fullName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  phone: string;
-  gender: string;
-  birthDate: string;
-  type: string;
-  role: string;
-  address: {
-    street: string;
-    number: string;
-    complement: string;
-    bairro: string;
-    city: string;
-    state: string;
-  };
-}
+import { signup, uploadUserAvatar } from "@/services";
+import {
+  CreateUserPayload,
+  EnumUserGender,
+  EnumUserRole,
+  EnumUserType,
+  UserGenderLabels,
+  UserTypeLabels,
+} from "@/types/user";
+import { Building2, ImageIcon, MapPin, KeyRound, Search } from "lucide-react";
+import { ImageUpload, StepsFooter, StepsHeader } from "@/components";
+import {
+  createUserFormSchema,
+  CreateUserFormValues,
+  userStepSchemas,
+} from "@/lib/schemas/createUserSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useCep from "@/hooks/useCep";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { formatCep } = useCep();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [formData, setFormData] = useState<IFormData>({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    gender: "",
-    birthDate: "",
-    type: EnumUserType.CLIENT,
-    role: EnumUserRole.USER,
-    address: {
+  const STEPS = [
+    { id: 0, label: "Dados Básicos", icon: Building2 },
+    { id: 1, label: "Endereco", icon: MapPin },
+    { id: 2, label: "Senha", icon: KeyRound },
+    { id: 3, label: "Imagem", icon: ImageIcon },
+  ];
+
+  const [currentStep, setCurrentStep] = useState(2);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    setValue,
+    watch,
+    getValues,
+    formState: { errors },
+  } = useForm<CreateUserFormValues>({
+    resolver: zodResolver(createUserFormSchema) as any,
+    defaultValues: {
+      fullName: "",
+      email: "",
+      type: EnumUserType.CLIENT,
+      role: EnumUserRole.USER,
+      gender: undefined,
+      phone: undefined,
+      birthDate: undefined,
+      cep: "",
+      state: "",
+      city: "",
+      bairro: "",
       street: "",
       number: "",
       complement: "",
-      bairro: "",
-      city: "",
-      state: "",
+      password: "",
+      confirm: "",
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+  const handleCepChange = async (rawValue: string) => {
+    const formatted = formatCep(rawValue);
+    setValue("cep", formatted);
+
+    const digits = rawValue.replace(/\D/g, "");
+    if (digits.length === 8) {
+      setIsFetchingCep(true);
+      try {
+        const response = await fetch(
+          `https://viacep.com.br/ws/${digits}/json/`,
+        );
+        const data = await response.json();
+        if (!data.erro) {
+          setValue("state", data.uf || "");
+          setValue("city", data.localidade || "");
+          setValue("bairro", data.bairro || "");
+          setValue("street", data.logradouro || "");
+        } else {
+          toast.error("CEP nao encontrado");
+        }
+      } catch {
+        toast.error("Erro ao buscar CEP");
+      } finally {
+        setIsFetchingCep(false);
+      }
+    }
   };
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+  const onSubmit = useCallback(async (data: CreateUserFormValues) => {
+    console.log("chamou");
+
+    const payload: CreateUserPayload = {
+      ...data,
       address: {
-        ...prev.address,
-        [id]: value,
-      },
-    }));
-  };
-
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.fullName) newErrors.fullName = "Nome completo é obrigatório";
-    if (!formData.email) newErrors.email = "Email é obrigatório";
-    if (!formData.password) newErrors.password = "Senha é obrigatória";
-    if (!formData.confirmPassword)
-      newErrors.confirmPassword = "Digite sua senha novamente";
-    if (!formData.type) newErrors.type = "Tipo é obrigatório";
-    if (!formData.role) newErrors.role = "Perfil é obrigatório";
-    if (!formData.address.street) newErrors.street = "Rua é obrigatória";
-    if (!formData.address.bairro) newErrors.bairro = "Bairro é obrigatório";
-    if (!formData.address.city) newErrors.city = "Cidade é obrigatória";
-    if (!formData.address.state) newErrors.state = "Estado é obrigatório";
-
-    if (
-      formData.password &&
-      formData.confirmPassword &&
-      formData.password !== formData.confirmPassword
-    ) {
-      newErrors.confirmPassword = "As senhas não conferem";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  async function handleRegister(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (
-      formData.password &&
-      formData.confirmPassword &&
-      formData.password !== formData.confirmPassword
-    ) {
-      setErrors((prev) => ({
-        ...prev,
-        confirmPassword: "As senhas não conferem",
-      }));
-      toast.error("As senhas informadas não são iguais.");
-      return;
-    }
-
-    if (!validate()) {
-      toast.error("Preencha os campos obrigatórios corretamente.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    const payload: ICreateUser = {
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      phone: formData.phone || undefined,
-      gender: formData.gender || undefined,
-      birthDate: formData.birthDate || undefined,
-      type: formData.type as "cliente" | "locador",
-      role: formData.role as "user" | "gerente" | "admin",
-      address: {
-        street: formData.address.street,
-        number: formData.address.number || undefined,
-        complement: formData.address.complement || undefined,
-        bairro: formData.address.bairro,
-        city: formData.address.city,
-        state: formData.address.state,
+        state: data.state,
+        city: data.city,
+        bairro: data.bairro,
+        street: data.street,
+        number: data.number,
+        complement: data.complement || undefined,
       },
     };
 
-    const data = await signup(payload);
+    if (!userId) {
+      try {
+        setIsSubmitting(true);
+        const response = await signup(payload);
 
-    if (data) {
-      toast.success("Cadastro realizado com sucesso!");
-      router.push(LOGIN_ROUTE);
+        if (!response) {
+          toast.error("Erro ao realizar cadastro. tente novamente");
+        }
+
+        toast.success("Cadastro realizado com sucesso!");
+        router.push(LOGIN_ROUTE);
+        return;
+      } catch (error) {
+        toast.error(`Erro ao realizar cadastro. ${error}`);
+        console.log(error);
+      } finally {
+        setIsSubmitting(false);
+      }
+
       return;
     }
 
-    toast.error("Erro ao criar cadastro.");
-    setIsLoading(false);
-  }
+    if (!avatarFile) return;
+
+    try {
+      setIsSubmitting(true);
+      const userFormData = new FormData();
+      userFormData.append("avatar", avatarFile);
+
+      const response = await uploadUserAvatar(userId, userFormData);
+
+      if (!response.success) {
+        toast.error(
+          "cadastro realizado, mas houve erro ao enviar a foto de perfil",
+        );
+      }
+
+      router.push(LOGIN_ROUTE);
+      return;
+    } catch (error) {
+      toast.error(`Erro ao enviar avatar. ${error}`);
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
+
+  const goToStep = async (targetStep: number) => {
+    if (targetStep > currentStep) {
+      const schema = userStepSchemas[currentStep];
+      const fields = Object.keys(schema.shape) as Array<
+        keyof CreateUserFormValues
+      >;
+      const isValid = await trigger(fields);
+      if (!isValid) return;
+    }
+    setCurrentStep(targetStep);
+  };
 
   return (
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
@@ -169,255 +204,377 @@ export default function RegisterPage() {
 
       <div className="flex items-center justify-center px-6 py-6">
         <div className="w-full max-w-md">
-          <h2 className="text-center text-2xl font-semibold text-red-500">
+          <h2 className="text-center text-3xl font-semibold text-red-500 mb-8">
             Crie sua conta
           </h2>
 
-          <form className="mt-6 grid grid-cols-1 gap-3" onSubmit={handleRegister}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nome Completo:
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                placeholder="Digite seu nome completo"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.fullName && (
-                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
-              )}
-            </div>
+          <StepsHeader
+            goToStep={goToStep}
+            currentStep={currentStep}
+            steps={STEPS}
+          />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email:
-              </label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Digite seu email"
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
+          <form
+            className="mt-6 grid grid-cols-1 gap-3"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <Card>
+              <CardContent>
+                {currentStep === 0 && (
+                  <div className="flex flex-col gap-8">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Informações Pessoais
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Para iniciarmos o cadastro, preencha o formulário com
+                        seus dados básicos
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="fullName">Nome Completo:</Label>
+                        <Input
+                          type="text"
+                          id="fullName"
+                          placeholder="João da Silva Figueiredo"
+                          {...register("fullName")}
+                          aria-invalid={!!errors.fullName}
+                        />
+                        {errors.fullName && (
+                          <p className="text-sm text-destructive">
+                            {errors.fullName.message}
+                          </p>
+                        )}
+                      </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Tipo:
-                </label>
-                <select
-                  id="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                >
-                  <option value={EnumUserType.CLIENT}>Cliente</option>
-                  <option value={EnumUserType.OWNER}>Locador</option>
-                </select>
-                {errors.type && (
-                  <p className="mt-1 text-sm text-red-500">{errors.type}</p>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="email">Email:</Label>
+                        <Input
+                          type="email"
+                          id="email"
+                          placeholder="joao.silva@email.com"
+                          {...register("email")}
+                          aria-invalid={!!errors.email}
+                        />
+                        {errors.email && (
+                          <p className="text-sm text-destructive">
+                            {errors.email.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="gender">Gênero:</Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue("gender", value as EnumUserGender, {
+                                shouldValidate: true,
+                              })
+                            }
+                            value={watch("gender")}
+                          >
+                            <SelectTrigger className="w-full" id="type">
+                              <SelectValue placeholder="Selecione seu gênero" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.values(EnumUserGender).map((gender) => (
+                                <SelectItem key={gender} value={gender}>
+                                  {UserGenderLabels[gender]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.gender && (
+                            <p className="text-sm text-destructive">
+                              {errors.gender.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="type">Tipo:</Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue("type", value as EnumUserType, {
+                                shouldValidate: true,
+                              })
+                            }
+                            value={watch("type")}
+                          >
+                            <SelectTrigger className="w-full" id="type">
+                              <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.values(EnumUserType).map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {UserTypeLabels[type]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.type && (
+                            <p className="text-sm text-destructive">
+                              {errors.type.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="phone">Telefone:</Label>
+                          <Input
+                            id="phone"
+                            type="number"
+                            placeholder="(91) 9 8888-7777"
+                            {...register("phone")}
+                            aria-invalid={!!errors.phone}
+                          />
+                          {errors.phone && (
+                            <p className="text-sm text-destructive">
+                              {errors.phone.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="birthDate">Data de Nascimento:</Label>
+                          <Input
+                            id="birthDate"
+                            type="date"
+                            {...register("birthDate")}
+                            aria-invalid={!!errors.birthDate}
+                          />
+                          {errors.birthDate && (
+                            <p className="text-sm text-destructive">
+                              {errors.birthDate.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Perfil:
-                </label>
-                <select
-                  id="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                >
-                  <option value={EnumUserRole.USER}>User</option>
-                  <option value={EnumUserRole.MANAGER}>Gerente</option>
-                  <option value={EnumUserRole.ADMIN}>Admin</option>
-                </select>
-                {errors.role && (
-                  <p className="mt-1 text-sm text-red-500">{errors.role}</p>
+                {currentStep === 1 && (
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Preencha seu Endereco
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Informe seu endereco completo. O CEP preencherá
+                        automaticamente os demais campos.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="cep">CEP</Label>
+                        <div className="relative">
+                          <Input
+                            id="cep"
+                            placeholder="00000-000"
+                            value={watch("cep")}
+                            onChange={(e) => handleCepChange(e.target.value)}
+                            aria-invalid={!!errors.cep}
+                          />
+                          {isFetchingCep && (
+                            <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-pulse text-muted-foreground" />
+                          )}
+                        </div>
+                        {errors.cep && (
+                          <p className="text-sm text-destructive">
+                            {errors.cep.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="state">Estado</Label>
+                          <Input
+                            id="state"
+                            placeholder="UF"
+                            {...register("state")}
+                            aria-invalid={!!errors.state}
+                          />
+                          {errors.state && (
+                            <p className="text-sm text-destructive">
+                              {errors.state.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="city">Cidade</Label>
+                          <Input
+                            id="city"
+                            placeholder="Cidade"
+                            {...register("city")}
+                            aria-invalid={!!errors.city}
+                          />
+                          {errors.city && (
+                            <p className="text-sm text-destructive">
+                              {errors.city.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="neighborhood">Bairro</Label>
+                        <Input
+                          id="bairro"
+                          placeholder="Bairro"
+                          {...register("bairro")}
+                          type="text"
+                          aria-invalid={!!errors.bairro}
+                        />
+                        {errors.bairro && (
+                          <p className="text-sm text-destructive">
+                            {errors.bairro.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="street">Rua</Label>
+                        <Input
+                          id="street"
+                          placeholder="Nome da rua"
+                          {...register("street")}
+                          aria-invalid={!!errors.street}
+                        />
+                        {errors.street && (
+                          <p className="text-sm text-destructive">
+                            {errors.street.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="number">Numero</Label>
+                          <Input
+                            id="number"
+                            placeholder="123"
+                            {...register("number")}
+                            aria-invalid={!!errors.number}
+                          />
+                          {errors.number && (
+                            <p className="text-sm text-destructive">
+                              {errors.number.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="complement">
+                            Complemento{" "}
+                            <span className="text-muted-foreground">
+                              (opcional)
+                            </span>
+                          </Label>
+                          <Input
+                            id="complement"
+                            placeholder="Bloco A..."
+                            {...register("complement")}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Telefone:
-                </label>
-                <input
-                  type="text"
-                  id="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="91988887777"
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                />
-              </div>
+                {currentStep === 2 && (
+                  <div className="flex flex-col gap-8">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Credenciais
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Agora, basta definir uma senha para você acessar sua
+                        conta em nossa plataforma
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="fullName">Senha:</Label>
+                        <Input
+                          type="password"
+                          id="password"
+                          placeholder="Digite sua senha"
+                          {...register("password")}
+                          aria-invalid={!!errors.password}
+                        />
+                        {errors.password && (
+                          <p className="text-sm text-destructive">
+                            {errors.password.message}
+                          </p>
+                        )}
+                      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Gênero:
-                </label>
-                <select
-                  id="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Feminino">Feminino</option>
-                  <option value="Outro">Outro</option>
-                </select>
-              </div>
-            </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="confirm">Confirmar senha:</Label>
+                        <Input
+                          type="password"
+                          id="confirm"
+                          placeholder="Digite sua senha novamente"
+                          {...register("confirm")}
+                          aria-invalid={!!errors.confirm}
+                        />
+                        {errors.confirm && (
+                          <p className="text-sm text-destructive">
+                            {errors.confirm.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Data de Nascimento:
-              </label>
-              <input
-                type="date"
-                id="birthDate"
-                value={formData.birthDate}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-            </div>
+                {currentStep === 3 && (
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Imagem de Perfil
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Adicione uma imagem de perfil para passar mais confiança
+                        aos usuários!
+                      </p>
+                    </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Senha:
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Digite sua senha"
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
+                    <div className="flex flex-col gap-6">
+                      <div className="flex flex-col gap-2">
+                        <Label>Avatar</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Image de Perfil
+                        </p>
+                        <ImageUpload
+                          files={avatarFile ? [avatarFile] : []}
+                          onFilesChange={(files) =>
+                            setAvatarFile(files[0] ?? null)
+                          }
+                          maxFiles={1}
+                          accept="image/*"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Confirme sua Senha:
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Digite sua senha novamente"
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-              )}
-            </div>
-
-            <div className="rounded-md border border-gray-200 p-3">
-              <p className="mb-2 text-sm font-semibold text-gray-800">Endereço</p>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Rua:</label>
-                  <input
-                    type="text"
-                    id="street"
-                    value={formData.address.street}
-                    onChange={handleAddressChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                  {errors.street && (
-                    <p className="mt-1 text-sm text-red-500">{errors.street}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Número:</label>
-                  <input
-                    type="text"
-                    id="number"
-                    value={formData.address.number}
-                    onChange={handleAddressChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Complemento:</label>
-                  <input
-                    type="text"
-                    id="complement"
-                    value={formData.address.complement}
-                    onChange={handleAddressChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Bairro:</label>
-                  <input
-                    type="text"
-                    id="bairro"
-                    value={formData.address.bairro}
-                    onChange={handleAddressChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                  {errors.bairro && (
-                    <p className="mt-1 text-sm text-red-500">{errors.bairro}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Cidade:</label>
-                  <input
-                    type="text"
-                    id="city"
-                    value={formData.address.city}
-                    onChange={handleAddressChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                  {errors.city && (
-                    <p className="mt-1 text-sm text-red-500">{errors.city}</p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Estado:</label>
-                  <input
-                    type="text"
-                    id="state"
-                    value={formData.address.state}
-                    onChange={handleAddressChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                  {errors.state && (
-                    <p className="mt-1 text-sm text-red-500">{errors.state}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="mt-1 w-full cursor-pointer rounded-md bg-red-500 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
-              disabled={isLoading}
-            >
-              {isLoading ? "Carregando..." : "Cadastrar"}
-            </button>
+            <StepsFooter
+              goToStep={goToStep}
+              steps={STEPS}
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              isSubmitting={isSubmitting}
+            />
           </form>
 
           <p className="mt-4 text-center text-sm text-gray-500">
@@ -431,3 +588,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

@@ -11,8 +11,26 @@ export enum EnumUserType {
   OWNER = "locador",
 }
 
+export enum EnumUserGender {
+  MALE = "masculino",
+  FEMALE = "feminino",
+  OTHERS = "outros",
+}
+
 export type UserRole = "user" | "gerente" | "admin";
 export type UserType = "cliente" | "locador";
+export type UserGender = "masculino" | "feminino" | "outros";
+
+export const UserTypeLabels: Record<EnumUserType, string> = {
+  [EnumUserType.CLIENT]: "Cliente",
+  [EnumUserType.OWNER]: "Locador",
+};
+
+export const UserGenderLabels: Record<EnumUserGender, string> = {
+  [EnumUserGender.MALE]: "Masculino",
+  [EnumUserGender.FEMALE]: "Feminino",
+  [EnumUserGender.OTHERS]: "Outros",
+};
 
 export interface IFavorite {
   id: number;
@@ -27,7 +45,7 @@ export interface IUser {
   email: string;
   role: UserRole;
   phone: string | null;
-  gender: string | null;
+  gender: UserGender | null;
   birthDate: string | null;
   createdAt: string;
   updatedAt: string | null;
@@ -37,13 +55,13 @@ export interface IUser {
   appointments: any[];
 }
 
-export interface ICreateUser {
+export interface CreateUserPayload {
   fullName: string;
   email: string;
   password: string;
-  phone?: string;
-  gender?: string;
-  birthDate?: string;
+  phone: string;
+  gender: UserGender;
+  birthDate: Date;
   type: UserType;
   role: UserRole;
   address: {
@@ -55,3 +73,4 @@ export interface ICreateUser {
     state: string;
   };
 }
+

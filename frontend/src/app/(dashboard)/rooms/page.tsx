@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader, RoomCard, RoomsFilters } from "@/components";
-import { useRooms } from "@/hooks/useRooms";
+import PopularRooms from "@/components/PopularRooms.component";
 import { useRoomsWithFilters } from "@/hooks/useRoomWithFilters";
 import { useState } from "react";
 
@@ -24,8 +24,6 @@ export default function RoomsPage() {
     setAmenitieIds,
     handleToggleFavorites,
   } = useRoomsWithFilters("rooms");
-  const { rooms: popularRooms } = useRooms();
-
   const [location, setLocation] = useState("");
 
   const hasAnyRoom = rooms.length > 0;
@@ -196,28 +194,7 @@ export default function RoomsPage() {
                 </button>
               </section>
 
-              <h2 className="text-[14px] font-semibold text-[#444] mt-6 mb-3">
-                Mais procurados na sua região
-              </h2>
-
-              {/* Mais procurados */}
-
-              <div
-                className="
-                  grid grid-cols-3 gap-4
-                  max-[1100px]:grid-cols-2
-                  max-[840px]:grid-cols-1
-                "
-              >
-                {popularRooms.map((room) => (
-                  <RoomCard
-                    key={room.id}
-                    room={room}
-                    mode="view"
-                    handleToggleFavorites={handleToggleFavorites}
-                  />
-                ))}
-              </div>
+              <PopularRooms />
             </div>
           )}
         </main>

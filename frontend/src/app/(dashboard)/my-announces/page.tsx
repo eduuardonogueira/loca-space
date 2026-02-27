@@ -1,8 +1,12 @@
 "use client";
 
 import { Loader, RoomCard, AnnouncesFilters } from "@/components";
+import PopularRooms from "@/components/PopularRooms.component";
+import { CREATE_ROOM_ROUTE } from "@/constants/routes";
 import { useMyAnnouncement } from "@/hooks/useMyAnnouncement";
 import { useRooms } from "@/hooks/useRooms";
+import { PlusCircleIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function RoomsPage() {
@@ -23,8 +27,6 @@ export default function RoomsPage() {
     type,
     setType,
   } = useMyAnnouncement();
-  const { rooms: popularRooms } = useRooms();
-
   const [roomName, setRoomName] = useState("");
 
   const hasAnyRoom = rooms.length > 0;
@@ -86,8 +88,8 @@ export default function RoomsPage() {
                     px-3 text-[13px]
                     bg-white
                     focus:outline-none
-                    focus:border-[#e53935]
-                    focus:ring-1 focus:ring-[#e53935]/40
+                    focus:border-primary
+                    focus:ring-1 focus:ring-primary/40
                   "
                   placeholder="Escritório 204..."
                   value={roomName}
@@ -102,12 +104,11 @@ export default function RoomsPage() {
                   type="button"
                   className="
                     h-10 px-6 rounded-[10px]
-                    bg-[#e53935] text-white font-semibold text-[13px]
+                    bg-primary text-white font-semibold text-[13px]
                     flex items-center justify-center
                     cursor-pointer
                     transition
-                    hover:bg-[#d32f2f]
-                    hover:shadow-[0_4px_10px_rgba(211,47,47,0.4)]
+                    hover:bg-primary-hover
                     active:translate-y-px
                     active:shadow-[0_2px_5px_rgba(211,47,47,0.3)]
                     max-[600px]:w-full
@@ -120,26 +121,47 @@ export default function RoomsPage() {
             </div>
           </section>
 
-          <div
-            className="
-                grid grid-cols-3 gap-4
-                max-[1100px]:grid-cols-2
-                max-[840px]:grid-cols-1
-              "
-          >
+          <div className="flex">
             {isLoading ? (
-              <div className="col-span-3">
+              <div className="flex w-full justify-center">
                 <Loader text="Carregando salas..." />
               </div>
             ) : (
-              rooms.map((room) => (
-                <RoomCard
-                  key={room.id}
-                  room={room}
-                  mode="edit"
-                  handleToggleFavorites={handleToggleFavorites}
-                />
-              ))
+              <div
+                className="            
+                  grid grid-cols-3 gap-4
+                  max-[1100px]:grid-cols-2
+                  max-[840px]:grid-cols-1
+                "
+              >
+                <Link
+                  className={`
+                    w-full h-full bg-gray-50 
+                    shadow rounded-[14px] overflow-hidden
+                    border border-gray-200
+                    flex flex-col items-center justify-center
+                    transition hover:shadow-[0_14px_35px_rgba(15,23,42,0.10)]
+                    hover:-translate-y-1
+                    duration-200 gap-2
+                    cursor-pointer ${!hasAnyRoom && "hidden"}
+                  `}
+                  href={CREATE_ROOM_ROUTE}
+                >
+                  <PlusCircleIcon
+                    size={40}
+                    className="text-white bg-gray-700 rounded-full"
+                  />
+                  <p className="text-gray-700 text-sm font-bold">Adicionar Anúncio</p>
+                </Link>
+                {rooms.map((room) => (
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    mode="edit"
+                    handleToggleFavorites={handleToggleFavorites}
+                  />
+                ))}
+              </div>
             )}
           </div>
 
@@ -159,6 +181,16 @@ export default function RoomsPage() {
                 Ainda não há salas anunciadas na plataforma. Assim que alguém
                 anunciar, elas aparecerão aqui.
               </p>
+              <Link
+                href={CREATE_ROOM_ROUTE}
+                className="
+                  mt-2 px-6 py-2.5 rounded-full border text-sm text-primary
+                  border-primarytext-[14px] font-semibold
+                  transition hover:bg-primary
+                "
+              >
+                Criar Anúncio
+              </Link>
             </section>
           )}
 
@@ -180,39 +212,32 @@ export default function RoomsPage() {
                   Não encontramos salas com os filtros selecionados. Tente
                   remover alguns filtros ou ajustar a busca.
                 </p>
-                <button
-                  type="button"
-                  onClick={handleClearFilters}
-                  className="
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className="
                     mt-2 px-6 py-2.5 rounded-full
-                    bg-[#e53935] text-white text-[14px] font-semibold
-                    transition hover:bg-[#d32f2f]
+                    bg-primary text-white text-sm font-semibold
+                    transition hover:bg-primary-hover cursor-pointer
                   "
-                >
-                  Limpar filtros
-                </button>
+                  >
+                    Limpar filtros
+                  </button>
+                  <Link
+                    href={CREATE_ROOM_ROUTE}
+                    className="
+                      mt-2 px-6 py-2.5 rounded-full border text-sm 
+                      text-primary border-primary font-semibold
+                      transition hover:border-primary2 hover:text-primary-hover
+                    "
+                  >
+                    Criar Anúncio
+                  </Link>
+                </div>
               </section>
 
-              <h2 className="text-[14px] font-semibold text-[#444] mt-6 mb-3">
-                Mais procurados na sua região
-              </h2>
-
-              <div
-                className="
-                  grid grid-cols-3 gap-4
-                  max-[1100px]:grid-cols-2
-                  max-[840px]:grid-cols-1
-                "
-              >
-                {popularRooms.map((room) => (
-                  <RoomCard
-                    key={room.id}
-                    room={room}
-                    mode="edit"
-                    handleToggleFavorites={handleToggleFavorites}
-                  />
-                ))}
-              </div>
+              <PopularRooms />
             </div>
           )}
         </main>

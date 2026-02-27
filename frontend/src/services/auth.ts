@@ -1,6 +1,6 @@
 "use server";
 
-import { ICreateUser, IUser } from "@/types/user";
+import { CreateUserPayload, EnumUserRole, IUser } from "@/types/user";
 import { cookies } from "next/headers";
 import { authFetch } from "./authFetch.ts";
 import { AUTH_COOKIE_KEY } from "@/constants/cookies.ts";
@@ -32,34 +32,19 @@ export async function login(
   return false;
 }
 
-export async function signup(userData: ICreateUser): Promise<IUser | null> {
+export async function signup(
+  userData: CreateUserPayload,
+): Promise<IUser | null> {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/auth/signup`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
+      body: JSON.stringify({ ...userData, role: EnumUserRole.USER }),
     });
 
     if (response.ok) {
       return response.json();
     }
-
-    // Compatibilidade com backend legado de signup (fullName, email, password).
-    const fallbackResponse = await fetch(`${process.env.BACKEND_URL}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName: userData.fullName,
-        email: userData.email,
-        password: userData.password,
-      }),
-    });
-
-    if (!fallbackResponse.ok) {
-      return null;
-    }
-
-    return fallbackResponse.json();
   } catch (error) {
     console.log(error);
   }
@@ -130,3 +115,22 @@ export async function findUserById(id: number): Promise<IUser | null> {
     return null;
   }
 }
+
+export async function uploadUserAvatar(userId: number, formData: FormData) {
+  try {
+    const response = await authFetch(`/user/${userId}/upload-avatar`, {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return { success: false, error: "Erro ao enviar avatar" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao enviar avatar:", error);
+    return { success: false, error: "Erro ao enviar avatar" };
+  }
+}
+

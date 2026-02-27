@@ -5,14 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
-  ArrowRight,
   Building2,
   MapPin,
   Sparkles,
   ImageIcon,
-  Check,
-  Loader2,
   Plus,
   X,
   Search,
@@ -50,17 +46,18 @@ import {
   uploadRoomBanner,
   uploadRoomPhotos,
 } from "@/services/room";
-import { ImageUpload } from "@/components/ImageUpload.component";
+import { ImageUpload, StepsFooter, StepsHeader } from "@/components";
 import { Button } from "./ui/button";
 import { MY_ANNOUNCE_ROUTE } from "@/constants/routes";
 import { useRouter } from "next/navigation";
+import useCep from "@/hooks/useCep";
 
 const STEPS = [
   { id: 0, label: "Dados Básicos", icon: Building2 },
   { id: 1, label: "Endereco", icon: MapPin },
   { id: 2, label: "Recursos", icon: Sparkles },
   { id: 3, label: "Imagens", icon: ImageIcon },
-] as const;
+];
 
 interface CreateRoomWizardProps {
   amenities: IAmenity[];
@@ -68,6 +65,7 @@ interface CreateRoomWizardProps {
 
 export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   const router = useRouter();
+  const { formatCep } = useCep();
 
   const [currentRoomId, setCurrentRoomId] = useState<number | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -110,15 +108,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   });
 
   const selectedAmenities = watch("amenities") ?? [];
-
-  // CEP mask
-  const formatCep = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 8);
-    if (digits.length > 5) {
-      return `${digits.slice(0, 5)}-${digits.slice(5)}`;
-    }
-    return digits;
-  };
 
   const handleCepChange = async (rawValue: string) => {
     const formatted = formatCep(rawValue);
@@ -204,9 +193,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     setCurrentStep(targetStep);
   };
 
-  const nextStep = () => goToStep(currentStep + 1);
-  const prevStep = () => setCurrentStep((s) => Math.max(0, s - 1));
-
   // Submit
   const onSubmit = useCallback(
     async (data: CreateRoomFormValues) => {
@@ -240,9 +226,7 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
             return;
           }
 
-          console.log(result);
           const roomId = result.data?.id;
-          console.log(roomId);
           setCurrentRoomId(roomId);
 
           if (roomId) {
@@ -298,69 +282,16 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <nav aria-label="Etapas do formulario">
-        <ol className="flex items-center gap-2">
-          {STEPS.map((step, index) => {
-            const isCompleted = index < currentStep;
-            const isCurrent = index === currentStep;
-            const Icon = step.icon;
-
-            return (
-              <li key={step.id} className="flex flex-1 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => goToStep(index)}
-                  className={`
-                    flex flex-1 flex-col items-center gap-2 rounded-lg px-3 py-3 transition-colors
-                    ${
-                      isCurrent
-                        ? "bg-primary/10 text-primary"
-                        : isCompleted
-                          ? "text-primary/70 hover:bg-primary/5"
-                          : "text-muted-foreground hover:bg-muted"
-                    }
-                  `}
-                  aria-current={isCurrent ? "step" : undefined}
-                >
-                  <span
-                    className={`
-                      flex size-10 items-center justify-center rounded-full border-2 transition-colors
-                      ${
-                        isCurrent
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : isCompleted
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-muted-foreground/30 bg-background text-muted-foreground"
-                      }
-                    `}
-                  >
-                    {isCompleted ? (
-                      <Check className="size-5" />
-                    ) : (
-                      <Icon className="size-5" />
-                    )}
-                  </span>
-                  <span className="text-xs font-medium hidden sm:block">
-                    {step.label}
-                  </span>
-                </button>
-                {index < STEPS.length - 1 && (
-                  <Separator
-                    className={`hidden w-8 sm:block ${
-                      index < currentStep ? "bg-primary" : "bg-border"
-                    }`}
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
+      <StepsHeader
+        goToStep={goToStep}
+        currentStep={currentStep}
+        steps={STEPS}
+      />
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             {/* Step 1: Dados Basicos */}
             {currentStep === 0 && (
               <div className="flex flex-col gap-6">
@@ -790,38 +721,13 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
         </Card>
 
         {/* Navigation */}
-        <div className="mt-6 flex items-center justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 0}
-            className="gap-2"
-          >
-            <ArrowLeft className="size-4" />
-            Voltar
-          </Button>
-
-          {currentStep < STEPS.length - 2 ? (
-            <Button type="button" onClick={nextStep} className="gap-2">
-              Proximo
-              <ArrowRight className="size-4" />
-            </Button>
-          ) : (
-            <Button type="submit" disabled={isSubmitting} className="gap-2">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  {currentStep === 3 ? "Enviando imagens..." : "Criando..."}
-                </>
-              ) : currentStep === 3 ? (
-                "Enviar imagens"
-              ) : (
-                "Criar Espaco"
-              )}
-            </Button>
-          )}
-        </div>
+        <StepsFooter
+          goToStep={goToStep}
+          steps={STEPS}
+          currentStep={currentStep}
+          setCurrentStep={setCurrentStep}
+          isSubmitting={isSubmitting}
+        />
       </form>
     </div>
   );
