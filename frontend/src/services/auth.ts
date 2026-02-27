@@ -37,10 +37,29 @@ export async function signup(userData: ICreateUser): Promise<IUser | null> {
     const response = await fetch(`${process.env.BACKEND_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...userData, role: "user" }),
+      body: JSON.stringify(userData),
     });
 
-    return response.json();
+    if (response.ok) {
+      return response.json();
+    }
+
+    // Compatibilidade com backend legado de signup (fullName, email, password).
+    const fallbackResponse = await fetch(`${process.env.BACKEND_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: userData.fullName,
+        email: userData.email,
+        password: userData.password,
+      }),
+    });
+
+    if (!fallbackResponse.ok) {
+      return null;
+    }
+
+    return fallbackResponse.json();
   } catch (error) {
     console.log(error);
   }
@@ -111,4 +130,3 @@ export async function findUserById(id: number): Promise<IUser | null> {
     return null;
   }
 }
-

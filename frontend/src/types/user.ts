@@ -2,10 +2,17 @@ import { IAddress, IRoom } from "./room";
 
 export enum EnumUserRole {
   USER = "user",
+  MANAGER = "gerente",
   ADMIN = "admin",
 }
 
-export type UserRole = "user" | "admin";
+export enum EnumUserType {
+  CLIENT = "cliente",
+  OWNER = "locador",
+}
+
+export type UserRole = "user" | "gerente" | "admin";
+export type UserType = "cliente" | "locador";
 
 export interface IFavorite {
   id: number;
@@ -33,5 +40,18 @@ export interface IUser {
 export interface ICreateUser {
   fullName: string;
   email: string;
+  password: string;
+  phone?: string;
+  gender?: string;
+  birthDate?: string;
+  type: UserType;
+  role: UserRole;
+  address: {
+    street: string;
+    number?: string;
+    complement?: string;
+    bairro: string;
+    city: string;
+    state: string;
+  };
 }
-
