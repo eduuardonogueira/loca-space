@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -104,6 +105,56 @@ export class FavoriteService {
         roomAmenities: undefined,
       },
     }));
+  }
+
+  async findMostFavorited(pageNumber: number = 1, pageSize: number = 10) {
+    if (pageNumber <= 0 || pageSize <= 0) {
+      throw new BadRequestException('Page Number ou Page Size inválidos');
+    }
+    const offset = (pageNumber - 1) * pageSize;
+
+    const query = this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.favorites', 'favorite')
+      .leftJoinAndSelect('room.roomAmenities', 'roomAmenities')
+      .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
+      .leftJoinAndSelect('room.address', 'address')
+      .addSelect('COUNT(favorite.id)', 'favoriteCount')
+      .groupBy('room.id')
+      .addGroupBy('roomAmenities.id')
+      .addGroupBy('amenity.id')
+      .addGroupBy('address.id')
+      .orderBy('"favoriteCount"', 'DESC')
+      .offset(offset)
+      .limit(pageSize);
+
+    const rooms = await query.getRawAndEntities();
+
+    const total = await this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.favorites', 'favorite')
+      .select('room.id')
+      .groupBy('room.id')
+      .getCount();
+
+    const data = rooms.entities.map((room, index) => ({
+      ...room,
+      amenities:
+        room.roomAmenities?.map((ra) => ({
+          id: ra.amenity.id,
+          name: ra.amenity.name,
+        })) ?? [],
+      totalFavorited: Number(rooms.raw[index]?.favoriteCount || 0),
+      roomAmenities: undefined,
+    }));
+
+    return {
+      data,
+      total,
+      pageNumber,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   async remove(userId: number, roomId: number) {

@@ -43,6 +43,19 @@ export class FavoriteController {
     return this.favoriteService.findAll(req.user.userId, filters);
   }
 
+  @Get('most-favoritdas')
+  @ApiOperation({ summary: 'Listar salas mais favoritadas' })
+  @ApiResponse({ status: 200, description: 'Lista de salas mais favoritadas' })
+  findMostFavorited(
+    @Query('pageNumber') pageNumber?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.favoriteService.findMostFavorited(
+      pageNumber ? +pageNumber : 1,
+      pageSize ? +pageSize : 10,
+    );
+  }
+
   @Delete(':roomId')
   @ApiOperation({ summary: 'Remover sala dos favoritos' })
   @ApiResponse({ status: 204, description: 'Favorito removido com sucesso' })
