@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader, RoomCard, RoomsFilters } from "@/components";
+import { useRooms } from "@/hooks/useRooms";
 import { useRoomsWithFilters } from "@/hooks/useRoomWithFilters";
 import { useState } from "react";
 
@@ -22,7 +23,8 @@ export default function RoomsPage() {
     amenitieIds,
     setAmenitieIds,
     handleToggleFavorites,
-  } = useRoomsWithFilters();
+  } = useRoomsWithFilters("rooms");
+  const { rooms: popularRooms } = useRooms();
 
   const [location, setLocation] = useState("");
 
@@ -121,7 +123,30 @@ export default function RoomsPage() {
             </div>
           </section>
 
-          {!hasAnyRoom && !hasFilters && (
+          <div
+            className="
+                grid grid-cols-3 gap-4
+                max-[1100px]:grid-cols-2
+                max-[840px]:grid-cols-1
+              "
+          >
+            {isLoading ? (
+              <div className="col-span-3">
+                <Loader text="Carregando salas..." />
+              </div>
+            ) : (
+              rooms.map((room) => (
+                <RoomCard
+                  key={room.id}
+                  room={room}
+                  mode="view"
+                  handleToggleFavorites={handleToggleFavorites}
+                />
+              ))
+            )}
+          </div>
+
+          {!hasAnyRoom && !hasFilters && !isLoading && (
             <section
               className="
                 mt-4 w-full rounded-[18px]
@@ -140,7 +165,7 @@ export default function RoomsPage() {
             </section>
           )}
 
-          {!hasAnyRoom && hasFilters && (
+          {!hasAnyRoom && hasFilters && !isLoading && (
             <div>
               <section
                 className="
@@ -184,7 +209,7 @@ export default function RoomsPage() {
                   max-[840px]:grid-cols-1
                 "
               >
-                {rooms.map((room) => (
+                {popularRooms.map((room) => (
                   <RoomCard
                     key={room.id}
                     room={room}
@@ -193,29 +218,6 @@ export default function RoomsPage() {
                   />
                 ))}
               </div>
-            </div>
-          )}
-
-          {hasAnyRoom && (
-            <div
-              className="
-                grid grid-cols-3 gap-4
-                max-[1100px]:grid-cols-2
-                max-[840px]:grid-cols-1
-              "
-            >
-              {isLoading ? (
-                <Loader text="Carregando salas..." />
-              ) : (
-                rooms.map((room) => (
-                  <RoomCard
-                    key={room.id}
-                    room={room}
-                    mode="view"
-                    handleToggleFavorites={handleToggleFavorites}
-                  />
-                ))
-              )}
             </div>
           )}
         </main>

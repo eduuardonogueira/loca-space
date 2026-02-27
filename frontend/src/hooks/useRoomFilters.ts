@@ -1,3 +1,5 @@
+import { EnumRoomStatus, EnumRoomType } from "@/types/room";
+
 export default function useRoomFilters() {
   const orderByOptions = [
     {
@@ -18,6 +20,19 @@ export default function useRoomFilters() {
     },
   ];
 
-  return { orderByOptions };
+  const roomStatusOptions = [
+    { label: "Disponível", value: EnumRoomStatus.AVAILABLE },
+    { label: "Indisponível", value: EnumRoomStatus.UNAVAILABLE },
+    { label: "Agendada", value: EnumRoomStatus.OCCUPIED },
+    { label: "Em manutenção", value: EnumRoomStatus.MAINTENANCE },
+  ];
+
+  const roomTypeOptions = [
+    { label: "Reunião", value: EnumRoomType.SalaReuniao },
+    { label: "Escritório", value: EnumRoomType.Escritorio },
+    { label: "Gerais", value: EnumRoomType.Gerais },
+  ];
+
+  return { orderByOptions, roomStatusOptions, roomTypeOptions };
 }
 

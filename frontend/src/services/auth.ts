@@ -116,3 +116,19 @@ export async function updateUserProfile(id: number, userData: any) {
     return false;
   }
 }
+export async function findUserById(id: number): Promise<IUser | null> {
+  try {
+    const response = await authFetch(`/user/${id}`, {
+      method: "GET",
+    });
+
+    if (!response || response.status === 401) return null;
+
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}

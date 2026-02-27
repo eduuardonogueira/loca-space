@@ -45,7 +45,11 @@ import {
   RoomTypeLabels,
   type IAmenity,
 } from "@/types/room";
-import { createRoom, uploadRoomBanner, uploadRoomPhotos } from "@/services/room";
+import {
+  createRoom,
+  uploadRoomBanner,
+  uploadRoomPhotos,
+} from "@/services/room";
 import { ImageUpload } from "@/components/ImageUpload.component";
 import { Button } from "./ui/button";
 import { MY_ANNOUNCE_ROUTE } from "@/constants/routes";
@@ -679,7 +683,12 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                       {amenities.map((amenity) => (
                         <label
                           key={amenity.id}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg border border-input px-4 py-3 transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                          className="
+                            flex cursor-pointer items-center gap-3 rounded-lg
+                            border border-input px-4 py-3 transition-colors
+                            hover:bg-muted/50 has-checked:border-primary 
+                            has-checked:bg-primary/5
+                          "
                         >
                           <Checkbox
                             checked={selectedAmenities.includes(amenity.id)}

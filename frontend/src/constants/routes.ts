@@ -10,7 +10,7 @@ export const ADMIN_ROUTE = "/admin";
 export const RESERVATIONS_ROUTE = "/reservations";
 
 export const MY_ANNOUNCE_ROUTE = "/my-announces";
-export const FAVORITES_ROUTE = "/favorites";
+export const FAVORITES_ROUTE = "/rooms/favorites";
 export const MESSAGES_ROUTE = "/messages";
 export const PROFILE_ROUTE = "/profile";
 export const AVAILABILITY_ROUTE = "/rooms/[id]/availability";

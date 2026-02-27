@@ -28,6 +28,11 @@ export function useNavbarLinks() {
       icon: Heart,
     },
     {
+      route: MESSAGES_ROUTE,
+      label: "Mensagens",
+      icon: MessageCircleCode,
+    },
+    {
       route: RESERVATIONS_ROUTE,
       label: "Reservas",
       icon: BookCheckIcon,
@@ -36,11 +41,6 @@ export function useNavbarLinks() {
       route: MY_ANNOUNCE_ROUTE,
       label: "Meus Anúncios",
       icon: BriefcaseBusiness,
-    },
-    {
-      route: CREATE_ROOM_ROUTE,
-      label: "Anunciar",
-      icon: CirclePlus,
     },
   ];
 

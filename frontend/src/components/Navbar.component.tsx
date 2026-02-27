@@ -7,12 +7,13 @@ import { CircleUserRound, House } from "lucide-react";
 import { useNavbarLinks } from "../hooks/useNavbarLinks";
 import { ProfileModal } from "./ProfileModal.component";
 import { useProfile } from "@/hooks/useProfile";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
+  const pathname = usePathname();
   const { navbarLinks } = useNavbarLinks();
+  const { profile, isLoading } = useProfile();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-
-  const { profile } = useProfile();
 
   return (
     <header className="flex justify-between px-6 md:px-16 h-20 items-center bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
@@ -29,16 +30,26 @@ export function Navbar() {
       </div>
 
       <nav className="flex justify-center gap-8 w-[70%]">
-        {navbarLinks.map((link) => (
-          <Link
-            key={link.route}
-            href={link.route}
-            className="flex gap-2 items-center text-gray-700 font-medium transition-all duration-300 hover:text-red-400 hover:scale-105 origin-center"
-          >
-            <link.icon size={20} />
-            <p>{link.label}</p>
-          </Link>
-        ))}
+        {navbarLinks.map((link) => {
+          const isActive = pathname === link.route;
+
+          return (
+            <Link
+              key={link.route}
+              href={link.route}
+              className={`
+                flex gap-2 items-center text-gray-700 font-medium
+                transition-all duration-300 hover:text-red-400
+                hover:scale-105 origin-center ${
+                  isActive ? "text-red-500" : "text-gray-700 hover:text-red-400"
+                }
+              `}
+            >
+              <link.icon size={20} />
+              <p>{link.label}</p>
+            </Link>
+          );
+        })}
       </nav>
 
       <button
@@ -53,6 +64,8 @@ export function Navbar() {
       <ProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+        profile={profile}
+        isLoading={isLoading}
       />
     </header>
   );

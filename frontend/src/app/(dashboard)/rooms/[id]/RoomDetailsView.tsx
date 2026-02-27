@@ -13,7 +13,7 @@ type RoomDetailsViewProps = {
 };
 
 export function RoomDetailsView({ roomId }: RoomDetailsViewProps) {
-  const { roomDetails, isLoading } = useRoomDetails(parseInt(roomId));
+  const { roomDetails, isLoading } = useRoomDetails(Number(roomId));
 
   if (isLoading) return <Loader text="Carregando informações da sala..." />;
 

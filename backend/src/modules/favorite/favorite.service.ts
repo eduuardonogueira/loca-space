@@ -1,9 +1,15 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
 import { Room } from '../room/entities/room.entity';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
+import { FilterRoomDto, orderMap } from '../room/dto/filter-room.dto';
 
 @Injectable()
 export class FavoriteService {
@@ -42,17 +48,113 @@ export class FavoriteService {
     return await this.favoriteRepository.save(favorite);
   }
 
-  async findAll(userId: number) {
-    const favorites = await this.favoriteRepository.find({
-      where: { user: { id: userId } },
-      relations: ['room', 'room.address', 'room.roomAmenities', 'room.roomAmenities.amenity'],
-      order: { createdAt: 'DESC' },
-    });
-    
-    // Transform formatting if RoomService has specific formatting logic, but here raw is fine or minimal mapping.
-    // Return the room objects directly or the favorite wrapper? Usually return rooms.
-    // The user asked "listar favoritos", so returning favorite wrapper is standard REST, included relations.
-    return favorites;
+  async findAll(userId: number, filters?: FilterRoomDto) {
+    const query = this.favoriteRepository
+      .createQueryBuilder('favorite')
+      .leftJoinAndSelect('favorite.room', 'room')
+      .leftJoinAndSelect('room.roomAmenities', 'roomAmenities')
+      .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
+      .leftJoinAndSelect('room.address', 'address')
+      .where('favorite.userId = :userId', { userId });
+
+    if (filters) {
+      if (filters.address) {
+        const termLike = `%${filters.address}%`;
+        query.andWhere(
+          '(address.street ILIKE :term OR address.bairro ILIKE :term OR address.city ILIKE :term OR address.state ILIKE :term)',
+          { term: termLike },
+        );
+      }
+
+      if (filters.type) {
+        query.andWhere('room.type = :type', { type: filters.type });
+      }
+
+      if (filters.status) {
+        query.andWhere('room.status = :status', { status: filters.status });
+      }
+
+      if (filters.amenities && filters.amenities.length > 0) {
+        query.innerJoin(
+          'room.roomAmenities',
+          'filterRa',
+          'filterRa.amenityId IN (:...amenityIds)',
+          { amenityIds: filters.amenities },
+        );
+      }
+
+      const order = orderMap[filters.orderBy ?? 'default'];
+      for (const [column, direction] of Object.entries(order)) {
+        query.addOrderBy(`room.${column}`, direction as 'ASC' | 'DESC');
+      }
+    } else {
+      query.addOrderBy('favorite.createdAt', 'DESC');
+    }
+
+    const favorites = await query.getMany();
+
+    return favorites.map((fav) => ({
+      ...fav,
+      room: {
+        ...fav.room,
+        amenities:
+          fav.room.roomAmenities?.map((ra) => ({
+            id: ra.amenity.id,
+            name: ra.amenity.name,
+          })) ?? [],
+        roomAmenities: undefined,
+      },
+    }));
+  }
+
+  async findMostFavorited(pageNumber: number = 1, pageSize: number = 10) {
+    if (pageNumber <= 0 || pageSize <= 0) {
+      throw new BadRequestException('Page Number ou Page Size inválidos');
+    }
+    const offset = (pageNumber - 1) * pageSize;
+
+    const query = this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.favorites', 'favorite')
+      .leftJoinAndSelect('room.roomAmenities', 'roomAmenities')
+      .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
+      .leftJoinAndSelect('room.address', 'address')
+      .addSelect('COUNT(favorite.id)', 'favoriteCount')
+      .groupBy('room.id')
+      .addGroupBy('roomAmenities.id')
+      .addGroupBy('amenity.id')
+      .addGroupBy('address.id')
+      .orderBy('"favoriteCount"', 'DESC')
+      .offset(offset)
+      .limit(pageSize);
+
+    const rooms = await query.getRawAndEntities();
+
+    const total = await this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoin('room.favorites', 'favorite')
+      .select('room.id')
+      .groupBy('room.id')
+      .getCount();
+
+    const data = rooms.entities.map((room, index) => ({
+      ...room,
+      amenities:
+        room.roomAmenities?.map((ra) => ({
+          id: ra.amenity.id,
+          name: ra.amenity.name,
+        })) ?? [],
+      totalFavorited: Number(rooms.raw[index]?.favoriteCount || 0),
+      roomAmenities: undefined,
+    }));
+
+    return {
+      data,
+      total,
+      pageNumber,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   async remove(userId: number, roomId: number) {

@@ -39,9 +39,10 @@ export function RoomsFilters({
         bg-white rounded-[18px] px-4.5 pt-5 pb-5.5
         border border-[#e7e7eb]
         shadow-[0_4px_12px_rgba(15,23,42,0.03)]
-        text-[13px] text-[#333]
+        text-[13px] text-[#333] h-min
       "
     >
+      {/* OrderBy */}
       <div
         className="
           mt-0 pt-0 border-t-0
@@ -69,7 +70,9 @@ export function RoomsFilters({
                   : "bg-white border-[#e5e5e5] text-[#555]"
               }
             `}
-              onClick={() => setOrderBy(order.value)}
+              onClick={() =>
+                setOrderBy(order.value === orderBy ? null : order.value)
+              }
             >
               {order.label}
             </button>
@@ -77,6 +80,7 @@ export function RoomsFilters({
         </div>
       </div>
 
+      {/* Preço */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
@@ -96,7 +100,7 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={price.min?.toString()}
+            value={price.min ? price.min.toString() : ""}
             onChange={(e) =>
               setPrice((prev) => ({ ...prev, min: Number(e.target.value) }))
             }
@@ -112,7 +116,7 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={price.max?.toString()}
+            value={price.max ? price.max.toString() : ""}
             onChange={(e) =>
               setPrice((prev) => ({ ...prev, max: Number(e.target.value) }))
             }
@@ -120,6 +124,7 @@ export function RoomsFilters({
         </div>
       </div>
 
+      {/* Área */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
@@ -141,7 +146,7 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={size.min?.toString()}
+            value={size.min ? size.min.toString() : ""}
             onChange={(e) =>
               setSize((prev) => ({ ...prev, min: Number(e.target.value) }))
             }
@@ -157,7 +162,7 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={size.max?.toString()}
+            value={size.max ? size.max.toString() : ""}
             onChange={(e) =>
               setSize((prev) => ({ ...prev, max: Number(e.target.value) }))
             }
@@ -165,6 +170,7 @@ export function RoomsFilters({
         </div>
       </div>
 
+      {/* Capacidade */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]
@@ -205,7 +211,7 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={totalSpace.max?.toString()}
+            value={totalSpace.max ? totalSpace.max.toString() : ""}
             onChange={(e) =>
               setTotalSpace((prev) => ({
                 ...prev,
@@ -216,6 +222,7 @@ export function RoomsFilters({
         </div>
       </div>
 
+      {/* Amenities */}
       <div
         className="
           mt-4 pt-3 border-t border-[#f1f1f4]

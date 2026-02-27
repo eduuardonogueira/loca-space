@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
@@ -8,9 +8,12 @@ import {
 } from './dto/appointment.dto';
 import { User } from '../user/entities/user.entity';
 import { Room } from '../room/entities/room.entity';
+import { EmailService } from '../email/email/email.service';
 
 @Injectable()
 export class AppointmentService {
+  private readonly logger = new Logger(AppointmentService.name);
+
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
@@ -18,6 +21,7 @@ export class AppointmentService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(dto: CreateAppointmentDto): Promise<Appointment> {
@@ -35,7 +39,24 @@ export class AppointmentService {
       room,
       createdAt: new Date(),
     });
-    return this.appointmentRepository.save(appointment);
+    const savedAppointment = await this.appointmentRepository.save(appointment);
+
+    const roomName = room.name || `Sala #${room.id}`;
+    this.emailService
+      .sendAppointmentNotification(
+        user.email,
+        user.fullName,
+        roomName,
+        dto.date,
+        dto.startTime,
+        dto.endTime,
+        dto.title,
+      )
+      .catch((err) =>
+        this.logger.warn(`Error sending appointment email: ${err?.message}`),
+      );
+
+    return savedAppointment;
   }
 
   async findAll(): Promise<Appointment[]> {

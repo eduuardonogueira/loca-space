@@ -8,7 +8,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { EnumRoomType } from 'src/types/room';
+import { EnumRoomType, EnumRoomStatus } from 'src/types/room';
 
 export const orderMap = {
   'data-recente': { createdAt: 'DESC' },
@@ -40,47 +40,13 @@ export class FilterRoomDto {
   @IsEnum(EnumRoomType)
   type?: EnumRoomType;
 
-  @ApiPropertyOptional({ description: 'Preço mínimo' })
+  @ApiPropertyOptional({
+    description: 'Status da sala',
+    enum: EnumRoomStatus,
+  })
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  minPrice?: number;
-
-  @ApiPropertyOptional({ description: 'Preço máximo' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  maxPrice?: number;
-
-  @ApiPropertyOptional({ description: 'Área mínima (m²)' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  minSize?: number;
-
-  @ApiPropertyOptional({ description: 'Área máxima (m²)' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  maxSize?: number;
-
-  @ApiPropertyOptional({ description: 'Capacidade mínima (Pessoas)' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  minTotalSpace?: number;
-
-  @ApiPropertyOptional({ description: 'Capacidade máxima (Pessoas)' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  maxTotalSpace?: number;
+  @IsEnum(EnumRoomStatus)
+  status?: EnumRoomStatus;
 
   @ApiPropertyOptional({
     description: 'Recursos (Ex: 1,3,4) ',

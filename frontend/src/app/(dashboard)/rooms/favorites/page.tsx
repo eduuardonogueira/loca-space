@@ -1,31 +1,34 @@
 "use client";
 
-import { Loader, RoomCard, AnnouncesFilters } from "@/components";
-import { useMyAnnouncement } from "@/hooks/useMyAnnouncement";
+import { Loader, RoomCard, RoomsFilters } from "@/components";
+import { ROOMS_ROUTE } from "@/constants/routes";
 import { useRooms } from "@/hooks/useRooms";
+import { useRoomsWithFilters } from "@/hooks/useRoomWithFilters";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function RoomsPage() {
   const {
     rooms,
     isLoading,
-    name,
-    setName,
-    status,
-    setStatus,
+    setAddress,
     handleClearFilters,
     hasFilters,
     orderBy,
+    price,
+    size,
+    totalSpace,
     setOrderBy,
+    setPrice,
+    setSize,
+    setTotalSpace,
     amenitieIds,
     setAmenitieIds,
     handleToggleFavorites,
-    type,
-    setType,
-  } = useMyAnnouncement();
+  } = useRoomsWithFilters("favorites");
   const { rooms: popularRooms } = useRooms();
 
-  const [roomName, setRoomName] = useState("");
+  const [location, setLocation] = useState("");
 
   const hasAnyRoom = rooms.length > 0;
 
@@ -46,15 +49,17 @@ export default function RoomsPage() {
           max-[840px]:px-4
         "
       >
-        <AnnouncesFilters
-          orderBy={orderBy}
+        <RoomsFilters
           amenitieIds={amenitieIds}
-          status={status}
-          setOrderBy={setOrderBy}
           setAmenitieIds={setAmenitieIds}
-          setStatus={setStatus}
-          type={type}
-          setType={setType}
+          orderBy={orderBy}
+          price={price}
+          size={size}
+          totalSpace={totalSpace}
+          setOrderBy={setOrderBy}
+          setPrice={setPrice}
+          setSize={setSize}
+          setTotalSpace={setTotalSpace}
         />
 
         <main className="flex flex-col gap-4">
@@ -69,7 +74,7 @@ export default function RoomsPage() {
           >
             <div className="flex flex-col gap-1">
               <span className="text-[13px] font-semibold text-[#444]">
-                Bucar por Nome
+                Localização
               </span>
 
               <div
@@ -89,12 +94,12 @@ export default function RoomsPage() {
                     focus:border-[#e53935]
                     focus:ring-1 focus:ring-[#e53935]/40
                   "
-                  placeholder="Escritório 204..."
-                  value={roomName}
+                  placeholder="Ex: Belém - PA"
+                  value={location}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setRoomName(value);
-                    if (value.length === 0) setName(null);
+                    setLocation(value);
+                    if (value.length === 0) setAddress(null);
                   }}
                 />
 
@@ -112,7 +117,7 @@ export default function RoomsPage() {
                     active:shadow-[0_2px_5px_rgba(211,47,47,0.3)]
                     max-[600px]:w-full
                   "
-                  onClick={() => setName(name)}
+                  onClick={() => setAddress(location)}
                 >
                   Buscar
                 </button>
@@ -129,14 +134,14 @@ export default function RoomsPage() {
           >
             {isLoading ? (
               <div className="col-span-3">
-                <Loader text="Carregando salas..." />
+                <Loader text="Carregando favoritos..." />
               </div>
             ) : (
               rooms.map((room) => (
                 <RoomCard
                   key={room.id}
                   room={room}
-                  mode="edit"
+                  mode="view"
                   handleToggleFavorites={handleToggleFavorites}
                 />
               ))
@@ -146,6 +151,7 @@ export default function RoomsPage() {
           {!hasAnyRoom && !hasFilters && !isLoading && (
             <section
               className="
+                flex flex-col items-center
                 mt-4 w-full rounded-[18px]
                 border border-[#e0e0e4]
                 bg-white px-8 py-10
@@ -153,12 +159,22 @@ export default function RoomsPage() {
               "
             >
               <p className="text-[18px] font-bold text-[#333] mb-2">
-                Nenhuma sala cadastrada ainda
+                Nenhuma sala adicionada aos favoritos
               </p>
               <p className="text-[14px] text-[#666] max-w-160">
-                Ainda não há salas anunciadas na plataforma. Assim que alguém
-                anunciar, elas aparecerão aqui.
+                Você ainda não adicionou nenhuma sala aos favoritos, <br /> para
+                que você possa ver as salas, adicione ela aos seus favoritos!
               </p>
+              <Link
+                href={ROOMS_ROUTE}
+                className="
+                    text-center mt-4 px-6 py-2.5 rounded-full
+                    bg-[#e53935] text-white text-[14px] font-semibold
+                    transition hover:bg-[#d32f2f] w-100 hover:cursor-pointer
+                  "
+              >
+                Procurar Salas
+              </Link>
             </section>
           )}
 
@@ -197,6 +213,8 @@ export default function RoomsPage() {
                 Mais procurados na sua região
               </h2>
 
+              {/* Mais procurados */}
+
               <div
                 className="
                   grid grid-cols-3 gap-4
@@ -208,7 +226,7 @@ export default function RoomsPage() {
                   <RoomCard
                     key={room.id}
                     room={room}
-                    mode="edit"
+                    mode="view"
                     handleToggleFavorites={handleToggleFavorites}
                   />
                 ))}

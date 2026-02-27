@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { FilterRoomDto, orderMap } from './dto/filter-room.dto';
+import { EnumRoomStatus } from 'src/types/room';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
@@ -44,7 +45,9 @@ export class RoomService {
           amenity: true,
         },
         address: true,
-        favorites: true,
+        favorites: {
+          user: true,
+        },
       },
     });
 
@@ -81,6 +84,7 @@ export class RoomService {
 
   async findAll(userId: number) {
     const findedRooms = await this.roomRepository.find({
+      where: { status: EnumRoomStatus.AVAILABLE },
       relations: {
         roomAmenities: {
           amenity: true,
@@ -117,19 +121,49 @@ export class RoomService {
     return formattedRooms;
   }
 
-  async findByUser(userId: number) {
-    const rooms = await this.roomRepository.find({
-      where: { user: { id: userId } },
-      relations: {
-        roomAmenities: {
-          amenity: true,
-        },
-        address: true,
-        favorites: {
-          user: true,
-        },
-      },
-    });
+  async findByUser(userId: number, filters?: FilterRoomDto) {
+    const query = this.roomRepository
+      .createQueryBuilder('room')
+      .leftJoinAndSelect('room.roomAmenities', 'roomAmenities')
+      .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
+      .leftJoinAndSelect('room.address', 'address')
+      .leftJoinAndSelect('room.favorites', 'favorites')
+      .leftJoinAndSelect('favorites.user', 'favUser')
+      .where('room.userId = :userId', { userId });
+
+    if (filters) {
+      if (filters.address) {
+        const termLike = `%${filters.address}%`;
+        query.andWhere(
+          '(address.street ILIKE :term OR address.bairro ILIKE :term OR address.city ILIKE :term OR address.state ILIKE :term)',
+          { term: termLike },
+        );
+      }
+
+      if (filters.status) {
+        query.andWhere('room.status = :status', { status: filters.status });
+      }
+
+      if (filters.type) {
+        query.andWhere('room.type = :type', { type: filters.type });
+      }
+
+      if (filters.amenities && filters.amenities.length > 0) {
+        query.innerJoin(
+          'room.roomAmenities',
+          'filterRa',
+          'filterRa.amenityId IN (:...amenityIds)',
+          { amenityIds: filters.amenities },
+        );
+      }
+
+      const order = orderMap[filters.orderBy ?? 'default'];
+      for (const [column, direction] of Object.entries(order)) {
+        query.addOrderBy(`room.${column}`, direction as 'ASC' | 'DESC');
+      }
+    }
+
+    const rooms = await query.getMany();
 
     if (!rooms || rooms.length === 0) {
       throw new HttpException(
@@ -140,7 +174,7 @@ export class RoomService {
 
     return rooms.map((room) => {
       const isFavorite = userId
-        ? room.favorites.some((fav) => fav.user.id === userId)
+        ? room.favorites?.some((fav) => fav.user?.id === userId)
         : false;
 
       return {
@@ -160,10 +194,22 @@ export class RoomService {
     const termLike = `%${term}%`;
     const findedRooms = await this.roomRepository.find({
       where: [
-        { address: { street: ILike(termLike) } },
-        { address: { bairro: ILike(termLike) } },
-        { address: { city: ILike(termLike) } },
-        { address: { state: ILike(termLike) } },
+        {
+          status: EnumRoomStatus.AVAILABLE,
+          address: { street: ILike(termLike) },
+        },
+        {
+          status: EnumRoomStatus.AVAILABLE,
+          address: { bairro: ILike(termLike) },
+        },
+        {
+          status: EnumRoomStatus.AVAILABLE,
+          address: { city: ILike(termLike) },
+        },
+        {
+          status: EnumRoomStatus.AVAILABLE,
+          address: { state: ILike(termLike) },
+        },
       ],
       relations: {
         roomAmenities: {
@@ -207,7 +253,10 @@ export class RoomService {
       .leftJoinAndSelect('roomAmenities.amenity', 'amenity')
       .leftJoinAndSelect('room.address', 'address')
       .leftJoinAndSelect('room.favorites', 'favorites')
-      .leftJoinAndSelect('favorites.user', 'favUser');
+      .leftJoinAndSelect('favorites.user', 'favUser')
+      .where('room.status = :availableStatus', {
+        availableStatus: EnumRoomStatus.AVAILABLE,
+      });
 
     if (filters.address) {
       const termLike = `%${filters.address}%`;
@@ -222,40 +271,8 @@ export class RoomService {
       query.andWhere('room.type = :type', { type: filters.type });
     }
 
-    if (filters.minPrice) {
-      query.andWhere('room.price >= :minPrice', {
-        minPrice: filters.minPrice,
-      });
-    }
-
-    if (filters.maxPrice) {
-      query.andWhere('room.price <= :maxPrice', {
-        maxPrice: filters.maxPrice,
-      });
-    }
-
-    if (filters.minSize) {
-      query.andWhere('room.size >= :minSize', {
-        minSize: filters.minSize,
-      });
-    }
-
-    if (filters.maxSize) {
-      query.andWhere('room.size <= :maxSize', {
-        maxSize: filters.maxSize,
-      });
-    }
-
-    if (filters.minTotalSpace) {
-      query.andWhere('room.totalSpace >= :minTotalSpace', {
-        minTotalSpace: filters.minTotalSpace,
-      });
-    }
-
-    if (filters.maxTotalSpace) {
-      query.andWhere('room.totalSpace <= :maxTotalSpace', {
-        maxTotalSpace: filters.maxTotalSpace,
-      });
+    if (filters.status) {
+      query.andWhere('room.status = :status', { status: filters.status });
     }
 
     if (filters.amenities && filters.amenities.length > 0) {

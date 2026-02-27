@@ -44,14 +44,16 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsEnum(EnumUserType, {
-    message: 'Type must be one of: docente, discente, tecnico, externo',
+    message: 'Type must be one of: cliente, locador',
   })
-  @ApiProperty({ example: 'docente, discente, tecnico, externo' })
+  @ApiProperty({ example: 'cliente, locador' })
   type: EnumUserType;
 
   @IsNotEmpty()
-  @IsEnum(EnumUserRole, { message: 'Role must be one of: user, admin' })
-  @ApiProperty({ example: 'user, admin' })
+  @IsEnum(EnumUserRole, {
+    message: 'Role must be one of: user, admin, gerente',
+  })
+  @ApiProperty({ example: 'user, admin, gerente' })
   role: EnumUserRole;
 
   @ApiProperty({ type: CreateAddressDto })

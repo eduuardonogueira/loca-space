@@ -5,6 +5,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -12,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
+import { FilterRoomDto } from '../room/dto/filter-room.dto';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -37,8 +39,21 @@ export class FavoriteController {
   @Get()
   @ApiOperation({ summary: 'Listar favoritos do usuário' })
   @ApiResponse({ status: 200, description: 'Lista de favoritos retornada' })
-  findAll(@Req() req) {
-    return this.favoriteService.findAll(req.user.userId);
+  findAll(@Req() req, @Query() filters: FilterRoomDto) {
+    return this.favoriteService.findAll(req.user.userId, filters);
+  }
+
+  @Get('most-favoritdas')
+  @ApiOperation({ summary: 'Listar salas mais favoritadas' })
+  @ApiResponse({ status: 200, description: 'Lista de salas mais favoritadas' })
+  findMostFavorited(
+    @Query('pageNumber') pageNumber?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.favoriteService.findMostFavorited(
+      pageNumber ? +pageNumber : 1,
+      pageSize ? +pageSize : 10,
+    );
   }
 
   @Delete(':roomId')

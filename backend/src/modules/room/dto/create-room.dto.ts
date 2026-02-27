@@ -57,7 +57,8 @@ export class CreateRoomDto {
   @ApiProperty({ example: 'available' })
   @IsNotEmpty()
   @IsEnum(EnumRoomStatus, {
-    message: 'Status must be one of: available, scheduled, maintenance',
+    message:
+      'Status must be one of: available, scheduled, maintenance, unavailable',
   })
   status: EnumRoomStatus;
 

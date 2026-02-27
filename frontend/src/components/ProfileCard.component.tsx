@@ -3,21 +3,23 @@ import Link from "next/link";
 import { Loader } from "./Loader.component";
 import { PROFILE_ROUTE } from "@/constants/routes";
 import { logout } from "@/app/actions";
-import { useProfile } from "@/hooks/useProfile";
+import { IUser } from "@/types/user";
 
 interface ProfileCardProps {
   type?: "modal" | "page";
   onClose?: () => void;
   onEditClick?: () => void;
+  profile: IUser | null;
+  isLoading: boolean;
 }
 
 export function ProfileCard({
   type = "page",
   onClose,
   onEditClick,
+  profile,
+  isLoading,
 }: ProfileCardProps) {
-  const { profile, isLoading } = useProfile();
-
   if (isLoading)
     return (
       <div className="flex flex-col bg-white h-full w- rounded-[30px]">
@@ -41,18 +43,21 @@ export function ProfileCard({
   }
 
   return (
-    <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-w-100 p-8 relative shadow-2xl font-sans mx-auto gap-4">
+    <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-h-[90vh] max-w-100 p-8 relative shadow-2xl font-sans mx-auto gap-4">
       <div className="flex items-center gap-4">
         <div className="relative">
           <img
-            src={profile.avatarUrl || "https://github.com/shadcn.png"}
+            src={
+              profile.avatarUrl ||
+              "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Windows_10_Default_Profile_Picture.svg/960px-Windows_10_Default_Profile_Picture.svg.png"
+            }
             alt="Foto de Perfil"
-            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
+            className="w-16 h-16 rounded-full  border-2 border-white shadow-md"
           />
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900 leading-tight w-40">
+          <h2 className="text-xl font-bold text-gray-900 w-full">
             {profile.fullName}
           </h2>
           <p className="text-xs text-gray-500 mt-1 capitalize">

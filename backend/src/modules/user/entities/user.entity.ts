@@ -33,7 +33,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: EnumUserType, default: EnumUserType.EXTERNO })
+  @Column({ type: 'enum', enum: EnumUserType, default: EnumUserType.CLIENT })
   type: EnumUserType;
 
   @Column({ type: 'enum', enum: EnumUserRole, default: EnumUserRole.USER })
