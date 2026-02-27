@@ -13,4 +13,8 @@ export * from "./AvailabilityModal.component";
 export * from "./EditProfileModal.component";
 export * from "./messages";
 export * from "./AnnouncesFilters.component";
+export * from "./PopularRooms.component.tsx";
+export * from "./StepsHeader.component.tsx";
+export * from "./StepsFooter.component.tsx";
+export * from "./ImageUpload.component.tsx";
 

@@ -1,78 +1,217 @@
 "use client";
 
-import { login } from "@/app/actions";
-import { HOME_ROUTE, LOGIN_ROUTE, SIGNUP_ROUTE } from "@/constants/routes";
+import { useCallback, useState } from "react";
+import { LOGIN_ROUTE } from "@/constants/routes";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { useState } from "react";
 import Image from "next/image";
-import { signup } from "@/services";
-
-interface IFormData {
-  fullName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+import { signup, uploadUserAvatar } from "@/services";
+import {
+  CreateUserPayload,
+  EnumUserGender,
+  EnumUserRole,
+  EnumUserType,
+  UserGenderLabels,
+  UserTypeLabels,
+} from "@/types/user";
+import {
+  Building2,
+  ImageIcon,
+  MapPin,
+  KeyRound,
+  Search,
+  BookUser,
+} from "lucide-react";
+import { ImageUpload, StepsFooter, StepsHeader } from "@/components";
+import {
+  createUserFormSchema,
+  CreateUserFormValues,
+  userStepSchemas,
+} from "@/lib/schemas/createUserSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useCep from "@/hooks/useCep";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { formatCep } = useCep();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [formData, setFormData] = useState<IFormData>({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const STEPS = [
+    { id: 0, label: "Dados Básicos", icon: BookUser },
+    { id: 1, label: "Endereço", icon: MapPin },
+    { id: 2, label: "Senha", icon: KeyRound },
+    { id: 3, label: "Imagem", icon: ImageIcon },
+  ];
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    getValues,
+    setError,
+    formState: { errors },
+  } = useForm<CreateUserFormValues>({
+    resolver: zodResolver(createUserFormSchema) as any,
+    mode: "onChange",
+    defaultValues: {
+      fullName: "",
+      email: "",
+      type: EnumUserType.CLIENT,
+      role: EnumUserRole.USER,
+      gender: undefined,
+      phone: undefined,
+      birthDate: undefined,
+      cep: "",
+      state: "",
+      city: "",
+      bairro: "",
+      street: "",
+      number: "",
+      complement: "",
+      password: "",
+      confirm: "",
+    },
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
-  };
+  const handleCepChange = async (rawValue: string) => {
+    const formatted = formatCep(rawValue);
+    setValue("cep", formatted);
 
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.fullName) newErrors.fullName = "Nome completo é obrigatório";
-    if (!formData.email) newErrors.email = "Email é obrigatório";
-    if (!formData.password) newErrors.password = "Senha é obrigatória";
-    if (!formData.confirmPassword)
-      newErrors.confirmPassword = "Digite sua senha novamente";
-    if (
-      formData.password &&
-      formData.confirmPassword &&
-      formData.password !== formData.confirmPassword
-    ) {
-      newErrors.confirmPassword = "As senhas não conferem";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  async function handleRegister(e: React.FormEvent) {
-    e.preventDefault();
-    setIsLoading(true);
-    if (validate()) {
-      const data = await signup(formData);
-
-      if (!data || data.id) {
-        toast.success("Cadastro realizado com sucesso!");
-        router.push(LOGIN_ROUTE);
-        return;
+    const digits = rawValue.replace(/\D/g, "");
+    if (digits.length === 8) {
+      setIsFetchingCep(true);
+      try {
+        const response = await fetch(
+          `https://viacep.com.br/ws/${digits}/json/`,
+        );
+        const data = await response.json();
+        if (!data.erro) {
+          setValue("state", data.uf || "");
+          setValue("city", data.localidade || "");
+          setValue("bairro", data.bairro || "");
+          setValue("street", data.logradouro || "");
+        } else {
+          toast.error("CEP nao encontrado");
+        }
+      } catch {
+        toast.error("Erro ao buscar CEP");
+      } finally {
+        setIsFetchingCep(false);
       }
+    }
+  };
 
-      toast.error("Erro ao criar cadastro!");
+  const onSubmit = async () => {
+    if (!userId) {
+      toast.error("Erro ao criar usuário, volte um passo e tente novamente");
       return;
     }
 
-    toast.error("Você deve preencher todos os campos obrigatórios!");
-    setIsLoading(false);
-  }
+    if (!avatarFile) {
+      toast.error("Erro ao enviar imagem!");
+      router.push(LOGIN_ROUTE);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+
+      const response = await uploadUserAvatar(userId, formData);
+
+      if (!response.success) {
+        toast.error("Erro ao enviar imagem");
+        return;
+      }
+
+      toast.success("Cadastro finalizado!");
+      router.push(LOGIN_ROUTE);
+    } catch {
+      toast.error("Erro ao enviar imagem");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const goToStep = async (targetStep: number) => {
+    if (targetStep <= currentStep) {
+      setCurrentStep(targetStep);
+      return;
+    }
+
+    const schema = userStepSchemas[currentStep];
+    const values = getValues();
+    const result = schema.safeParse(values);
+
+    if (!result.success) {
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as keyof CreateUserFormValues;
+        setError(field, {
+          type: "onChange",
+          message: err.message,
+        });
+      });
+      return;
+    }
+
+    if (currentStep === 2 && !userId) {
+      try {
+        setIsSubmitting(true);
+
+        const { confirm, ...data } = values;
+
+        const payload: CreateUserPayload = {
+          ...data,
+          address: {
+            state: values.state,
+            city: values.city,
+            bairro: values.bairro,
+            street: values.street,
+            number: values.number,
+            complement: values.complement || undefined,
+          },
+        };
+
+        const response = await signup(payload);
+
+        if (!response?.id) {
+          toast.error("Erro ao criar usuário");
+          return;
+        }
+
+        setUserId(response.id);
+        toast.success("Usuário criado com sucesso!");
+      } catch (error) {
+        toast.error("Erro ao criar usuário");
+        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
+    setCurrentStep(targetStep);
+  };
 
   return (
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
@@ -90,88 +229,379 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center px-6">
-        <div className="w-full max-w-sm">
-          <h2 className="text-center text-2xl font-semibold text-red-500">
+      <div className="flex items-center justify-center px-6 py-6">
+        <div className="w-full max-w-md">
+          <h2 className="text-center text-3xl font-semibold text-red-500 mb-8">
             Crie sua conta
           </h2>
 
-          <form className="mt-6 space-y-4" onSubmit={handleRegister}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nome Completo:
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                placeholder="Digite seu nome completo"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.fullName && (
-                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
-              )}
-            </div>
+          <StepsHeader
+            goToStep={goToStep}
+            currentStep={currentStep}
+            steps={STEPS}
+          />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email:
-              </label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Digite seu email"
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
+          <form
+            className="mt-6 grid grid-cols-1 gap-3"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <Card>
+              <CardContent>
+                {currentStep === 0 && (
+                  <div className="flex flex-col gap-8">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Informações Pessoais
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Para iniciarmos o cadastro, preencha o formulário com
+                        seus dados básicos
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="fullName">Nome Completo:</Label>
+                        <Input
+                          type="text"
+                          id="fullName"
+                          placeholder="João da Silva Figueiredo"
+                          {...register("fullName")}
+                          aria-invalid={!!errors.fullName}
+                        />
+                        {errors.fullName && (
+                          <p className="text-sm text-destructive">
+                            {errors.fullName.message}
+                          </p>
+                        )}
+                      </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Senha:
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Digite sua senha"
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="email">Email:</Label>
+                        <Input
+                          type="email"
+                          id="email"
+                          placeholder="joao.silva@email.com"
+                          {...register("email")}
+                          aria-invalid={!!errors.email}
+                        />
+                        {errors.email && (
+                          <p className="text-sm text-destructive">
+                            {errors.email.message}
+                          </p>
+                        )}
+                      </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Confirme sua Senha:
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Digite sua senha novamente"
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-              )}
-            </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="gender">Gênero:</Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue("gender", value as EnumUserGender, {
+                                shouldValidate: true,
+                              })
+                            }
+                            value={watch("gender")}
+                          >
+                            <SelectTrigger className="w-full" id="type">
+                              <SelectValue placeholder="Selecione seu gênero" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.values(EnumUserGender).map((gender) => (
+                                <SelectItem key={gender} value={gender}>
+                                  {UserGenderLabels[gender]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.gender && (
+                            <p className="text-sm text-destructive">
+                              {errors.gender.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="type">Tipo:</Label>
+                          <Select
+                            onValueChange={(value) =>
+                              setValue("type", value as EnumUserType, {
+                                shouldValidate: true,
+                              })
+                            }
+                            value={watch("type")}
+                          >
+                            <SelectTrigger className="w-full" id="type">
+                              <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.values(EnumUserType).map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {UserTypeLabels[type]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {errors.type && (
+                            <p className="text-sm text-destructive">
+                              {errors.type.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
-            <button
-              type="submit"
-              className="cursor-pointer w-full rounded-md bg-red-500 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
-              disabled={isLoading}
-            >
-              {isLoading ? "Carregando..." : "Cadastrar"}
-            </button>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="phone">Telefone:</Label>
+                          <Input
+                            id="phone"
+                            type="number"
+                            placeholder="(91) 9 8888-7777"
+                            {...register("phone")}
+                            aria-invalid={!!errors.phone}
+                          />
+                          {errors.phone && (
+                            <p className="text-sm text-destructive">
+                              {errors.phone.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="birthDate">Data de Nascimento:</Label>
+                          <Input
+                            id="birthDate"
+                            type="date"
+                            {...register("birthDate")}
+                            aria-invalid={!!errors.birthDate}
+                          />
+                          {errors.birthDate && (
+                            <p className="text-sm text-destructive">
+                              {errors.birthDate.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 1 && (
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Preencha seu Endereco
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Informe seu endereco completo. O CEP preencherá
+                        automaticamente os demais campos.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="cep">CEP</Label>
+                        <div className="relative">
+                          <Input
+                            id="cep"
+                            placeholder="00000-000"
+                            value={watch("cep")}
+                            onChange={(e) => handleCepChange(e.target.value)}
+                            aria-invalid={!!errors.cep}
+                          />
+                          {isFetchingCep && (
+                            <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-pulse text-muted-foreground" />
+                          )}
+                        </div>
+                        {errors.cep && (
+                          <p className="text-sm text-destructive">
+                            {errors.cep.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="state">Estado</Label>
+                          <Input
+                            id="state"
+                            placeholder="UF"
+                            {...register("state")}
+                            aria-invalid={!!errors.state}
+                          />
+                          {errors.state && (
+                            <p className="text-sm text-destructive">
+                              {errors.state.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="city">Cidade</Label>
+                          <Input
+                            id="city"
+                            placeholder="Cidade"
+                            {...register("city")}
+                            aria-invalid={!!errors.city}
+                          />
+                          {errors.city && (
+                            <p className="text-sm text-destructive">
+                              {errors.city.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="neighborhood">Bairro</Label>
+                        <Input
+                          id="bairro"
+                          placeholder="Bairro"
+                          {...register("bairro")}
+                          type="text"
+                          aria-invalid={!!errors.bairro}
+                        />
+                        {errors.bairro && (
+                          <p className="text-sm text-destructive">
+                            {errors.bairro.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="street">Rua</Label>
+                        <Input
+                          id="street"
+                          placeholder="Nome da rua"
+                          {...register("street")}
+                          aria-invalid={!!errors.street}
+                        />
+                        {errors.street && (
+                          <p className="text-sm text-destructive">
+                            {errors.street.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="number">Numero</Label>
+                          <Input
+                            id="number"
+                            placeholder="123"
+                            {...register("number")}
+                            aria-invalid={!!errors.number}
+                          />
+                          {errors.number && (
+                            <p className="text-sm text-destructive">
+                              {errors.number.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="complement">
+                            Complemento{" "}
+                            <span className="text-muted-foreground">
+                              (opcional)
+                            </span>
+                          </Label>
+                          <Input
+                            id="complement"
+                            placeholder="Bloco A..."
+                            {...register("complement")}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="flex flex-col gap-8">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Credenciais
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Agora, basta definir uma senha para você acessar sua
+                        conta em nossa plataforma
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="fullName">Senha:</Label>
+                        <Input
+                          type="password"
+                          id="password"
+                          placeholder="Digite sua senha"
+                          {...register("password")}
+                          aria-invalid={!!errors.password}
+                        />
+                        {errors.password && (
+                          <p className="text-sm text-destructive">
+                            {errors.password.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="confirm">Confirmar senha:</Label>
+                        <Input
+                          type="password"
+                          id="confirm"
+                          placeholder="Digite sua senha novamente"
+                          {...register("confirm")}
+                          aria-invalid={!!errors.confirm}
+                        />
+                        {errors.confirm && (
+                          <p className="text-sm text-destructive">
+                            {errors.confirm.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Imagem de Perfil
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Adicione uma imagem de perfil para passar mais confiança
+                        aos usuários!
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-6">
+                      <div className="flex flex-col gap-2">
+                        <Label>Avatar</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Image de Perfil
+                        </p>
+                        <ImageUpload
+                          files={avatarFile ? [avatarFile] : []}
+                          onFilesChange={(files) =>
+                            setAvatarFile(files[0] ?? null)
+                          }
+                          maxFiles={1}
+                          accept="image/*"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <StepsFooter
+              goToStep={goToStep}
+              steps={STEPS}
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              isSubmitting={isSubmitting}
+            />
           </form>
 
           <p className="mt-4 text-center text-sm text-gray-500">
