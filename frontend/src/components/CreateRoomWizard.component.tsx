@@ -3,16 +3,11 @@
 import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import {
-  ArrowLeft,
-  ArrowRight,
   Building2,
   MapPin,
   Sparkles,
   ImageIcon,
-  Check,
-  Loader2,
   Plus,
   X,
   Search,
@@ -50,17 +45,19 @@ import {
   uploadRoomBanner,
   uploadRoomPhotos,
 } from "@/services/room";
-import { ImageUpload } from "@/components/ImageUpload.component";
+import { ImageUpload, StepsFooter, StepsHeader } from "@/components";
 import { Button } from "./ui/button";
 import { MY_ANNOUNCE_ROUTE } from "@/constants/routes";
 import { useRouter } from "next/navigation";
+import useCep from "@/hooks/useCep";
+import { toast } from "react-toastify";
 
 const STEPS = [
   { id: 0, label: "Dados Básicos", icon: Building2 },
   { id: 1, label: "Endereco", icon: MapPin },
   { id: 2, label: "Recursos", icon: Sparkles },
   { id: 3, label: "Imagens", icon: ImageIcon },
-] as const;
+];
 
 interface CreateRoomWizardProps {
   amenities: IAmenity[];
@@ -68,6 +65,7 @@ interface CreateRoomWizardProps {
 
 export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   const router = useRouter();
+  const { formatCep } = useCep();
 
   const [currentRoomId, setCurrentRoomId] = useState<number | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -76,7 +74,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   const [customAmenities, setCustomAmenities] = useState<string[]>([]);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
 
-  // Image states
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
 
@@ -87,9 +84,11 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     setValue,
     watch,
     getValues,
+    setError,
     formState: { errors },
   } = useForm<CreateRoomFormValues>({
     resolver: zodResolver(createRoomFormSchema) as any,
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -110,15 +109,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   });
 
   const selectedAmenities = watch("amenities") ?? [];
-
-  // CEP mask
-  const formatCep = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 8);
-    if (digits.length > 5) {
-      return `${digits.slice(0, 5)}-${digits.slice(5)}`;
-    }
-    return digits;
-  };
 
   const handleCepChange = async (rawValue: string) => {
     const formatted = formatCep(rawValue);
@@ -148,7 +138,6 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     }
   };
 
-  // Amenity toggle
   const toggleAmenity = (amenityId: number) => {
     const current = getValues("amenities");
 
@@ -191,176 +180,145 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
     setCustomAmenities((prev) => prev.filter((id) => id !== id));
   };
 
-  // Step navigation
+  // const goToStep = async (targetStep: number) => {
+  //   if (targetStep > currentStep) {
+  //     const schema = stepSchemas[currentStep];
+  //     const fields = Object.keys(schema.shape) as Array<
+  //       keyof CreateRoomFormValues
+  //     >;
+  //     const isValid = await trigger(fields);
+  //     if (!isValid) return;
+  //   }
+  //   setCurrentStep(targetStep);
+  // };
+
   const goToStep = async (targetStep: number) => {
-    if (targetStep > currentStep) {
-      const schema = stepSchemas[currentStep];
-      const fields = Object.keys(schema.shape) as Array<
-        keyof CreateRoomFormValues
-      >;
-      const isValid = await trigger(fields);
-      if (!isValid) return;
+    if (targetStep <= currentStep) {
+      setCurrentStep(targetStep);
+      return;
     }
-    setCurrentStep(targetStep);
-  };
 
-  const nextStep = () => goToStep(currentStep + 1);
-  const prevStep = () => setCurrentStep((s) => Math.max(0, s - 1));
+    const schema = stepSchemas[currentStep];
+    const values = getValues();
 
-  // Submit
-  const onSubmit = useCallback(
-    async (data: CreateRoomFormValues) => {
-      setIsSubmitting(true);
+    const result = schema.safeParse(values);
+
+    if (!result.success) {
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as keyof CreateRoomFormValues;
+        setError(field, {
+          type: "manual",
+          message: err.message,
+        });
+      });
+      return;
+    }
+
+    if (currentStep === 2 && !currentRoomId) {
       try {
-        if (currentStep < 3) {
-          const payload: CreateRoomPayload = {
-            name: data.name,
-            description: data.description,
-            type: data.type,
-            price: data.price,
-            size: data.size,
-            status: data.status,
-            totalSpace: data.totalSpace,
-            address: {
-              cep: data.cep.replace(/\D/g, ""),
-              state: data.state,
-              city: data.city,
-              bairro: data.bairro,
-              street: data.street,
-              number: data.number,
-              complement: data.complement || undefined,
-            },
-            amenities: data.amenities.map((id) => id),
-          };
+        setIsSubmitting(true);
 
-          const result = await createRoom(payload);
+        const payload: CreateRoomPayload = {
+          name: values.name,
+          description: values.description,
+          type: values.type,
+          price: values.price,
+          size: values.size,
+          status: values.status,
+          totalSpace: values.totalSpace,
+          address: {
+            cep: values.cep.replace(/\D/g, ""),
+            state: values.state,
+            city: values.city,
+            bairro: values.bairro,
+            street: values.street,
+            number: values.number,
+            complement: values.complement || undefined,
+          },
+          amenities: values.amenities,
+        };
 
-          if (!result.success) {
-            toast.error(result.error || "Erro ao criar espaco");
-            return;
-          }
+        const result = await createRoom(payload);
 
-          console.log(result);
-          const roomId = result.data?.id;
-          console.log(roomId);
-          setCurrentRoomId(roomId);
-
-          if (roomId) {
-            toast.success("Espaco criado com sucesso!");
-            setCurrentStep(3);
-          }
-        } else {
-          console.log(currentRoomId);
-          if (!currentRoomId) {
-            toast.error("Sala não encontrada para envio das imagens");
-            return;
-          }
-
-          // Upload banner
-          if (bannerFile) {
-            const bannerFormData = new FormData();
-            bannerFormData.append("banner", bannerFile);
-            const bannerResult = await uploadRoomBanner(
-              currentRoomId,
-              bannerFormData,
-            );
-            if (!bannerResult.success) {
-              toast.error("Espaco criado, mas houve erro ao enviar o banner");
-            }
-          }
-
-          // Upload photos
-          if (photoFiles.length > 0) {
-            const photosFormData = new FormData();
-            photoFiles.forEach((file) => {
-              photosFormData.append("photos", file);
-            });
-            const photosResult = await uploadRoomPhotos(
-              currentRoomId,
-              photosFormData,
-            );
-            if (!photosResult.success) {
-              toast.error("Espaco criado, mas houve erro ao enviar as fotos");
-            }
-          }
-
-          toast.success("Espaco criado com sucesso!");
-          router.push(MY_ANNOUNCE_ROUTE);
+        if (!result.success || !result.data?.id) {
+          toast.error(result.error || "Erro ao criar espaço");
+          return;
         }
+
+        setCurrentRoomId(result.data.id);
+        toast.success("Espaço criado com sucesso!");
       } catch {
-        toast.error("Ocorreu um erro inesperado");
+        toast.error("Erro ao criar espaço");
+        return;
       } finally {
         setIsSubmitting(false);
       }
-    },
-    [bannerFile, photoFiles, currentRoomId, currentStep, router],
-  );
+    }
+
+    setCurrentStep(targetStep);
+  };
+
+  const onSubmit = useCallback(async () => {
+    if (!currentRoomId) {
+      toast.error("Sala não encontrada para envio das imagens");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      if (bannerFile) {
+        const bannerFormData = new FormData();
+        bannerFormData.append("banner", bannerFile);
+
+        const bannerResult = await uploadRoomBanner(
+          currentRoomId,
+          bannerFormData,
+        );
+
+        if (!bannerResult.success) {
+          toast.error("Erro ao enviar banner");
+        }
+      }
+
+      if (photoFiles.length > 0) {
+        const photosFormData = new FormData();
+
+        photoFiles.forEach((file) => {
+          photosFormData.append("photos", file);
+        });
+
+        const photosResult = await uploadRoomPhotos(
+          currentRoomId,
+          photosFormData,
+        );
+
+        if (!photosResult.success) {
+          toast.error("Erro ao enviar fotos");
+        }
+      }
+
+      toast.success("Espaço criado com sucesso!");
+      router.push(MY_ANNOUNCE_ROUTE);
+    } catch {
+      toast.error("Erro inesperado ao enviar imagens");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [bannerFile, photoFiles, currentRoomId, router]);
 
   return (
     <div className="flex flex-col gap-8">
-      <nav aria-label="Etapas do formulario">
-        <ol className="flex items-center gap-2">
-          {STEPS.map((step, index) => {
-            const isCompleted = index < currentStep;
-            const isCurrent = index === currentStep;
-            const Icon = step.icon;
-
-            return (
-              <li key={step.id} className="flex flex-1 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => goToStep(index)}
-                  className={`
-                    flex flex-1 flex-col items-center gap-2 rounded-lg px-3 py-3 transition-colors
-                    ${
-                      isCurrent
-                        ? "bg-primary/10 text-primary"
-                        : isCompleted
-                          ? "text-primary/70 hover:bg-primary/5"
-                          : "text-muted-foreground hover:bg-muted"
-                    }
-                  `}
-                  aria-current={isCurrent ? "step" : undefined}
-                >
-                  <span
-                    className={`
-                      flex size-10 items-center justify-center rounded-full border-2 transition-colors
-                      ${
-                        isCurrent
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : isCompleted
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-muted-foreground/30 bg-background text-muted-foreground"
-                      }
-                    `}
-                  >
-                    {isCompleted ? (
-                      <Check className="size-5" />
-                    ) : (
-                      <Icon className="size-5" />
-                    )}
-                  </span>
-                  <span className="text-xs font-medium hidden sm:block">
-                    {step.label}
-                  </span>
-                </button>
-                {index < STEPS.length - 1 && (
-                  <Separator
-                    className={`hidden w-8 sm:block ${
-                      index < currentStep ? "bg-primary" : "bg-border"
-                    }`}
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
+      <StepsHeader
+        goToStep={goToStep}
+        currentStep={currentStep}
+        steps={STEPS}
+      />
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             {/* Step 1: Dados Basicos */}
             {currentStep === 0 && (
               <div className="flex flex-col gap-6">
@@ -790,38 +748,13 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
         </Card>
 
         {/* Navigation */}
-        <div className="mt-6 flex items-center justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 0}
-            className="gap-2"
-          >
-            <ArrowLeft className="size-4" />
-            Voltar
-          </Button>
-
-          {currentStep < STEPS.length - 2 ? (
-            <Button type="button" onClick={nextStep} className="gap-2">
-              Proximo
-              <ArrowRight className="size-4" />
-            </Button>
-          ) : (
-            <Button type="submit" disabled={isSubmitting} className="gap-2">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  {currentStep === 3 ? "Enviando imagens..." : "Criando..."}
-                </>
-              ) : currentStep === 3 ? (
-                "Enviar imagens"
-              ) : (
-                "Criar Espaco"
-              )}
-            </Button>
-          )}
-        </div>
+        <StepsFooter
+          goToStep={goToStep}
+          steps={STEPS}
+          currentStep={currentStep}
+          setCurrentStep={setCurrentStep}
+          isSubmitting={isSubmitting}
+        />
       </form>
     </div>
   );

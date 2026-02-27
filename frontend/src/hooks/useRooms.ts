@@ -1,4 +1,6 @@
-import { getRooms } from "@/services";
+"use client";
+
+import { addFavorite, getRooms, removeFavorite } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -26,6 +28,24 @@ export function useRooms() {
     fetchRooms();
   }, []);
 
-  return { rooms, isLoading, fetchRooms };
+  async function handleToggleFavorites(selectedRoom: IRoomWithAmenities) {
+    if (selectedRoom.isFavorite) {
+      setRooms((prev) =>
+        prev.map((room) =>
+          room.id === selectedRoom.id ? { ...room, isFavorite: false } : room,
+        ),
+      );
+      await removeFavorite(selectedRoom.id);
+    } else {
+      setRooms((prev) =>
+        prev.map((room) =>
+          room.id === selectedRoom.id ? { ...room, isFavorite: true } : room,
+        ),
+      );
+      await addFavorite(selectedRoom.id);
+    }
+  }
+
+  return { rooms, isLoading, fetchRooms, handleToggleFavorites };
 }
 
