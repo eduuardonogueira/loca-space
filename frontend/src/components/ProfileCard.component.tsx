@@ -4,6 +4,7 @@ import { Loader } from "./Loader.component";
 import { PROFILE_ROUTE } from "@/constants/routes";
 import { logout } from "@/app/actions";
 import { IUser } from "@/types/user";
+import { formatDateBR } from "@/utils/formatDate";
 
 interface ProfileCardProps {
   type?: "modal" | "page";
@@ -70,9 +71,7 @@ export function ProfileCard({
         {profile.birthDate && (
           <div className="flex items-center gap-3">
             <Calendar size={18} className="text-gray-500" />
-            <span>
-              {new Date(profile.birthDate).toLocaleDateString("pt-BR")}
-            </span>
+            <span>{formatDateBR(profile.birthDate)}</span>
           </div>
         )}
 
@@ -80,7 +79,6 @@ export function ProfileCard({
           <MapPin size={18} className="text-gray-500" />
           <span>
             <span>
-              {profile?.address?.street && `${profile?.address?.street}, `}
               {profile?.address?.bairro && `${profile?.address?.bairro} - `}
               {profile?.address?.city || "Cidade não informada"} /{" "}
               {profile?.address?.state || "UF"}
@@ -138,3 +136,4 @@ export function ProfileCard({
     </div>
   );
 }
+

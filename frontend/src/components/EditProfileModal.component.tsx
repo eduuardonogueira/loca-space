@@ -2,26 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { X, Calendar, MapPin, Mail, Phone } from "lucide-react";
-import { updateUserProfile } from "@/services/auth";
+import { updateUserProfile, uploadUserAvatar } from "@/services/auth";
+import { EnumUserGender, IUser, UserGender } from "@/types/user";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { ProfileImageUpload } from "./ProfileImageUpload.component";
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userData?: any;
+  profile: IUser | null;
 }
 
 export function EditProfileModal({
   isOpen,
   onClose,
-  userData,
+  profile,
 }: EditProfileModalProps) {
-  // 1. Estados para guardar TODOS os dados
-  const [email, setEmail] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [phone, setPhone] = useState("");
-  const [gender, setGender] = useState("");
+  const [profileImage, setProfileImage] = useState<File | null>(null);
 
-  // Novos estados do Endereço divididos!
+  const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState<string>("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState<UserGender>("outros");
+
   const [street, setStreet] = useState("");
   const [bairro, setBairro] = useState("");
   const [city, setCity] = useState("");
@@ -29,49 +33,66 @@ export function EditProfileModal({
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // 2. Puxa os dados reais quando o modal abre
   useEffect(() => {
-    if (userData) {
-      setEmail(userData.email || "");
-      setBirthDate(userData.birthDate || "");
-      setPhone(userData.phone || "");
-      setGender(userData.gender || "");
+    if (profile) {
+      setEmail(profile.email || "");
+      setBirthDate(profile.birthDate ? profile.birthDate.toString() : "");
+      setPhone(profile.phone || "");
+      setGender(profile.gender || "outros");
 
-      // Se o usuário já tiver endereço salvo, preenche as 4 caixinhas
-      setStreet(userData.address?.street || "");
-      setBairro(userData.address?.bairro || "");
-      setCity(userData.address?.city || "");
-      setState(userData.address?.state || "");
+      setStreet(profile.address?.street || "");
+      setBairro(profile.address?.bairro || "");
+      setCity(profile.address?.city || "");
+      setState(profile.address?.state || "");
     }
-  }, [userData]);
+  }, [profile]);
 
-  // 3. A função de envio com o Objeto Perfeito!
   const handleConfirm = async () => {
-    if (!userData?.id) return;
-    setIsSaving(true);
+    if (!profile?.id) return;
 
-    const dadosAtualizados = {
-      email: email,
-      birthDate: birthDate,
-      phone: phone,
-      gender: gender,
-      address: {
-        street: street,
-        bairro: bairro,
-        city: city,
-        state: state,
-      },
-    };
+    try {
+      setIsSaving(true);
 
-    const sucesso = await updateUserProfile(userData.id, dadosAtualizados);
+      const payload = {
+        email,
+        birthDate: new Date(birthDate),
+        phone,
+        gender,
+        address: {
+          street,
+          bairro,
+          city,
+          state,
+        },
+      };
 
-    setIsSaving(false);
+      let userResponse;
 
-    if (sucesso) {
-      alert("Perfil atualizado com sucesso!");
-      window.location.reload();
-    } else {
-      alert("Erro ao atualizar o perfil.");
+      if (profileImage) {
+        const avatarFormData = new FormData();
+        avatarFormData.append("avatar", profileImage);
+
+        const [user, _image] = await Promise.all([
+          updateUserProfile(profile.id, payload),
+          uploadUserAvatar(profile.id, avatarFormData),
+        ]);
+
+        userResponse = user;
+      } else {
+        userResponse = await updateUserProfile(profile.id, payload);
+      }
+
+      if (userResponse?.id) {
+        toast.success("Perfil atualizado com sucesso!");
+        window.location.reload();
+      } else {
+        toast.error("Erro ao atualizar o perfil.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao atualizar o perfil.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -79,7 +100,7 @@ export function EditProfileModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-[30px] w-full max-w-[400px] p-8 relative shadow-2xl font-sans max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[30px] w-full max-w-100 p-8 relative shadow-2xl font-sans max-h-[90vh] overflow-y-auto">
         {/* Cabeçalho */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-900">Editar Perfil</h2>
@@ -94,10 +115,11 @@ export function EditProfileModal({
         {/* Foto e Nome */}
         <div className="flex items-center gap-4 mb-8">
           <div className="flex flex-col items-center">
-            <img
-              src="https://github.com/shadcn.png"
-              alt="Foto de Perfil"
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+            <ProfileImageUpload
+              file={profileImage}
+              onChange={setProfileImage}
+              avatarUrl={profile?.avatarUrl}
+              size={80}
             />
             <span className="text-xs text-gray-400 mt-2 cursor-pointer hover:text-gray-600 transition-colors">
               Alterar Foto
@@ -105,7 +127,7 @@ export function EditProfileModal({
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900 leading-tight w-36">
-              {userData?.fullName || "Carregando..."}
+              {profile?.fullName || "Carregando..."}
             </h3>
             <p className="text-green-500 text-xs font-bold flex items-center gap-1 mt-1">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -122,7 +144,7 @@ export function EditProfileModal({
             </label>
             <input
               type="date"
-              value={birthDate}
+              value={birthDate ?? ""}
               onChange={(e) => setBirthDate(e.target.value)}
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none"
             />
@@ -215,8 +237,8 @@ export function EditProfileModal({
                   type="radio"
                   name="sexo"
                   value="Homem"
-                  checked={gender === "Homem"}
-                  onChange={(e) => setGender(e.target.value)}
+                  checked={gender === "masculino"}
+                  onChange={() => setGender(EnumUserGender.MALE)}
                   className="accent-red-500"
                 />{" "}
                 Homem
@@ -225,9 +247,9 @@ export function EditProfileModal({
                 <input
                   type="radio"
                   name="sexo"
-                  value="Mulher"
-                  checked={gender === "Mulher"}
-                  onChange={(e) => setGender(e.target.value)}
+                  value="Feminino"
+                  checked={gender === "feminino"}
+                  onChange={() => setGender(EnumUserGender.FEMALE)}
                   className="accent-red-500"
                 />{" "}
                 Mulher
@@ -237,8 +259,8 @@ export function EditProfileModal({
                   type="radio"
                   name="sexo"
                   value="Outro"
-                  checked={gender === "Outro"}
-                  onChange={(e) => setGender(e.target.value)}
+                  checked={gender === "outros"}
+                  onChange={() => setGender(EnumUserGender.OTHERS)}
                   className="accent-red-500"
                 />{" "}
                 Outro
@@ -260,10 +282,11 @@ export function EditProfileModal({
             disabled={isSaving}
             className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
           >
-            Confirmar
+            {isSaving ? "Atualizando..." : "Confirmar"}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
