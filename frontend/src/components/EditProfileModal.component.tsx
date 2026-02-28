@@ -126,7 +126,7 @@ export function EditProfileModal({
             </span>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900 leading-tight w-36">
+            <h3 className="text-lg font-bold text-gray-900 leading-tight w-full">
               {profile?.fullName || "Carregando..."}
             </h3>
             <p className="text-green-500 text-xs font-bold flex items-center gap-1 mt-1">

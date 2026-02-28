@@ -1,8 +1,10 @@
-import { useRooms } from "@/hooks/useRooms";
 import { RoomCard } from "./RoomCard.component";
+import { useMostFavoriteRooms } from "@/hooks/useMostFavoriteRooms";
 
 export default function PopularRooms() {
-  const { rooms, handleToggleFavorites } = useRooms();
+  const { rooms, handleToggleFavorites } = useMostFavoriteRooms();
+
+  if (!rooms || rooms.length === 0) return;
 
   return (
     <section>

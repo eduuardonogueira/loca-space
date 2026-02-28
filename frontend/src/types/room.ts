@@ -129,3 +129,11 @@ export interface IAnnouncesWithFiltersParams {
   orderBy: string | null;
 }
 
+export interface GetRoomResponse {
+  data: IRoomWithAmenities[] | [];
+  total: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+

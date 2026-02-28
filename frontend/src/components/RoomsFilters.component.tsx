@@ -192,7 +192,7 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={totalSpace.min?.toString()}
+            value={totalSpace.min ? totalSpace.min.toString() : ""}
             onChange={(e) =>
               setTotalSpace((prev) => ({
                 ...prev,

@@ -15,6 +15,13 @@ export function Navbar() {
   const { profile, isLoading } = useProfile();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  function formatUserName(name: string) {
+    const splitted = name.split(" ");
+    const firstName = splitted[0];
+    const lastName = splitted[splitted.length - 1];
+    return `${firstName} ${lastName}`;
+  }
+
   return (
     <header className="flex justify-between px-6 md:px-16 h-20 items-center bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
       <div className="flex items-center gap-2 group cursor-pointer">
@@ -58,7 +65,9 @@ export function Navbar() {
       >
         <CircleUserRound size={20} className="transition-colors" />
 
-        <p className="font-medium">{profile?.fullName ?? "Carregando..."}</p>
+        <p className="font-medium">
+          {profile ? formatUserName(profile.fullName) : "Carregando..."}
+        </p>
       </button>
 
       <ProfileModal

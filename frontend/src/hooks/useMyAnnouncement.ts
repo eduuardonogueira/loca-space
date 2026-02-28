@@ -70,7 +70,7 @@ export function useMyAnnouncement() {
     }
   }
 
-  const hasFilters = !!name || !!orderBy || !!status;
+  const hasFilters = !!name || !!orderBy || !!status || !!type;
 
   return {
     rooms,

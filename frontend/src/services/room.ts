@@ -2,6 +2,7 @@
 
 import {
   CreateRoomPayload,
+  GetRoomResponse,
   IAnnouncesWithFiltersParams,
   ICreateRoom,
   IRoomDetails,
@@ -26,6 +27,23 @@ export async function getRooms(): Promise<IRoomWithAmenities[] | null> {
     console.error("Erro ao buscar rooms:", error);
     return null;
   }
+}
+
+export async function getMostFavoriteRooms(
+  pageNumber: number = 1,
+  pageSize: number = 6,
+): Promise<GetRoomResponse> {
+  const params = new URLSearchParams();
+  params.append("pageNumber", pageNumber.toString());
+  params.append("pageSize", pageSize.toString());
+
+  const queryString = params.toString();
+
+  const response = await authFetch(`/favorite/most-favorite?${queryString}`, {
+    method: "GET",
+  });
+
+  return response.json();
 }
 
 export async function getRoomsWithFilters({
@@ -99,21 +117,11 @@ export async function getFavoriteRoomsWithFilters({
 
   const queryString = params.toString();
 
-  try {
-    const response = await authFetch(`/favorites?${queryString}`, {
-      method: "GET",
-    });
+  const response = await authFetch(`/favorite?${queryString}`, {
+    method: "GET",
+  });
 
-    if (!response.ok) {
-      console.error("Erro na requisição:", response.status);
-      return [];
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Erro ao buscar rooms:", error);
-    return [];
-  }
+  return response.json();
 }
 
 export async function getRoomDetails(

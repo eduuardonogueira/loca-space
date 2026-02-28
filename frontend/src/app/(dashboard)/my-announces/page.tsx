@@ -4,7 +4,6 @@ import { Loader, RoomCard, AnnouncesFilters } from "@/components";
 import PopularRooms from "@/components/PopularRooms.component";
 import { CREATE_ROOM_ROUTE } from "@/constants/routes";
 import { useMyAnnouncement } from "@/hooks/useMyAnnouncement";
-import { useRooms } from "@/hooks/useRooms";
 import { PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -66,7 +65,7 @@ export default function RoomsPage() {
               bg-white rounded-2xl
               px-4 py-3.5
               shadow-[0_8px_18px_rgba(15,23,42,0.04)]
-              border border-[#e0e0e4]
+              border border-gray-300
             "
           >
             <div className="flex flex-col gap-1">
@@ -151,7 +150,9 @@ export default function RoomsPage() {
                     size={40}
                     className="text-white bg-gray-700 rounded-full"
                   />
-                  <p className="text-gray-700 text-sm font-bold">Adicionar Anúncio</p>
+                  <p className="text-gray-700 text-sm font-bold">
+                    Adicionar Anúncio
+                  </p>
                 </Link>
                 {rooms.map((room) => (
                   <RoomCard
@@ -168,25 +169,26 @@ export default function RoomsPage() {
           {!hasAnyRoom && !hasFilters && !isLoading && (
             <section
               className="
+                flex flex-col gap-2 items-center
                 mt-4 w-full rounded-[18px]
-                border border-[#e0e0e4]
+                border border-gray-300
                 bg-white px-8 py-10
                 shadow-[0_10px_25px_rgba(15,23,42,0.06)]
               "
             >
-              <p className="text-[18px] font-bold text-[#333] mb-2">
+              <p className="text-xl font-bold text-gray-800">
                 Nenhuma sala cadastrada ainda
               </p>
-              <p className="text-[14px] text-[#666] max-w-160">
-                Ainda não há salas anunciadas na plataforma. Assim que alguém
-                anunciar, elas aparecerão aqui.
+              <p className="text-sm text-gray-500 max-w-130 text-center">
+                Parece que você ainda não adicionou nenhum anúncio em nossa
+                plataforma, assim que você criar elas serão exibidas aqui!
               </p>
               <Link
                 href={CREATE_ROOM_ROUTE}
                 className="
-                  mt-2 px-6 py-2.5 rounded-full border text-sm text-primary
-                  border-primarytext-[14px] font-semibold
-                  transition hover:bg-primary
+                  mt-2 px-6 py-2.5 rounded-full border text-sm 
+                  text-primary border-primary font-semibold
+                  transition hover:border-primary-hover hover:text-primary-hover
                 "
               >
                 Criar Anúncio
@@ -199,7 +201,7 @@ export default function RoomsPage() {
               <section
                 className="
                   mt-4 w-full rounded-[18px]
-                  border border-[#e0e0e4]
+                  border border-gray-300
                   bg-white px-8 py-10
                   shadow-[0_10px_25px_rgba(15,23,42,0.06)]
                   flex flex-col items-center text-center gap-3
@@ -229,7 +231,7 @@ export default function RoomsPage() {
                     className="
                       mt-2 px-6 py-2.5 rounded-full border text-sm 
                       text-primary border-primary font-semibold
-                      transition hover:border-primary2 hover:text-primary-hover
+                      transition hover:border-primary-hover hover:text-primary-hover
                     "
                   >
                     Criar Anúncio

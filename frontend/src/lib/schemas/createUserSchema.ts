@@ -11,7 +11,7 @@ export const stepUserBasicInfoSchema = z.object({
   }),
   phone: z
     .string()
-    .min(10, "Número deve conter no mínimo 10 dígitos")
+    .min(11, "Número deve conter no mínimo 11 dígitos")
     .max(13, "Número deve conter no máximo 13 dígitos")
     .regex(/^\d+$/, "Telefone deve conter apenas números"),
   birthDate: z.coerce

@@ -93,18 +93,17 @@ export class FavoriteService {
 
     const favorites = await query.getMany();
 
-    return favorites.map((fav) => ({
-      ...fav,
-      room: {
-        ...fav.room,
-        amenities:
-          fav.room.roomAmenities?.map((ra) => ({
-            id: ra.amenity.id,
-            name: ra.amenity.name,
-          })) ?? [],
-        roomAmenities: undefined,
-      },
+    const data = favorites.map((fav) => ({
+      ...fav.room,
+      amenities:
+        fav.room.roomAmenities?.map((ra) => ({
+          id: ra.amenity.id,
+          name: ra.amenity.name,
+        })) ?? [],
+      roomAmenities: undefined,
     }));
+
+    return data;
   }
 
   async findMostFavorited(pageNumber: number = 1, pageSize: number = 10) {

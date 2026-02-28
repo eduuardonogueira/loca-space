@@ -51,6 +51,8 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
         ? getRoomsWithFilters(searchParams)
         : getFavoriteRoomsWithFilters(searchParams));
 
+      console.log(response);
+
       setRooms(response);
     } catch (error) {
       toast.error("Erro ao buscar salas");

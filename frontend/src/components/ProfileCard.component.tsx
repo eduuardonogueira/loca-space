@@ -30,14 +30,14 @@ export function ProfileCard({
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center bg-white rounded-[30px] p-4 shadow-2xl">
+      <div className="flex flex-col items-center justify-center bg-white rounded-[30px] p-10 shadow-2xl gap-4">
         <p className="text-gray-500">Usuário não encontrado</p>
         <button
-          className="w-full border-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+          className="flex justify-center gap-2 w-full border border-red-500 text-red-500 font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-colors"
           onClick={() => logout()}
         >
           <LogOutIcon />
-          Logout
+          Sair
         </button>
       </div>
     );
@@ -46,7 +46,7 @@ export function ProfileCard({
   return (
     <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-h-[90vh] max-w-100 p-8 relative shadow-2xl font-sans mx-auto gap-4">
       <div className="flex items-center gap-4">
-        <div className="relative">
+        <div className="relative w-34">
           <img
             src={
               profile.avatarUrl ||
@@ -120,7 +120,7 @@ export function ProfileCard({
                 onClick={() => logout()}
               >
                 <LogOutIcon />
-                Sair da conta
+                Sair
               </button>
             </div>
           ) : (

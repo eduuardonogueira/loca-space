@@ -13,3 +13,4 @@ export async function RequireAuth({ children }: { children: ReactNode }) {
 
   return children;
 }
+

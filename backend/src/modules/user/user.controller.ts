@@ -47,9 +47,22 @@ export class UserController {
     summary: 'Atualiza o avatar do usuário',
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('avatar'))
   uploadAvatar(@Req() req, @UploadedFile() file: Express.Multer.File) {
     return this.userService.uploadAvatar(req.user.userId, file);
+  }
+
+  @Patch(':id/upload-avatar')
+  @ApiOperation({
+    summary: 'Atualiza o avatar do usuário',
+  })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar'))
+  uploadUserAvatar(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.userService.uploadAvatar(id, file);
   }
 
   @Get('me')

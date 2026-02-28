@@ -43,7 +43,7 @@ export class FavoriteController {
     return this.favoriteService.findAll(req.user.userId, filters);
   }
 
-  @Get('most-favoritdas')
+  @Get('most-favorite')
   @ApiOperation({ summary: 'Listar salas mais favoritadas' })
   @ApiResponse({ status: 200, description: 'Lista de salas mais favoritadas' })
   findMostFavorited(
