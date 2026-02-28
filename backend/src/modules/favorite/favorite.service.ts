@@ -100,13 +100,18 @@ export class FavoriteService {
           id: ra.amenity.id,
           name: ra.amenity.name,
         })) ?? [],
+      isFavorite: true,
       roomAmenities: undefined,
     }));
 
     return data;
   }
 
-  async findMostFavorited(pageNumber: number = 1, pageSize: number = 10) {
+  async findMostFavorited(
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    userId?: number,
+  ) {
     if (pageNumber <= 0 || pageSize <= 0) {
       throw new BadRequestException('Page Number ou Page Size inválidos');
     }
@@ -136,6 +141,15 @@ export class FavoriteService {
       .groupBy('room.id')
       .getCount();
 
+    const userFavoriteRoomIds = new Set<number>();
+    if (userId) {
+      const userFavorites = await this.favoriteRepository.find({
+        where: { user: { id: userId } },
+        relations: ['room'],
+      });
+      userFavorites.forEach((fav) => userFavoriteRoomIds.add(fav.room.id));
+    }
+
     const data = rooms.entities.map((room, index) => ({
       ...room,
       amenities:
@@ -144,6 +158,7 @@ export class FavoriteService {
           name: ra.amenity.name,
         })) ?? [],
       totalFavorited: Number(rooms.raw[index]?.favoriteCount || 0),
+      isFavorite: userFavoriteRoomIds.has(room.id),
       roomAmenities: undefined,
     }));
 

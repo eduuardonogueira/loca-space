@@ -47,12 +47,14 @@ export class FavoriteController {
   @ApiOperation({ summary: 'Listar salas mais favoritadas' })
   @ApiResponse({ status: 200, description: 'Lista de salas mais favoritadas' })
   findMostFavorited(
+    @Req() req,
     @Query('pageNumber') pageNumber?: string,
     @Query('pageSize') pageSize?: string,
   ) {
     return this.favoriteService.findMostFavorited(
       pageNumber ? +pageNumber : 1,
       pageSize ? +pageSize : 10,
+      req.user.userId,
     );
   }
 
