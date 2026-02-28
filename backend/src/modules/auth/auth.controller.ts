@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ApiBody, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
-import { SignupDto } from './dto/signup.dto';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from '../user/dto/user.dto';
@@ -36,12 +36,12 @@ export class AuthController {
 
   @Serialize(UserDto)
   @Post('signup')
-  @ApiBody({ type: SignupDto })
+  @ApiBody({ type: CreateUserDto })
   @ApiResponse({
     status: 200,
     description: 'Usuário criado com sucesso.',
   })
-  async signup(@Body() body: SignupDto) {
+  async signup(@Body() body: CreateUserDto) {
     return this.authService.signup(body);
   }
 

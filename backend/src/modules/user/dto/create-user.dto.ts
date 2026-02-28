@@ -42,23 +42,16 @@ export class CreateUserDto {
   @IsString()
   birthDate?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(EnumUserType, {
     message: 'Type must be one of: cliente, locador',
   })
-  @ApiProperty({ example: 'cliente, locador' })
-  type: EnumUserType;
+  @ApiProperty({ example: 'cliente, locador', required: false })
+  type?: EnumUserType;
 
-  @IsNotEmpty()
-  @IsEnum(EnumUserRole, {
-    message: 'Role must be one of: user, admin, gerente',
-  })
-  @ApiProperty({ example: 'user, admin, gerente' })
-  role: EnumUserRole;
-
-  @ApiProperty({ type: CreateAddressDto })
+  @ApiProperty({ type: CreateAddressDto, required: false })
   @ValidateNested()
   @Type(() => CreateAddressDto)
-  @IsNotEmpty()
-  address: CreateAddressDto;
+  @IsOptional()
+  address?: CreateAddressDto;
 }
