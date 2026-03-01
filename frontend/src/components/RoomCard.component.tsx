@@ -2,10 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, Ruler, Users, MessageCircle, ArrowRight, EditIcon } from "lucide-react";
 import { IRoomWithAmenities } from "@/types/room";
 import { ROOM_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../utils/formatRoomAddress";
+import { createConversation } from "@/services/chat";
 
 type RoomCardProps = {
   room: IRoomWithAmenities;
@@ -18,6 +20,17 @@ export function RoomCard({
   mode = "view",
   handleToggleFavorites,
 }: RoomCardProps) {
+  const router = useRouter();
+
+  const handleSendMessage = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const result = await createConversation(room.userId, room.id);
+    if (result.success) {
+      router.push("/messages");
+    }
+  };
+
   return (
     <div className="block">
       <article
@@ -104,10 +117,7 @@ export function RoomCard({
           {mode === "view" ? (
             <div className="flex flex-col gap-2 mt-3">
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                onClick={handleSendMessage}
                 type="button"
                 className="
                 w-full h-9 rounded-full

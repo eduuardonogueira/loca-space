@@ -70,6 +70,39 @@ export class FavoriteService {
         query.andWhere('room.type = :type', { type: filters.type });
       }
 
+      if (filters.minPrice !== undefined && filters.minPrice !== null) {
+        query.andWhere('room.price >= :minPrice', {
+          minPrice: filters.minPrice,
+        });
+      }
+      if (filters.maxPrice !== undefined && filters.maxPrice !== null) {
+        query.andWhere('room.price <= :maxPrice', {
+          maxPrice: filters.maxPrice,
+        });
+      }
+      if (filters.minSize !== undefined && filters.minSize !== null) {
+        query.andWhere('room.size >= :minSize', { minSize: filters.minSize });
+      }
+      if (filters.maxSize !== undefined && filters.maxSize !== null) {
+        query.andWhere('room.size <= :maxSize', { maxSize: filters.maxSize });
+      }
+      if (
+        filters.minTotalSpace !== undefined &&
+        filters.minTotalSpace !== null
+      ) {
+        query.andWhere('room.totalSpace >= :minTotalSpace', {
+          minTotalSpace: filters.minTotalSpace,
+        });
+      }
+      if (
+        filters.maxTotalSpace !== undefined &&
+        filters.maxTotalSpace !== null
+      ) {
+        query.andWhere('room.totalSpace <= :maxTotalSpace', {
+          maxTotalSpace: filters.maxTotalSpace,
+        });
+      }
+
       if (filters.status) {
         query.andWhere('room.status = :status', { status: filters.status });
       }

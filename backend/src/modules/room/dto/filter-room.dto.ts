@@ -28,6 +28,10 @@ export class FilterRoomDto {
   @IsString()
   address?: string;
 
+  @ApiPropertyOptional({
+    description: 'Ordenação dos resultados',
+    enum: ['data-recente', 'data-antiga', 'maior-preço', 'menor-preço', 'default'],
+  })
   @IsOptional()
   @IsString()
   orderBy?: OrderByType | null;
@@ -68,4 +72,42 @@ export class FilterRoomDto {
   @IsArray()
   @IsNumber({}, { each: true })
   amenities?: number[];
+
+  @ApiPropertyOptional({
+    description: 'Preço mínimo',
+    type: Number,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  minPrice?: number;
+
+  @ApiPropertyOptional({
+    description: 'Preço máximo',
+    type: Number,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  maxPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  minSize?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  maxSize?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  minTotalSpace?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  maxTotalSpace?: number;
 }

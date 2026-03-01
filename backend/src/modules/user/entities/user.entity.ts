@@ -12,6 +12,7 @@ import { Room } from '../../room/entities/room.entity';
 import { Favorite } from '../../favorite/entities/favorite.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Address } from 'src/modules/address/entities/address.entity';
+import { ConversationParticipant } from '../../chat/entities/conversation-participant.entity';
 
 @Entity('User')
 export class User {
@@ -59,6 +60,9 @@ export class User {
 
   @OneToMany(() => Appointment, (appointment) => appointment.user)
   appointments: Appointment[];
+
+  @OneToMany(() => ConversationParticipant, (cp) => cp.user)
+  conversationParticipants: ConversationParticipant[];
 
   @OneToOne(() => Address, (address) => address.room, {
     cascade: true,

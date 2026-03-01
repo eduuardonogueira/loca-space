@@ -12,6 +12,7 @@ import { FavoriteModule } from '../favorite/favorite.module';
 import { SelfConsultModule } from '../../tasks/self-consult/self-consult.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailModule } from '../email/email/email.module';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { EmailModule } from '../email/email/email.module';
       },
     }),
     EmailModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

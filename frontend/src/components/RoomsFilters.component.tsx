@@ -100,9 +100,9 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={price.min ? price.min.toString() : ""}
+            value={price.min !== null ? price.min.toString() : ""}
             onChange={(e) =>
-              setPrice((prev) => ({ ...prev, min: Number(e.target.value) }))
+              setPrice((prev) => ({ ...prev, min: e.target.value ? Number(e.target.value) : null }))
             }
           />
           <span className="text-[12px] text-[#777]">–</span>
@@ -116,9 +116,9 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={price.max ? price.max.toString() : ""}
+            value={price.max !== null ? price.max.toString() : ""}
             onChange={(e) =>
-              setPrice((prev) => ({ ...prev, max: Number(e.target.value) }))
+              setPrice((prev) => ({ ...prev, max: e.target.value ? Number(e.target.value) : null }))
             }
           />
         </div>
@@ -146,9 +146,9 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={size.min ? size.min.toString() : ""}
+            value={size.min !== null ? size.min.toString() : ""}
             onChange={(e) =>
-              setSize((prev) => ({ ...prev, min: Number(e.target.value) }))
+              setSize((prev) => ({ ...prev, min: e.target.value ? Number(e.target.value) : null }))
             }
           />
           <span className="text-[12px] text-[#777]">–</span>
@@ -162,9 +162,9 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={size.max ? size.max.toString() : ""}
+            value={size.max !== null ? size.max.toString() : ""}
             onChange={(e) =>
-              setSize((prev) => ({ ...prev, max: Number(e.target.value) }))
+              setSize((prev) => ({ ...prev, max: e.target.value ? Number(e.target.value) : null }))
             }
           />
         </div>
@@ -192,11 +192,11 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={totalSpace.min ? totalSpace.min.toString() : ""}
+            value={totalSpace.min !== null ? totalSpace.min.toString() : ""}
             onChange={(e) =>
               setTotalSpace((prev) => ({
                 ...prev,
-                min: Number(e.target.value),
+                min: e.target.value ? Number(e.target.value) : null,
               }))
             }
           />
@@ -211,11 +211,11 @@ export function RoomsFilters({
               focus:outline-none focus:border-[#e53935]
               focus:ring-1 focus:ring-[#e53935]/40
             "
-            value={totalSpace.max ? totalSpace.max.toString() : ""}
+            value={totalSpace.max !== null ? totalSpace.max.toString() : ""}
             onChange={(e) =>
               setTotalSpace((prev) => ({
                 ...prev,
-                max: Number(e.target.value),
+                max: e.target.value ? Number(e.target.value) : null,
               }))
             }
           />
