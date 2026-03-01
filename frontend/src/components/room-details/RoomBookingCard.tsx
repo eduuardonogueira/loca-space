@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Heart, Share2 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { IRoomDetails } from "@/types/room";
 import { RoomCalendar } from "./RoomCalendar";
+import { createConversation } from "@/services/chat";
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -28,6 +30,7 @@ interface IRoomBookingCardProps {
 }
 
 export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
+  const router = useRouter();
   // ✅ seleção livre: 1 dia ou vários dias
   const [range, setRange] = useState<DateRange | undefined>(undefined);
 
@@ -138,6 +141,15 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
       <button
         type="button"
         disabled={!normalizedRange?.from}
+        onClick={async () => {
+          const result = await createConversation(
+            roomDetails.room.userId,
+            roomDetails.room.id,
+          );
+          if (result.success) {
+            router.push("/messages");
+          }
+        }}
         className="
           mt-5 h-12 w-full rounded-full bg-[#e53935]
           text-sm font-semibold text-white
