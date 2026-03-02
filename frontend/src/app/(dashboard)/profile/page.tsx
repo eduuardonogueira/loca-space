@@ -38,7 +38,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-350 mx-auto p-6 min-h-screen relative">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-4 xl:col-span-3 sticky top-8 h-full">
+        <div className="lg:col-span-4 sticky top-8 h-full">
           <ProfileCard
             type="page"
             onEditClick={() => setIsEditModalOpen(true)}
@@ -47,7 +47,7 @@ export default function ProfilePage() {
           />
         </div>
 
-        <div className="lg:col-span-8 xl:col-span-9 space-y-10">
+        <div className="lg:col-span-8 space-y-10">
           <section>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">Histórico</h2>

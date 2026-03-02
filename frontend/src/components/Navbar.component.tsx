@@ -8,6 +8,7 @@ import { useNavbarLinks } from "../hooks/useNavbarLinks";
 import { ProfileModal } from "./ProfileModal.component";
 import { useProfile } from "@/hooks/useProfile";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -62,13 +63,23 @@ export function Navbar() {
 
       <button
         onClick={() => setIsProfileModalOpen(true)}
-        className="group flex items-center gap-2 border border-red-400 px-4 py-2 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md"
+        className="flex items-center w-max gap-2 px-4 py-2 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md"
       >
-        <CircleUserRound size={20} className="transition-colors" />
-
-        <p className="font-medium">
+        <p className="font-medium text-nowrap">
           {profile ? formatUserName(profile.fullName) : "Carregando..."}
         </p>
+
+        {profile?.avatarUrl ? (
+          <Image
+            src={profile?.avatarUrl}
+            height={36}
+            width={36}
+            alt="perfil"
+            className="rounded-full"
+          />
+        ) : (
+          <CircleUserRound size={20} className="transition-colors" />
+        )}
       </button>
 
       <ProfileModal

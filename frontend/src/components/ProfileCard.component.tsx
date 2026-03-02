@@ -46,18 +46,18 @@ export function ProfileCard({
   return (
     <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-h-[90vh] max-w-100 p-8 relative shadow-2xl font-sans mx-auto gap-4">
       <div className="flex items-center gap-4">
-        <div className="relative w-max">
+        <div className="relative w-20">
           <img
             src={
               profile.avatarUrl ||
-              "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Windows_10_Default_Profile_Picture.svg/960px-Windows_10_Default_Profile_Picture.svg.png"
+              "https://upload.wikimedia.org/ikipedia/commons/thumb/b/b5/Windows_10_Default_Profile_Picture.svg/960px-Windows_10_Default_Profile_Picture.svg.png"
             }
             alt="Foto de Perfil"
             className="w-16 h-16 rounded-full  border-2 border-white shadow-md"
           />
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
         </div>
-        <div>
+        <div className="w-full">
           <h2 className="text-xl font-bold text-gray-900 w-full">
             {profile.fullName}
           </h2>
@@ -112,12 +112,12 @@ export function ProfileCard({
             {type === "modal" ? (
               <div className="flex flex-col gap-2 w-full">
                 <Link href={PROFILE_ROUTE} className="flex-1" onClick={onClose}>
-                  <button className="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                  <button className="w-full cursor-pointer bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
                     Ver Perfil
                   </button>
                 </Link>
                 <button
-                  className="flex justify-center gap-2 w-full border border-red-500 text-red-500 font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-colors"
+                  className="flex justify-center cursor-pointer gap-2 w-full border border-red-500 text-red-500 font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-colors"
                   onClick={() => logout()}
                 >
                   <LogOutIcon />
