@@ -36,7 +36,7 @@ export function RoomDetailsView({ roomId }: RoomDetailsViewProps) {
 
   const { room } = roomDetails;
 
-  const gallery = [room.bannerUrl, ...room.photoUrls];
+  const gallery = [room.bannerUrl, ...(room.photoUrls ? room.photoUrls : [])];
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#f4f4f6]">

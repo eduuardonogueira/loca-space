@@ -98,7 +98,6 @@ export default function ReservationsPage() {
       );
     }
 
-    // dateDesc
     return list.sort(
       (a, b) =>
         new Date(b.startDateTime).getTime() -

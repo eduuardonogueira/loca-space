@@ -3,13 +3,14 @@
 import { Loader, RoomCard, RoomsFilters } from "@/components";
 import PopularRooms from "@/components/PopularRooms.component";
 import { useRoomsWithFilters } from "@/hooks/useRoomWithFilters";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function RoomsPage() {
   const params = useSearchParams();
-  const addressParams = params.get("adress")
-  const typeParams = params.get("type")
+  const addressParams = params.get("adress");
+  const typeParams = params.get("type");
+
   const {
     rooms,
     isLoading,
@@ -25,16 +26,22 @@ export default function RoomsPage() {
     setSize,
     setTotalSpace,
     amenitieIds,
+    type,
+    setType,
     setAmenitieIds,
     handleToggleFavorites,
     address,
   } = useRoomsWithFilters("rooms");
-  if(addressParams){
-    setAddress(addressParams)
-  }
-  if(typeParams){
-    //setType(typeParams)
-  }
+
+  useEffect(() => {
+    if (addressParams) {
+      setAddress(addressParams);
+    }
+    if (typeParams) {
+      setType(typeParams);
+    }
+  }, [typeParams, addressParams]);
+
   const [location, setLocation] = useState(address || "");
 
   const hasAnyRoom = rooms.length > 0;
@@ -57,6 +64,8 @@ export default function RoomsPage() {
         "
       >
         <RoomsFilters
+          type={type}
+          setType={setType}
           amenitieIds={amenitieIds}
           setAmenitieIds={setAmenitieIds}
           orderBy={orderBy}

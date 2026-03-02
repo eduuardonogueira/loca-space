@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
 type RoomGalleryProps = {
-  images?: string[];
+  images: (string | null)[];
 };
 
 export function RoomGallery({ images }: RoomGalleryProps) {
@@ -29,7 +29,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
     <div className="rounded-2xl border border-[#e7e7eb] bg-white p-4 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
       <div className="relative">
         <img
-          src={list[activeIndex]}
+          src={list[activeIndex] ?? undefined}
           alt="Sala"
           className="h-105 w-full rounded-2xl object-cover"
         />
@@ -72,7 +72,7 @@ export function RoomGallery({ images }: RoomGalleryProps) {
                 `}
               >
                 <img
-                  src={src}
+                  src={src ?? undefined}
                   alt={`Miniatura ${i + 1}`}
                   className={`
                     h-24 w-full object-cover transition

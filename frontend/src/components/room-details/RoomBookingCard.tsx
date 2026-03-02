@@ -233,7 +233,7 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
           {new Intl.NumberFormat("pt-BR", {
             style: "currency",
             currency: "BRL",
-          }).format(calculateBookingPrice())}{" "}
+          }).format(calculateBookingPrice())}
         </p>
       </div>
 

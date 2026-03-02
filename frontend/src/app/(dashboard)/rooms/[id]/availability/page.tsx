@@ -205,12 +205,13 @@ export default function Availability() {
             <p className="text-sm text-gray-500 mb-6">
               Você não criou nenhuma disponibilidade para essa sala no momento
             </p>
-            <button
-              onClick={() => document.getElementById("add-btn")?.click()}
+            <Button
+              type="button"
+              onClick={openAddModal}
               className="px-6 py-2 bg-red-500 text-white text-sm rounded-md hover:bg-red-800 cursor-pointer"
             >
               Criar agora!
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

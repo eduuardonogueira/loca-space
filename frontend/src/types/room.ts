@@ -45,8 +45,8 @@ export interface IRoom {
   price: number;
   status: IRoomStatus;
   description: string;
-  bannerUrl: string;
-  photoUrls: string[];
+  bannerUrl: string | null;
+  photoUrls: string[] | null;
   isFavorite: boolean;
   parkingSlots: number;
   createdAt: string;

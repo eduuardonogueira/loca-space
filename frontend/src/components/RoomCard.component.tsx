@@ -52,7 +52,7 @@ export function RoomCard({
       >
         <div className="relative h-42.5 overflow-hidden">
           <img
-            src={room.bannerUrl}
+            src={room.bannerUrl ?? undefined}
             alt={room.name}
             className="w-full h-full object-cover"
           />

@@ -14,7 +14,7 @@ export function ProfileRoomCard({ room }: IProfileRoomCardProps) {
       className="bg-white p-4 rounded-xl w-full border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
     >
       <img
-        src={room.bannerUrl}
+        src={room.bannerUrl ?? undefined}
         alt={room.name}
         className="w-24 h-20 rounded-lg object-cover bg-gray-200"
       />

@@ -9,8 +9,10 @@ interface IRoomsFiltersProps {
   orderBy: string | null;
   amenitieIds: number[];
   price: IFilterRange;
+  type: string | null;
   size: IFilterRange;
   totalSpace: IFilterRange;
+  setType: Dispatch<SetStateAction<string | null>>;
   setOrderBy: Dispatch<SetStateAction<string | null>>;
   setPrice: Dispatch<SetStateAction<IFilterRange>>;
   setSize: Dispatch<SetStateAction<IFilterRange>>;
@@ -22,15 +24,17 @@ export function RoomsFilters({
   orderBy,
   amenitieIds,
   price,
+  type,
   size,
   totalSpace,
   setOrderBy,
+  setType,
   setPrice,
   setSize,
   setTotalSpace,
   setAmenitieIds,
 }: IRoomsFiltersProps) {
-  const { orderByOptions } = useRoomFilters();
+  const { orderByOptions, roomTypeOptions } = useRoomFilters();
   const { amenities } = useAmenities();
 
   return (
@@ -102,7 +106,10 @@ export function RoomsFilters({
             "
             value={price.min !== null ? price.min.toString() : ""}
             onChange={(e) =>
-              setPrice((prev) => ({ ...prev, min: e.target.value ? Number(e.target.value) : null }))
+              setPrice((prev) => ({
+                ...prev,
+                min: e.target.value ? Number(e.target.value) : null,
+              }))
             }
           />
           <span className="text-[12px] text-[#777]">–</span>
@@ -118,7 +125,10 @@ export function RoomsFilters({
             "
             value={price.max !== null ? price.max.toString() : ""}
             onChange={(e) =>
-              setPrice((prev) => ({ ...prev, max: e.target.value ? Number(e.target.value) : null }))
+              setPrice((prev) => ({
+                ...prev,
+                max: e.target.value ? Number(e.target.value) : null,
+              }))
             }
           />
         </div>
@@ -148,7 +158,10 @@ export function RoomsFilters({
             "
             value={size.min !== null ? size.min.toString() : ""}
             onChange={(e) =>
-              setSize((prev) => ({ ...prev, min: e.target.value ? Number(e.target.value) : null }))
+              setSize((prev) => ({
+                ...prev,
+                min: e.target.value ? Number(e.target.value) : null,
+              }))
             }
           />
           <span className="text-[12px] text-[#777]">–</span>
@@ -164,7 +177,10 @@ export function RoomsFilters({
             "
             value={size.max !== null ? size.max.toString() : ""}
             onChange={(e) =>
-              setSize((prev) => ({ ...prev, max: e.target.value ? Number(e.target.value) : null }))
+              setSize((prev) => ({
+                ...prev,
+                max: e.target.value ? Number(e.target.value) : null,
+              }))
             }
           />
         </div>
@@ -219,6 +235,44 @@ export function RoomsFilters({
               }))
             }
           />
+        </div>
+      </div>
+
+      {/* Type */}
+      <div
+        className="
+          mt-3 pt-3 border-t border-[#f1f1f4]
+          first:mt-0 first:pt-0 first:border-t-0
+        "
+      >
+        <p className="text-[13px] font-semibold mb-2 text-[#333]">
+          Tipo da Sala:
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {roomTypeOptions.map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              className={`
+              inline-flex items-center justify-center h-9 px-4.5 rounded-full
+              border text-[0.85rem] whitespace-nowrap cursor-pointer transition
+              hover:border-[#d6d6dd] hover:bg-[#f5f5f9]
+              hover:shadow-[0_2px_6px_rgba(15,23,42,0.05)] 
+              focus:outline-none focus:ring-0 active:outline-none active:ring-0
+              ${
+                type === option.value
+                  ? "bg-[#e53935] border-[#e53935] text-white"
+                  : "bg-white border-[#e5e5e5] text-[#555]"
+              }
+            `}
+              onClick={() =>
+                setType(option.value === type ? null : option.value)
+              }
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       </div>
 

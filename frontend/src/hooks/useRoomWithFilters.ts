@@ -30,6 +30,7 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
   const [isLoading, setIsLoading] = useState(false);
   const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
   const [address, setAddress] = useState<string | null>(initialAddress);
+  const [type, setType] = useState<string | null>(null);
   const [size, setSize] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
   const [price, setPrice] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
   const [totalSpace, setTotalSpace] =
@@ -49,6 +50,7 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
       maxTotalSpace: totalSpace?.max,
       minTotalSpace: totalSpace?.min,
       amenities: amenitieIds,
+      type,
       orderBy,
     };
 
@@ -128,5 +130,8 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
     hasFilters,
     setAmenitieIds,
     handleToggleFavorites,
+    type,
+    setType,
   };
 }
+

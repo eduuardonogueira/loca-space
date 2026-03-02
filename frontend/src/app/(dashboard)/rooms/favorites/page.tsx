@@ -16,6 +16,7 @@ export default function RoomsPage() {
     hasFilters,
     orderBy,
     price,
+    type,
     size,
     totalSpace,
     setOrderBy,
@@ -25,6 +26,7 @@ export default function RoomsPage() {
     amenitieIds,
     setAmenitieIds,
     handleToggleFavorites,
+    setType,
   } = useRoomsWithFilters("favorites");
   const [location, setLocation] = useState("");
 
@@ -48,6 +50,8 @@ export default function RoomsPage() {
         "
       >
         <RoomsFilters
+          type={type}
+          setType={setType}
           amenitieIds={amenitieIds}
           setAmenitieIds={setAmenitieIds}
           orderBy={orderBy}
