@@ -13,9 +13,6 @@ export class Appointment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  order: number;
-
   @Column({
     type: 'enum',
     enum: ['PENDING', 'CONFIRMED', 'CANCELLED'],
@@ -23,14 +20,17 @@ export class Appointment {
   })
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
 
-  @Column({ type: 'date' })
-  date: string;
+  @Column({ type: 'timestamp' })
+  startDateTime: Date;
 
-  @Column({ type: 'time' })
-  startTime: string;
+  @Column({ type: 'timestamp' })
+  endDateTime: Date;
 
-  @Column({ type: 'time' })
-  endTime: string;
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  totalValue: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  price: number;
 
   @Column({ type: 'varchar', nullable: true })
   details: string | null;

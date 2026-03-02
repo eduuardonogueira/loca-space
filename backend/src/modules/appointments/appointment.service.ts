@@ -24,17 +24,34 @@ export class AppointmentService {
     private readonly emailService: EmailService,
   ) {}
 
-  async create(dto: CreateAppointmentDto): Promise<Appointment> {
+  private parseDateTime(dateTimeString: string): Date {
+    // "01/03/2025 08:00" -> DD/MM/YYYY HH:mm
+    const [datePart, timePart] = dateTimeString.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const [hour, minute] = timePart.split(':');
+    return new Date(+year, +month - 1, +day, +hour, +minute);
+  }
+
+  async create(
+    userId: number,
+    dto: CreateAppointmentDto,
+  ): Promise<Appointment> {
     const user = await this.userRepository.findOne({
-      where: { id: dto.userId },
+      where: { id: userId },
     });
     if (!user) throw new NotFoundException('User not found');
     const room = await this.roomRepository.findOne({
       where: { id: dto.roomId },
     });
     if (!room) throw new NotFoundException('Room not found');
+
+    const startDateTime = this.parseDateTime(dto.startDateTime);
+    const endDateTime = this.parseDateTime(dto.endDateTime);
+
     const appointment = this.appointmentRepository.create({
       ...dto,
+      startDateTime,
+      endDateTime,
       user,
       room,
       createdAt: new Date(),
@@ -47,9 +64,8 @@ export class AppointmentService {
         user.email,
         user.fullName,
         roomName,
-        dto.date,
-        dto.startTime,
-        dto.endTime,
+        dto.startDateTime,
+        dto.endDateTime,
         dto.title,
       )
       .catch((err) =>
@@ -82,11 +98,15 @@ export class AppointmentService {
     return findedAppointment;
   }
 
-  async update(id: number, dto: UpdateAppointmentDto): Promise<Appointment> {
+  async update(
+    id: number,
+    userId: number,
+    dto: UpdateAppointmentDto,
+  ): Promise<Appointment> {
     const appointment = await this.findOne(id);
-    if (dto.userId) {
+    if (userId) {
       const user = await this.userRepository.findOne({
-        where: { id: dto.userId },
+        where: { id: userId },
       });
       if (!user) throw new NotFoundException('User not found');
       appointment.user = user;
@@ -98,7 +118,17 @@ export class AppointmentService {
       if (!room) throw new NotFoundException('Room not found');
       appointment.room = room;
     }
-    Object.assign(appointment, dto);
+
+    const updatedProperties: any = { ...dto };
+
+    if (dto.startDateTime) {
+      updatedProperties.startDateTime = this.parseDateTime(dto.startDateTime);
+    }
+    if (dto.endDateTime) {
+      updatedProperties.endDateTime = this.parseDateTime(dto.endDateTime);
+    }
+
+    Object.assign(appointment, updatedProperties);
     return this.appointmentRepository.save(appointment);
   }
 

@@ -71,9 +71,8 @@ export class EmailService {
     email: string,
     userName: string,
     roomName: string,
-    date: string,
-    startTime: string,
-    endTime: string,
+    startDateTime: string,
+    endDateTime: string,
     title: string,
   ) {
     const html = `
@@ -92,10 +91,10 @@ export class EmailService {
               <strong>📌 Título:</strong> ${title}
             </p>
             <p style="margin: 8px 0; font-size: 15px; color: #555;">
-              <strong>📆 Data:</strong> ${date}
+              <strong>📆 Início:</strong> ${startDateTime}
             </p>
             <p style="margin: 8px 0; font-size: 15px; color: #555;">
-              <strong>🕐 Horário:</strong> ${startTime} - ${endTime}
+              <strong>📆 Fim:</strong> ${endDateTime}
             </p>
           </div>
           <p style="font-size: 14px; color: #666;">Não se esqueça do seu compromisso!</p>
@@ -107,7 +106,7 @@ export class EmailService {
     try {
       await this.mailerService.sendMail({
         to: email,
-        subject: `📅 Agendamento confirmado: ${roomName} em ${date}`,
+        subject: `📅 Agendamento confirmado: ${roomName} em ${startDateTime.split(' ')[0]}`,
         html,
       });
       this.logger.log(

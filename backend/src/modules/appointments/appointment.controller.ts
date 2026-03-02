@@ -7,24 +7,29 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AppointmentService } from './appointment.service';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
   DeleteAppointmentDto,
 } from './dto/appointment.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Appointment')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('appointment')
 export class AppointmentController {
   constructor(private readonly service: AppointmentService) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar agendamento' })
-  create(@Body() dto: CreateAppointmentDto) {
-    return this.service.create(dto);
+  create(@Req() req, @Body() dto: CreateAppointmentDto) {
+    return this.service.create(req.user.userId, dto);
   }
 
   @Get()
@@ -42,10 +47,11 @@ export class AppointmentController {
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar agendamento' })
   update(
+    @Req() req,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateAppointmentDto,
   ) {
-    return this.service.update(id, dto);
+    return this.service.update(id, req.user.userId, dto);
   }
 
   @Delete(':id')
