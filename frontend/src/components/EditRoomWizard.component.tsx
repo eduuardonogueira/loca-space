@@ -191,23 +191,47 @@ export function EditRoomWizard({ room, amenities }: EditRoomWizardProps) {
     setCustomAmenities((prev) => prev.filter((id) => id !== id));
   };
 
-  const removeExistingPhoto = (index: number) => {
-    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
+  const removeExistingPhoto = async (index: number) => {
+    const updatedPhotoUrls = existingPhotos.filter((_, i) => i !== index);
+    setExistingPhotos(updatedPhotoUrls);
+
+    const response = await updateRoom(room.id, { photoUrls: updatedPhotoUrls });
+
+    if (response.id) {
+      toast.success("foto removida com sucesso!");
+      return;
+    }
+
+    toast.error("erro ao remover foto!");
+  };
+
+  const removeBanner = async () => {
+    setRemovedBanner(true);
+
+    const response = await updateRoom(room.id, { bannerUrl: null });
+
+    if (response.id) {
+      toast.success("Banner removido com sucesso!");
+      return;
+    }
+
+    toast.error("Erro ao remover banner!");
   };
 
   const onSubmit = useCallback(
     async (data: CreateRoomFormValues) => {
-      console.log("first");
       setIsSubmitting(true);
       try {
         const payload = {
           name: data.name,
           description: data.description,
           type: data.type,
-          pricePerHour: data.price,
-          capacity: data.totalSpace,
+          price: data.price,
+          status: data.status,
+          totalSpace: data.totalSpace,
+          size: data.size,
           address: {
-            cep: data.cep.replace(/\D/g, ""),
+            // cep: data.cep.replace(/\D/g, ""),
             state: data.state,
             city: data.city,
             bairro: data.bairro,
@@ -306,7 +330,7 @@ export function EditRoomWizard({ room, amenities }: EditRoomWizardProps) {
                             type="button"
                             variant="destructive"
                             size="sm"
-                            onClick={() => setRemovedBanner(true)}
+                            onClick={removeBanner}
                             className="opacity-0 transition-opacity group-hover:opacity-100"
                           >
                             <X className="mr-1 size-4" />
@@ -328,20 +352,6 @@ export function EditRoomWizard({ room, amenities }: EditRoomWizardProps) {
                       maxFiles={1}
                       accept="image/*"
                     />
-                  )}
-
-                  {/* Undo remove banner */}
-                  {removedBanner && existingBanner && !bannerFile && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="self-start"
-                      onClick={() => setRemovedBanner(false)}
-                    >
-                      <ArrowLeft className="mr-1 size-3" />
-                      Restaurar banner anterior
-                    </Button>
                   )}
                 </div>
 

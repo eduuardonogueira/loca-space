@@ -143,5 +143,8 @@ export interface GetRoomResponse {
   totalPages: number;
 }
 
-export interface UpdateRoomPayload extends Partial<CreateRoomPayload> {}
+export interface UpdateRoomPayload extends Partial<CreateRoomPayload> {
+  photoUrls?: string[];
+  bannerUrl?: string | null;
+}
 
