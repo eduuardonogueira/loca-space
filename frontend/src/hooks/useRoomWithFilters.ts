@@ -7,6 +7,7 @@ import {
   removeFavorite,
 } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -21,9 +22,14 @@ const DEFAULT_RANGE_VALUE = {
 };
 
 export function useRoomsWithFilters(page: "rooms" | "favorites") {
+  const searchParamsUrl = useSearchParams();
+  const initialAddress = searchParamsUrl
+    ? searchParamsUrl.get("address")
+    : null;
+
   const [isLoading, setIsLoading] = useState(false);
   const [rooms, setRooms] = useState<IRoomWithAmenities[]>([]);
-  const [address, setAddress] = useState<string | null>(null);
+  const [address, setAddress] = useState<string | null>(initialAddress);
   const [size, setSize] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
   const [price, setPrice] = useState<IFilterRange>(DEFAULT_RANGE_VALUE);
   const [totalSpace, setTotalSpace] =
@@ -124,4 +130,3 @@ export function useRoomsWithFilters(page: "rooms" | "favorites") {
     handleToggleFavorites,
   };
 }
-

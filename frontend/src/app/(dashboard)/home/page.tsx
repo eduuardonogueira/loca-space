@@ -1,8 +1,20 @@
-"use server"
+"use client"
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default async function HomePage() {
+export default function HomePage() {
+  const router = useRouter();
+  const [address, setAddress] = useState("");
+  const [roomType, setRoomType] = useState("");
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (address) params.append("address", address);
+    if (roomType) params.append("type", roomType);
+    
+    router.push(`/rooms?${params.toString()}`);
+  };
   return (
     <main className="h-[calc(100vh-80px)] flex flex-col font-sans relative overflow-hidden">
       {/* Imagem de Fundo (Fixa) */}
@@ -52,6 +64,9 @@ export default async function HomePage() {
               <input
                 type="text"
                 placeholder="Digite a cidade, bairro ou rua"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 className="w-full h-[56px] border border-gray-300 rounded-lg px-4 text-gray-700 placeholder-gray-400 outline-none transition-all duration-300 focus:border-[#E85D46] focus:ring-4 focus:ring-[#E85D46]/10"
               />
             </div>
@@ -80,12 +95,18 @@ export default async function HomePage() {
                 type="text"
                 placeholder="Todos os tipos"
                 // Mantive apenas o foco bonito no input
+                value={roomType}
+                onChange={(e) => setRoomType(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 className="w-full h-[56px] border border-gray-300 rounded-lg px-4 text-gray-700 placeholder-gray-400 outline-none transition-all duration-300 focus:border-[#E85D46] focus:ring-4 focus:ring-[#E85D46]/10"
               />
             </div>
 
             {/* Botão Pesquisar */}
-            <button className="h-[56px] w-[60px] bg-[#E85D46] text-white rounded-lg flex items-center justify-center shrink-0 shadow-md transition-all duration-300 ease-out hover:bg-[#ff6b52] hover:shadow-[0_8px_20px_-6px_rgba(232,93,70,0.6)] hover:-translate-y-1 hover:scale-105 active:scale-95 active:shadow-inner">
+            <button 
+              onClick={handleSearch}
+              className="h-[56px] w-[60px] bg-[#E85D46] text-white rounded-lg flex items-center justify-center shrink-0 shadow-md transition-all duration-300 ease-out hover:bg-[#ff6b52] hover:shadow-[0_8px_20px_-6px_rgba(232,93,70,0.6)] hover:-translate-y-1 hover:scale-105 active:scale-95 active:shadow-inner"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
