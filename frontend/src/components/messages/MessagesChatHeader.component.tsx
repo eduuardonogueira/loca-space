@@ -74,6 +74,7 @@ export function MessagesChatHeader({
         </button>
       </header>
       <ProfileModal
+        type="message"
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         profile={profile}
@@ -82,3 +83,4 @@ export function MessagesChatHeader({
     </>
   );
 }
+

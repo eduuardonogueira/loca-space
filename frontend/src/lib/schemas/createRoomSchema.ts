@@ -7,18 +7,18 @@ export const stepBasicInfoSchema = z.object({
   status: z.enum(EnumRoomStatus, { error: "Selecione um Status" }),
   type: z.enum(EnumRoomType, { error: "Selecione um tipo de espaco" }),
   size: z.coerce
-    .number({ error: "Informe um valor válido" })
+    .number({ error: "Informe um tamanho válido" })
     .int("Capacidade deve ser um nímero inteiro")
     .positive("Capacidade deve ser maior que zero"),
   price: z.coerce
-    .number({ error: "Informe um valor válido" })
+    .number({ error: "Informe um preço válido" })
     .positive("Preço deve ser maior que zero")
     .refine((val) => Number.isInteger(val * 100), {
       message: "Preço deve ter no máximo 2 casas decimais",
     })
     .transform((val) => Number(val.toFixed(2))),
   totalSpace: z.coerce
-    .number({ error: "Informe um valor válido" })
+    .number({ error: "Informe uma quantidade válida" })
     .int("Capacidade deve ser um nímero inteiro")
     .positive("Capacidade deve ser maior que zero"),
 });

@@ -5,6 +5,7 @@ import { ProfileCard } from "./ProfileCard.component";
 import { IUser } from "@/types/user";
 
 interface ProfileModalProps {
+  type?: "modal" | "message";
   isOpen: boolean;
   onClose: () => void;
   profile: IUser | null;
@@ -12,6 +13,7 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({
+  type = "modal",
   isOpen,
   onClose,
   profile,
@@ -30,7 +32,7 @@ export function ProfileModal({
         </button>
 
         <ProfileCard
-          type="modal"
+          type={type}
           onClose={onClose}
           isLoading={isLoading}
           profile={profile}

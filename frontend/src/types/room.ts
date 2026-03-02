@@ -82,7 +82,6 @@ export interface CreateRoomPayload {
   description: string;
   status: RoomStatus;
   address: {
-    cep: string;
     street: string;
     number: string;
     complement?: string;
@@ -107,6 +106,13 @@ export const RoomTypeLabels: Record<EnumRoomType, string> = {
   [EnumRoomType.SalaReuniao]: "Sala de Reuniao",
   [EnumRoomType.Escritorio]: "Escritorio",
   [EnumRoomType.Gerais]: "Gerais",
+};
+
+export const RoomStatusLabels: Record<EnumRoomStatus, string> = {
+  [EnumRoomStatus.AVAILABLE]: "Disponível",
+  [EnumRoomStatus.MAINTENANCE]: "Em manutenção",
+  [EnumRoomStatus.OCCUPIED]: "Ocupada",
+  [EnumRoomStatus.UNAVAILABLE]: "Indisponível",
 };
 
 export interface IRoomWithFiltersParams {
@@ -136,4 +142,6 @@ export interface GetRoomResponse {
   pageSize: number;
   totalPages: number;
 }
+
+export interface UpdateRoomPayload extends Partial<CreateRoomPayload> {}
 

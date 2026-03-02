@@ -3,6 +3,7 @@ export const SIGNUP_ROUTE = "/auth/signup";
 export const HOME_ROUTE = "/home";
 export const ROOMS_ROUTE = "/rooms";
 export const ROOM_ROUTE = "/rooms/[id]";
+export const EDIT_ROOM_ROUTE = "/rooms/[id]/edit";
 export const CREATE_ROOM_ROUTE = "/rooms/create";
 
 export const ADMIN_ROUTE = "/admin";

@@ -19,6 +19,8 @@ import { getRooms } from "@/services";
 import { IRoomWithAmenities } from "@/types/room";
 import { AVAILABILITY_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../../../../../utils/formatRoomAddress";
+import { Button } from "flowbite-react";
+import { ArrowLeftIcon } from "lucide-react";
 
 export default function Availability() {
   const params = useParams<{ id: string }>();
@@ -78,7 +80,7 @@ export default function Availability() {
   const handleRoomSelect = (room: IRoomWithAmenities) => {
     setSelectedRoom(room);
     setIsDropdownOpen(false);
-    router.push(`${AVAILABILITY_ROUTE}/${room.id}`);
+    router.push(AVAILABILITY_ROUTE.replace("[id]", room.id.toString()));
   };
 
   const openAddModal = () => {
@@ -136,11 +138,19 @@ export default function Availability() {
     <div className="flex flex-col min-h-screen bg-white">
       <main className="p-10 flex-1">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <FaRegCalendarAlt className="text-3xl text-black" />
-            <h1 className="text-2xl font-bold text-gray-800">
-              Disponibilidade
-            </h1>
+          <div className="flex gap-4">
+            <Button
+              className="bg-primary p-2 hover:bg-primary-hover"
+              onClick={() => router.back()}
+            >
+              <ArrowLeftIcon size={24} />
+            </Button>
+            <div className="flex items-center gap-4">
+              <FaRegCalendarAlt className="text-3xl text-black" />
+              <h1 className="text-2xl font-bold text-gray-800">
+                Disponibilidade
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -177,13 +187,12 @@ export default function Availability() {
                 </div>
               )}
             </div>
-            <button
-              id="add-btn"
-              className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-800 text-sm cursor-pointer"
+            <Button
+              className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-800 text-sm cursor-pointer h-11.5"
               onClick={openAddModal}
             >
               Adicionar
-            </button>
+            </Button>
           </div>
         </div>
 

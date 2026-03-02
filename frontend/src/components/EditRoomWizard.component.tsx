@@ -3,16 +3,9 @@
 import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Building2,
-  MapPin,
-  Sparkles,
-  ImageIcon,
-  Plus,
-  X,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Plus, X, Search, Save, Trash } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -30,85 +23,103 @@ import { Separator } from "@/components/ui/separator";
 
 import {
   createRoomFormSchema,
-  stepSchemas,
   type CreateRoomFormValues,
 } from "@/lib/schemas/createRoomSchema";
 import {
-  CreateRoomPayload,
   EnumRoomStatus,
   EnumRoomType,
+  RoomStatusLabels,
   RoomTypeLabels,
   type IAmenity,
+  type IRoomWithAmenities,
 } from "@/types/room";
 import {
-  createRoom,
+  deleteRoom,
+  updateRoom,
   uploadRoomBanner,
   uploadRoomPhotos,
 } from "@/services/room";
-import { ImageUpload, StepsFooter, StepsHeader } from "@/components";
-import { Button } from "./ui/button";
+import { toast } from "react-toastify";
+import { ImageUpload } from "./ImageUpload.component";
 import { MY_ANNOUNCE_ROUTE } from "@/constants/routes";
 import { useRouter } from "next/navigation";
-import useCep from "@/hooks/useCep";
-import { toast } from "react-toastify";
 
-const STEPS = [
-  { id: 0, label: "Dados Básicos", icon: Building2 },
-  { id: 1, label: "Endereco", icon: MapPin },
-  { id: 2, label: "Recursos", icon: Sparkles },
-  { id: 3, label: "Imagens", icon: ImageIcon },
-];
-
-interface CreateRoomWizardProps {
+interface EditRoomWizardProps {
+  room: IRoomWithAmenities;
   amenities: IAmenity[];
 }
 
-export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
+export function EditRoomWizard({ room, amenities }: EditRoomWizardProps) {
   const router = useRouter();
-  const { formatCep } = useCep();
 
-  const [currentRoomId, setCurrentRoomId] = useState<number | null>(null);
-  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customAmenity, setCustomAmenity] = useState("");
-  const [customAmenities, setCustomAmenities] = useState<string[]>([]);
+  const [customAmenities, setCustomAmenities] = useState<number[]>([]);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
 
+  // Image states
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+
+  // Track existing images from the room
+  const [existingBanner] = useState<string | null>(room.bannerUrl);
+  const [existingPhotos, setExistingPhotos] = useState<string[]>(
+    room.photoUrls ?? [],
+  );
+  const [removedBanner, setRemovedBanner] = useState(false);
+
+  // Pre-populate the form with room data
+  const existingAmenityNames = room.amenities.map((a) => a.id);
 
   const {
     register,
     handleSubmit,
-    trigger,
     setValue,
     watch,
     getValues,
-    setError,
     formState: { errors },
   } = useForm<CreateRoomFormValues>({
-    resolver: zodResolver(createRoomFormSchema) as any,
-    mode: "onChange",
+    resolver: zodResolver(createRoomFormSchema as any),
+    mode: "onSubmit",
     defaultValues: {
-      name: "",
-      description: "",
-      type: undefined,
-      price: undefined,
-      totalSpace: undefined,
-      size: undefined,
-      status: EnumRoomStatus.AVAILABLE,
-      cep: "",
-      state: "",
-      city: "",
-      bairro: "",
-      street: "",
-      number: "",
-      complement: "",
-      amenities: [],
+      name: room.name,
+      description: room.description,
+      type: room.type as any,
+      status: room.status as any,
+      price: room.price,
+      size: room.size,
+      totalSpace: room.totalSpace,
+      state: room.address?.state ?? "",
+      city: room.address?.city ?? "",
+      cep: "12345678",
+      bairro: room.address?.bairro ?? "",
+      street: room.address?.street ?? "",
+      number: room.address?.number ?? "",
+      complement: room.address?.complement ?? "",
+      amenities: existingAmenityNames,
     },
   });
 
   const selectedAmenities = watch("amenities") ?? [];
+
+  const formatCep = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    if (digits.length > 5) {
+      return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+    }
+    return digits;
+  };
+
+  const handleDeleteRoom = async () => {
+    const isDeleted = await deleteRoom(room.id);
+
+    if (isDeleted) {
+      toast.success("Sala deletada com sucesso!");
+      router.push(MY_ANNOUNCE_ROUTE);
+    } else {
+      toast.error("Erro ao deletar sala.");
+    }
+  };
 
   const handleCepChange = async (rawValue: string) => {
     const formatted = formatCep(rawValue);
@@ -174,166 +185,256 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
   const removeAmenity = (id: number) => {
     setValue(
       "amenities",
-      selectedAmenities.filter((id) => id !== id),
+      selectedAmenities.filter((aId) => aId !== id),
       { shouldValidate: true },
     );
     setCustomAmenities((prev) => prev.filter((id) => id !== id));
   };
 
-  // const goToStep = async (targetStep: number) => {
-  //   if (targetStep > currentStep) {
-  //     const schema = stepSchemas[currentStep];
-  //     const fields = Object.keys(schema.shape) as Array<
-  //       keyof CreateRoomFormValues
-  //     >;
-  //     const isValid = await trigger(fields);
-  //     if (!isValid) return;
-  //   }
-  //   setCurrentStep(targetStep);
-  // };
+  const removeExistingPhoto = (index: number) => {
+    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
 
-  const goToStep = async (targetStep: number) => {
-    if (targetStep <= currentStep) {
-      setCurrentStep(targetStep);
-      return;
-    }
-
-    const schema = stepSchemas[currentStep];
-    const values = getValues();
-
-    const result = schema.safeParse(values);
-
-    if (!result.success) {
-      result.error.issues.forEach((err) => {
-        const field = err.path[0] as keyof CreateRoomFormValues;
-        setError(field, {
-          type: "manual",
-          message: err.message,
-        });
-      });
-      return;
-    }
-
-    if (currentStep === 2 && !currentRoomId) {
+  const onSubmit = useCallback(
+    async (data: CreateRoomFormValues) => {
+      console.log("first");
+      setIsSubmitting(true);
       try {
-        setIsSubmitting(true);
-
-        const payload: CreateRoomPayload = {
-          name: values.name,
-          description: values.description,
-          type: values.type,
-          price: values.price,
-          size: values.size,
-          status: values.status,
-          totalSpace: values.totalSpace,
+        const payload = {
+          name: data.name,
+          description: data.description,
+          type: data.type,
+          pricePerHour: data.price,
+          capacity: data.totalSpace,
           address: {
-            // cep: values.cep.replace(/\D/g, ""),
-            state: values.state,
-            city: values.city,
-            bairro: values.bairro,
-            street: values.street,
-            number: values.number,
-            complement: values.complement || undefined,
+            cep: data.cep.replace(/\D/g, ""),
+            state: data.state,
+            city: data.city,
+            bairro: data.bairro,
+            street: data.street,
+            number: data.number,
+            complement: data.complement || undefined,
           },
-          amenities: values.amenities,
+          amenities: data.amenities,
         };
 
-        const result = await createRoom(payload);
+        const result = await updateRoom(room.id, payload);
 
-        if (!result.success || !result.data?.id) {
-          toast.error(result.error || "Erro ao criar espaço");
+        if (!result.id) {
+          toast.error(result.error || "Erro ao atualizar sala");
           return;
         }
 
-        setCurrentRoomId(result.data.id);
-        toast.success("Espaço criado com sucesso!");
+        // Upload new banner if provided
+        if (bannerFile) {
+          const bannerFormData = new FormData();
+          bannerFormData.append("banner", bannerFile);
+          const bannerResult = await uploadRoomBanner(room.id, bannerFormData);
+          if (!bannerResult.success) {
+            toast.error("sala atualizado, mas houve erro ao enviar o banner");
+          }
+        }
+
+        // Upload new photos if provided
+        if (photoFiles.length > 0) {
+          const photosFormData = new FormData();
+          photoFiles.forEach((file) => {
+            photosFormData.append("photos", file);
+          });
+          const photosResult = await uploadRoomPhotos(room.id, photosFormData);
+          if (!photosResult.success) {
+            toast.error("sala atualizado, mas houve erro ao enviar as fotos");
+          }
+        }
+
+        toast.success("sala atualizado com sucesso!");
       } catch {
-        toast.error("Erro ao criar espaço");
-        return;
+        toast.error("Ocorreu um erro inesperado");
       } finally {
         setIsSubmitting(false);
       }
-    }
-
-    setCurrentStep(targetStep);
-  };
-
-  const onSubmit = useCallback(async () => {
-    if (!currentRoomId) {
-      toast.error("Sala não encontrada para envio das imagens");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      if (bannerFile) {
-        const bannerFormData = new FormData();
-        bannerFormData.append("banner", bannerFile);
-
-        const bannerResult = await uploadRoomBanner(
-          currentRoomId,
-          bannerFormData,
-        );
-
-        if (!bannerResult.success) {
-          toast.error("Erro ao enviar banner");
-        }
-      }
-
-      if (photoFiles.length > 0) {
-        const photosFormData = new FormData();
-
-        photoFiles.forEach((file) => {
-          photosFormData.append("photos", file);
-        });
-
-        const photosResult = await uploadRoomPhotos(
-          currentRoomId,
-          photosFormData,
-        );
-
-        if (!photosResult.success) {
-          toast.error("Erro ao enviar fotos");
-        }
-      }
-
-      toast.success("Espaço criado com sucesso!");
-      router.push(MY_ANNOUNCE_ROUTE);
-    } catch {
-      toast.error("Erro inesperado ao enviar imagens");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [bannerFile, photoFiles, currentRoomId, router]);
+    },
+    [bannerFile, photoFiles, room.id],
+  );
 
   return (
     <div className="flex flex-col gap-8">
-      <StepsHeader
-        goToStep={goToStep}
-        currentStep={currentStep}
-        steps={STEPS}
-      />
+      <form
+        onSubmit={handleSubmit(onSubmit, (errors) => {
+          const messages = Object.values(errors)
+            .map((error) => error?.message)
+            .filter(Boolean)
+            .join("\n");
 
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Card>
-          <CardContent>
-            {/* Step 1: Dados Basicos */}
-            {currentStep === 0 && (
+          toast.error(messages);
+        })}
+      >
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {/* Imagens */}
+          <Card className="lg:col-span-1 h-max">
+            <CardContent className="flex flex-col gap-6 ">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Imagens da sala
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Gerencie as imagens da sua sala. Voce pode manter as
+                  existentes ou substituir por novas.
+                </p>
+              </div>
+
               <div className="flex flex-col gap-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-red-500">
-                    Informações do Espaco
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Preencha os dados basicos do seu espaco.
+                {/* Banner section */}
+                <div className="flex flex-col gap-2">
+                  <Label>Banner</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Imagem principal da sala. Recomendado: 1200x400px.
                   </p>
+
+                  {/* Existing banner */}
+                  {existingBanner && !removedBanner && !bannerFile && (
+                    <div className="flex flex-col gap-2">
+                      <div className="group relative aspect-3/1 overflow-hidden rounded-lg border bg-muted">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={existingBanner}
+                          alt="Banner atual do sala"
+                          className="size-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/40">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setRemovedBanner(true)}
+                            className="opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <X className="mr-1 size-4" />
+                            Remover
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Banner atual. Clique em remover para substituir.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Upload new banner */}
+                  {(removedBanner || !existingBanner) && (
+                    <ImageUpload
+                      files={bannerFile ? [bannerFile] : []}
+                      onFilesChange={(files) => setBannerFile(files[0] ?? null)}
+                      maxFiles={1}
+                      accept="image/*"
+                    />
+                  )}
+
+                  {/* Undo remove banner */}
+                  {removedBanner && existingBanner && !bannerFile && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="self-start"
+                      onClick={() => setRemovedBanner(false)}
+                    >
+                      <ArrowLeft className="mr-1 size-3" />
+                      Restaurar banner anterior
+                    </Button>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Photos section */}
+                <div className="flex flex-col gap-2">
+                  <Label>Fotos da sala</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Fotos existentes e novas. Adicione ate 10 fotos no total.
+                  </p>
+
+                  {/* Existing photos grid */}
+                  {existingPhotos.length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Fotos atuais ({existingPhotos.length})
+                      </span>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                        {existingPhotos.map((url, index) => (
+                          <div
+                            key={url}
+                            className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={`Foto ${index + 1} do sala`}
+                              className="size-full object-cover"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/40">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => removeExistingPhoto(index)}
+                                className="size-8 opacity-0 transition-opacity group-hover:opacity-100"
+                                aria-label={`Remover foto ${index + 1}`}
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload new photos */}
+                  <div className="flex flex-col gap-2">
+                    {(existingPhotos.length > 0 || photoFiles.length > 0) && (
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Adicionar novas fotos
+                      </span>
+                    )}
+                    <ImageUpload
+                      files={photoFiles}
+                      onFilesChange={setPhotoFiles}
+                      maxFiles={Math.max(1, 10 - existingPhotos.length)}
+                      accept="image/*"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex flex-col lg:col-span-2 gap-4">
+            {/* Informações da sala */}
+            <Card className="h-max">
+              <CardContent className="flex flex-col gap-6 ">
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">
+                      Informações do Espaço
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Atualize os dados basicos do seu sala.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleDeleteRoom}
+                    className="p-4 border border-red-600 bg-primary text-white rounded-md hover:bg-primary-hover"
+                  >
+                    <Trash />
+                    Apagar sala
+                  </Button>
                 </div>
 
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="name">Nome do espaco</Label>
+                    <Label htmlFor="name">Nome do sala</Label>
                     <Input
                       id="name"
                       placeholder="Ex: Sala de Conferencias Premium"
@@ -348,10 +449,10 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="description">Descrição</Label>
+                    <Label htmlFor="description">Descricao</Label>
                     <Textarea
                       id="description"
-                      placeholder="Descreva o espaço, suas caracteristicas e diferenciais..."
+                      placeholder="Descreva o sala, suas caracteristicas e diferenciais..."
                       rows={4}
                       {...register("description")}
                       aria-invalid={!!errors.description}
@@ -365,7 +466,7 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="type">Tipo de espaço</Label>
+                      <Label htmlFor="type">Tipo de sala</Label>
                       <Select
                         onValueChange={(value) =>
                           setValue("type", value as EnumRoomType, {
@@ -391,26 +492,31 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                         </p>
                       )}
                     </div>
+
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="size">Tamanho da sala (m²)</Label>
-                      <div className="relative">
-                        <Input
-                          id="size"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0,00"
-                          className="pl-10"
-                          {...register("size")}
-                          aria-invalid={!!errors.size}
-                        />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 xt-sm text-muted-foreground">
-                          m²
-                        </span>
-                      </div>
-                      {errors.size && (
+                      <Label htmlFor="type">Status da sala</Label>
+                      <Select
+                        onValueChange={(value) =>
+                          setValue("status", value as EnumRoomStatus, {
+                            shouldValidate: true,
+                          })
+                        }
+                        value={watch("status")}
+                      >
+                        <SelectTrigger className="w-full" id="status">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(EnumRoomStatus).map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {RoomStatusLabels[status]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.status && (
                         <p className="text-sm text-destructive">
-                          {errors.size.message}
+                          {errors.status.message}
                         </p>
                       )}
                     </div>
@@ -418,13 +524,13 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="pricePerHour">Preco por hora (R$)</Label>
+                      <Label htmlFor="price">Preço (R$)</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                           R$
                         </span>
                         <Input
-                          id="pricePerHour"
+                          id="price"
                           type="number"
                           step="0.01"
                           min="0"
@@ -458,19 +564,43 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                       )}
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
 
-            {/* Step 2: Endereco */}
-            {currentStep === 1 && (
-              <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="size">Tamanho da sala (m²)</Label>
+                    <div className="relative">
+                      <Input
+                        id="size"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0,00"
+                        className="pl-10"
+                        {...register("size")}
+                        aria-invalid={!!errors.size}
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 xt-sm text-muted-foreground">
+                        m²
+                      </span>
+                    </div>
+                    {errors.size && (
+                      <p className="text-sm text-destructive">
+                        {errors.size.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Endereço */}
+            <Card className="h-max">
+              <CardContent className="flex flex-col gap-6">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
-                    Endereco do Espaco
+                    Endereco do sala
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Informe o endereco completo. O CEP preenchera
+                    Atualize o endereco do sala. O CEP preenchera
                     automaticamente os demais campos.
                   </p>
                 </div>
@@ -530,12 +660,11 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="neighborhood">Bairro</Label>
+                    <Label htmlFor="bairro">Bairro</Label>
                     <Input
                       id="bairro"
                       placeholder="Bairro"
                       {...register("bairro")}
-                      type="text"
                       aria-invalid={!!errors.bairro}
                     />
                     {errors.bairro && (
@@ -591,21 +720,23 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              </CardContent>
+            </Card>
 
-            {currentStep === 2 && (
-              <div className="flex flex-col gap-6">
+            {/* Amenities */}
+            <Card className="h-max">
+              <CardContent className="flex flex-col gap-6">
+                {/* Amenities */}
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
-                    Recursos
+                    Amenidades
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Selecione os recursos disponíveis no espaco ou adicione
-                    novas.
+                    Atualize as amenidades disponiveis no sala.
                   </p>
                 </div>
 
+                {/* Selected amenities */}
                 {selectedAmenities.length > 0 && (
                   <div className="flex flex-col gap-2">
                     <Label>Selecionadas ({selectedAmenities.length})</Label>
@@ -616,12 +747,12 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                           variant="secondary"
                           className="gap-1 py-1 pl-3 pr-1"
                         >
-                          {amenities.find((a) => a.id === id)?.name}
+                          {amenities.find((am) => am.id === id)?.name}
                           <button
                             type="button"
                             onClick={() => removeAmenity(id)}
                             className="rounded-sm p-0.5 hover:bg-muted-foreground/20"
-                            aria-label={`Remover ${name}`}
+                            aria-label={`Remover ${id}`}
                           >
                             <X className="size-3" />
                           </button>
@@ -664,7 +795,7 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                 {/* Custom amenity input */}
                 <div className="flex flex-col gap-3">
                   <Label htmlFor="custom-amenity">
-                    Adicionar recursos personalizado
+                    Adicionar amenidade personalizada
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -696,65 +827,40 @@ export function CreateRoomWizard({ amenities }: CreateRoomWizardProps) {
                     {errors.amenities.message}
                   </p>
                 )}
-              </div>
-            )}
+              </CardContent>
+            </Card>
+          </div>
 
-            {/* Step 4: Imagens */}
-            {currentStep === 3 && (
-              <div className="flex flex-col gap-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Imagens do Espaco
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Adicione um banner e fotos para seu espaco. As imagens serao
-                    enviadas apos a criacao.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-2">
-                    <Label>Banner</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Imagem principal do espaco. Recomendado: 1200x400px.
-                    </p>
-                    <ImageUpload
-                      files={bannerFile ? [bannerFile] : []}
-                      onFilesChange={(files) => setBannerFile(files[0] ?? null)}
-                      maxFiles={1}
-                      accept="image/*"
-                    />
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex flex-col gap-2">
-                    <Label>Fotos do espaco</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Adicione ate 10 fotos mostrando diferentes angulos e
-                      detalhes.
-                    </p>
-                    <ImageUpload
-                      files={photoFiles}
-                      onFilesChange={setPhotoFiles}
-                      maxFiles={10}
-                      accept="image/*"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Navigation */}
-        <StepsFooter
-          goToStep={goToStep}
-          steps={STEPS}
-          currentStep={currentStep}
-          setCurrentStep={setCurrentStep}
-          isSubmitting={isSubmitting}
-        />
+          <div className="flex col-span-3 gap-2 ml-auto">
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              className="p-6 hover:cursor-pointer"
+              variant="outline"
+              onClick={() => router.push(MY_ANNOUNCE_ROUTE)}
+            >
+              <Trash />
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="p-6 hover:cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Save size={24} />
+                  Salvar Alterações
+                </span>
+              )}
+            </Button>
+          </div>
+        </div>
       </form>
     </div>
   );

@@ -7,7 +7,7 @@ import { IUser } from "@/types/user";
 import { formatDateBR } from "@/utils/formatDate";
 
 interface ProfileCardProps {
-  type?: "modal" | "page";
+  type?: "modal" | "page" | "message";
   onClose?: () => void;
   onEditClick?: () => void;
   profile: IUser | null;
@@ -46,7 +46,7 @@ export function ProfileCard({
   return (
     <div className="flex flex-col bg-white rounded-[30px] w-full h-full max-h-[90vh] max-w-100 p-8 relative shadow-2xl font-sans mx-auto gap-4">
       <div className="flex items-center gap-4">
-        <div className="relative w-34">
+        <div className="relative w-max">
           <img
             src={
               profile.avatarUrl ||
@@ -106,33 +106,35 @@ export function ProfileCard({
         )}
       </div>
 
-      <div className="mt-auto">
-        <div className="flex gap-3">
-          {type === "modal" ? (
-            <div className="flex flex-col gap-2 w-full">
-              <Link href={PROFILE_ROUTE} className="flex-1" onClick={onClose}>
-                <button className="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
-                  Ver Perfil
+      {type !== "message" && (
+        <div className="mt-auto">
+          <div className="flex gap-3">
+            {type === "modal" ? (
+              <div className="flex flex-col gap-2 w-full">
+                <Link href={PROFILE_ROUTE} className="flex-1" onClick={onClose}>
+                  <button className="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                    Ver Perfil
+                  </button>
+                </Link>
+                <button
+                  className="flex justify-center gap-2 w-full border border-red-500 text-red-500 font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-colors"
+                  onClick={() => logout()}
+                >
+                  <LogOutIcon />
+                  Sair
                 </button>
-              </Link>
+              </div>
+            ) : (
               <button
-                className="flex justify-center gap-2 w-full border border-red-500 text-red-500 font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-colors"
-                onClick={() => logout()}
+                onClick={onEditClick}
+                className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
               >
-                <LogOutIcon />
-                Sair
+                Editar Perfil
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={onEditClick}
-              className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
-            >
-              Editar Perfil
-            </button>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

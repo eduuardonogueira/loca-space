@@ -70,7 +70,7 @@ export default function RoomsPage() {
           >
             <div className="flex flex-col gap-1">
               <span className="text-[13px] font-semibold text-[#444]">
-                Bucar por Nome
+                Buscar por Nome
               </span>
 
               <div

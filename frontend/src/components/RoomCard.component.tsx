@@ -3,9 +3,16 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heart, Ruler, Users, MessageCircle, ArrowRight, EditIcon } from "lucide-react";
+import {
+  Heart,
+  Ruler,
+  Users,
+  MessageCircle,
+  ArrowRight,
+  EditIcon,
+} from "lucide-react";
 import { IRoomWithAmenities } from "@/types/room";
-import { ROOM_ROUTE } from "@/constants/routes";
+import { EDIT_ROOM_ROUTE, ROOM_ROUTE } from "@/constants/routes";
 import { formatRoomAddress } from "../utils/formatRoomAddress";
 import { createConversation } from "@/services/chat";
 
@@ -23,8 +30,6 @@ export function RoomCard({
   const router = useRouter();
 
   const handleSendMessage = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
     const result = await createConversation(room.userId, room.id);
     if (result.success) {
       router.push("/messages");
@@ -149,7 +154,7 @@ export function RoomCard({
           ) : (
             <div className="flex flex-col gap-2 mt-3">
               <Link
-                href={ROOM_ROUTE.replace("[id]", room.id.toString())}
+                href={EDIT_ROOM_ROUTE.replace("[id]", room.id.toString())}
                 className="
                 w-full h-9 rounded-full
                 bg-[#e53935] text-[13px] font-semibold

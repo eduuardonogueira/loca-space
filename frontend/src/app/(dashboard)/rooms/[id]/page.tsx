@@ -1,4 +1,4 @@
-import { RoomDetailsView } from "./RoomDetailsView";
+import { RoomDetailsView } from "@/components";
 
 export default async function RoomDetailsPage({
   params,
@@ -8,3 +8,4 @@ export default async function RoomDetailsPage({
   const { id } = await params;
   return <RoomDetailsView roomId={id} />;
 }
+

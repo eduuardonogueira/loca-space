@@ -8,6 +8,7 @@ import {
   IRoomDetails,
   IRoomWithAmenities,
   IRoomWithFiltersParams,
+  UpdateRoomPayload,
 } from "@/types/room";
 import { authFetch } from "./authFetch";
 
@@ -122,6 +123,24 @@ export async function getFavoriteRoomsWithFilters({
   });
 
   return response.json();
+}
+
+export async function getRoomById(roomId: number) {
+  try {
+    const response = await authFetch(`/room/${roomId}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      console.error("Erro na requisição:", response.status);
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro ao buscar detalhes da sala:", error);
+    return null;
+  }
 }
 
 export async function getRoomDetails(
@@ -240,29 +259,16 @@ export async function uploadRoomPhotos(roomId: number, formData: FormData) {
   }
 }
 
-export async function updateRoom(
-  roomData: Partial<ICreateRoom>,
-  roomId: number,
-): Promise<IRoomWithAmenities[] | null> {
-  try {
-    const response = await authFetch(`/room/${roomId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(roomData),
-    });
+export async function updateRoom(roomId: number, roomData: UpdateRoomPayload) {
+  const response = await authFetch(`/room/${roomId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(roomData),
+  });
 
-    if (!response.ok) {
-      console.error("Erro na requisição:", response.status);
-      return null;
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Erro ao atualizar sala:", error);
-    return null;
-  }
+  return response.json();
 }
 
 export async function deleteRoom(roomId: number): Promise<boolean> {

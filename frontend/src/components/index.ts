@@ -18,4 +18,6 @@ export * from "./StepsHeader.component.tsx";
 export * from "./StepsFooter.component.tsx";
 export * from "./ImageUpload.component.tsx";
 export * from "./ProfileImageUpload.component.tsx";
+export * from "./RoomDetailsView.component.tsx";
+export * from "./EditRoomWizard.component.tsx";
 
