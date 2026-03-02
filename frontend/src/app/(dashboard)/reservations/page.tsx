@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 import { ReservationDetailsModal } from "../../../components/ReservationDetailsModal";
 import { CalendarDays, Filter, ChevronDown } from "lucide-react";
 import { ReservationCard } from "@/components/ReservationCard";
 import { EmptyState } from "@/components/EmptyState";
-import { Reservation } from "@/types/reservation";
 import { CancelModal } from "@/components/CancelModal";
-import { deleteReservation, fetchReservations } from "@/services/reservation";
 import { toast } from "react-toastify";
+import { useReservations } from "@/hooks/useReservations";
+import { deleteAppointment } from "@/services/appointments";
+import { IAppointmentWithRoomAndUser } from "@/types/appointment";
 
 type ReservationOrderBy =
   | "capacityDesc"
@@ -18,17 +19,16 @@ type ReservationOrderBy =
   | "dateAsc";
 
 export default function ReservationsPage() {
+  const { reservations, fetchReservations, isLoading } = useReservations();
+
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [selectedRes, setSelectedRes] = useState<Reservation | null>(null);
+  const [selectedRes, setSelectedRes] =
+    useState<IAppointmentWithRoomAndUser | null>(null);
   const [orderBy, setOrderBy] = useState<ReservationOrderBy>("dateDesc");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [reservationToDelete, setReservationToDelete] = useState<number | null>(
-    null,
-  );
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const orderOptions: Array<{ value: ReservationOrderBy; label: string }> = [
     {
@@ -49,70 +49,33 @@ export default function ReservationsPage() {
     },
   ];
 
-  async function loadReservations() {
-    setIsLoading(true);
-    const data = await fetchReservations();
-
-    if (!data) {
-      toast.error("Erro ao carregar reservas");
-      setReservations([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setReservations(data);
-    setIsLoading(false);
-  }
-
-  useEffect(() => {
-    void loadReservations();
-  }, []);
-
-  useEffect(() => {
-    function handleOutsideClick(event: MouseEvent) {
-      if (
-        isDropdownOpen &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [isDropdownOpen]);
-
-  const handleOpenCancelFlow = (id: number) => {
-    setReservationToDelete(id);
+  const handleOpenCancelFlow = () => {
     setIsCancelModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (reservationToDelete === null || isCanceling) return;
-
+  const handleConfirmDelete = async (
+    reservation: IAppointmentWithRoomAndUser,
+  ) => {
     setIsCanceling(true);
-    const deleted = await deleteReservation(reservationToDelete);
+
+    const deleted = await deleteAppointment(reservation.id);
+
     if (!deleted) {
       toast.error("Não foi possível cancelar a reserva.");
       setIsCanceling(false);
       return;
     }
 
-    setIsCancelModalOpen(false);
-    setReservationToDelete(null);
-    if (selectedRes?.id === reservationToDelete) {
-      setSelectedRes(null);
-      setIsDetailsModalOpen(false);
-    }
     toast.success("Reserva cancelada com sucesso");
-    await loadReservations();
+
     setIsCanceling(false);
+    setIsCancelModalOpen(false);
+    await fetchReservations();
   };
 
   const sortedReservations = useMemo(() => {
+    if (reservations === null) return [];
+
     const list = [...reservations];
 
     if (orderBy === "capacityDesc") {
@@ -128,18 +91,19 @@ export default function ReservationsPage() {
     }
 
     if (orderBy === "dateAsc") {
-      return list.sort((a, b) => {
-        const aTime = new Date(`${a.date}T${a.startTime || "00:00"}`).getTime();
-        const bTime = new Date(`${b.date}T${b.startTime || "00:00"}`).getTime();
-        return aTime - bTime;
-      });
+      return list.sort(
+        (a, b) =>
+          new Date(a.startDateTime).getTime() -
+          new Date(b.startDateTime).getTime(),
+      );
     }
 
-    return list.sort((a, b) => {
-      const aTime = new Date(`${a.date}T${a.startTime || "00:00"}`).getTime();
-      const bTime = new Date(`${b.date}T${b.startTime || "00:00"}`).getTime();
-      return bTime - aTime;
-    });
+    // dateDesc
+    return list.sort(
+      (a, b) =>
+        new Date(b.startDateTime).getTime() -
+        new Date(a.startDateTime).getTime(),
+    );
   }, [reservations, orderBy]);
 
   return (
@@ -196,13 +160,13 @@ export default function ReservationsPage() {
           </div>
         ) : sortedReservations.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-10">
-            {sortedReservations.map((res: Reservation) => (
+            {sortedReservations.map((res: IAppointmentWithRoomAndUser) => (
               <ReservationCard
                 key={res.id}
                 reservation={res}
                 onDeleteClick={handleOpenCancelFlow}
-                onDetailsClick={(r: Reservation) => {
-                  setSelectedRes(r);
+                onDetailsClick={() => {
+                  setSelectedRes(res);
                   setIsDetailsModalOpen(true);
                 }}
               />
@@ -214,6 +178,7 @@ export default function ReservationsPage() {
 
         <CancelModal
           isOpen={isCancelModalOpen}
+          reservation={selectedRes}
           onClose={() => setIsCancelModalOpen(false)}
           onConfirm={handleConfirmDelete}
           isLoading={isCanceling}
@@ -229,3 +194,4 @@ export default function ReservationsPage() {
     </main>
   );
 }
+

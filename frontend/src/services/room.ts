@@ -4,7 +4,6 @@ import {
   CreateRoomPayload,
   GetRoomResponse,
   IAnnouncesWithFiltersParams,
-  ICreateRoom,
   IRoomDetails,
   IRoomWithAmenities,
   IRoomWithFiltersParams,

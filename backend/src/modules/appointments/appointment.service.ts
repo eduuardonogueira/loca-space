@@ -24,14 +24,6 @@ export class AppointmentService {
     private readonly emailService: EmailService,
   ) {}
 
-  private parseDateTime(dateTimeString: string): Date {
-    // "01/03/2025 08:00" -> DD/MM/YYYY HH:mm
-    const [datePart, timePart] = dateTimeString.split(' ');
-    const [day, month, year] = datePart.split('/');
-    const [hour, minute] = timePart.split(':');
-    return new Date(+year, +month - 1, +day, +hour, +minute);
-  }
-
   async create(
     userId: number,
     dto: CreateAppointmentDto,
@@ -45,13 +37,8 @@ export class AppointmentService {
     });
     if (!room) throw new NotFoundException('Room not found');
 
-    const startDateTime = this.parseDateTime(dto.startDateTime);
-    const endDateTime = this.parseDateTime(dto.endDateTime);
-
     const appointment = this.appointmentRepository.create({
       ...dto,
-      startDateTime,
-      endDateTime,
       user,
       room,
       createdAt: new Date(),
@@ -77,6 +64,13 @@ export class AppointmentService {
 
   async findAll(): Promise<Appointment[]> {
     return this.appointmentRepository.find({ relations: ['user', 'room'] });
+  }
+
+  async findByUserId(userId: number): Promise<Appointment[]> {
+    return this.appointmentRepository.find({
+      where: { user: { id: userId } },
+      relations: ['user', 'room'],
+    });
   }
 
   async findOne(id: number): Promise<Appointment> {
@@ -120,13 +114,6 @@ export class AppointmentService {
     }
 
     const updatedProperties: any = { ...dto };
-
-    if (dto.startDateTime) {
-      updatedProperties.startDateTime = this.parseDateTime(dto.startDateTime);
-    }
-    if (dto.endDateTime) {
-      updatedProperties.endDateTime = this.parseDateTime(dto.endDateTime);
-    }
 
     Object.assign(appointment, updatedProperties);
     return this.appointmentRepository.save(appointment);

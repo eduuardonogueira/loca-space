@@ -13,56 +13,56 @@ function minutesToTime(mins: number) {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
-export function getAvailableTimes(
-  roomDetails: IRoomDetails,
-  date: string, // ex: "2025-09-18"
-): { start: string; end: string }[] {
-  const room = roomDetails.room;
-  // const duration = room.duration; // em minutos
-  const duration = 30; // em minutos
-  const jsDay = new Date(date).getDay();
-  const weekday = (jsDay + 1) % 7;
+// export function getAvailableTimes(
+//   roomDetails: IRoomDetails,
+//   date: string, // ex: "2025-09-18"
+// ): { start: string; end: string }[] {
+//   const room = roomDetails.room;
+//   // const duration = room.duration; // em minutos
+//   const duration = 30; // em minutos
+//   const jsDay = new Date(date).getDay();
+//   const weekday = (jsDay + 1) % 7;
 
-  // pega disponibilidade só do dia escolhido
-  const availabilities = roomDetails.availability.filter(
-    (a) => a.weekday === weekday,
-  );
+//   // pega disponibilidade só do dia escolhido
+//   const availabilities = roomDetails.availability.filter(
+//     (a) => a.weekday === weekday,
+//   );
 
-  if (!availabilities.length) return [];
+//   if (!availabilities.length) return [];
 
-  const appointments = (roomDetails.appointments || []).filter(
-    (appt) => appt.date === date,
-  );
+//   const appointments = (roomDetails.appointments || []).filter(
+//     (appt) => appt. === date,
+//   );
 
-  const appointmentRanges = appointments.map((appt) => ({
-    start: timeToMinutes(appt.startTime),
-    end: timeToMinutes(appt.endTime),
-  }));
+//   const appointmentRanges = appointments.map((appt) => ({
+//     start: timeToMinutes(appt.startDateTime),
+//     end: timeToMinutes(appt.endDateTime),
+//   }));
 
-  const freeSlots: { start: string; end: string }[] = [];
+//   const freeSlots: { start: string; end: string }[] = [];
 
-  for (const availability of availabilities) {
-    const startAvail = timeToMinutes(availability.startTime);
-    const endAvail = timeToMinutes(availability.endTime);
+//   for (const availability of availabilities) {
+//     const startAvail = timeToMinutes(availability.startTime);
+//     const endAvail = timeToMinutes(availability.endTime);
 
-    for (let t = startAvail; t + duration <= endAvail; t += duration) {
-      const slotStart = t;
-      const slotEnd = t + duration;
+//     for (let t = startAvail; t + duration <= endAvail; t += duration) {
+//       const slotStart = t;
+//       const slotEnd = t + duration;
 
-      // verifica conflito com appointments
-      const hasConflict = appointmentRanges.some(
-        (appt) => !(slotEnd <= appt.start || slotStart >= appt.end),
-      );
+//       // verifica conflito com appointments
+//       const hasConflict = appointmentRanges.some(
+//         (appt) => !(slotEnd <= appt.start || slotStart >= appt.end),
+//       );
 
-      if (!hasConflict) {
-        freeSlots.push({
-          start: minutesToTime(slotStart),
-          end: minutesToTime(slotEnd),
-        });
-      }
-    }
-  }
+//       if (!hasConflict) {
+//         freeSlots.push({
+//           start: minutesToTime(slotStart),
+//           end: minutesToTime(slotEnd),
+//         });
+//       }
+//     }
+//   }
 
-  return freeSlots;
-}
+//   return freeSlots;
+// }
 

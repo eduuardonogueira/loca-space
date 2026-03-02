@@ -1,17 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { Trash2, MapPin, Users, Calendar, Clock } from "lucide-react";
-import { Reservation } from "@/types/reservation";
-import {
-  getRoomImageList,
-  getRoomPlaceholderImage,
-} from "@/utils/roomImages";
+import { Trash2, MapPin, Users, Calendar } from "lucide-react";
+import { getRoomPlaceholderImage } from "@/utils/roomImages";
+import { IAppointment, IAppointmentWithRoomAndUser } from "@/types/appointment";
 
 interface ReservationCardProps {
-  reservation: Reservation;
-  onDeleteClick: (id: number) => void;
-  onDetailsClick: (reservation: Reservation) => void;
+  reservation: IAppointmentWithRoomAndUser;
+  onDeleteClick: (reservation: IAppointmentWithRoomAndUser) => void;
+  onDetailsClick: (reservation: IAppointmentWithRoomAndUser) => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -34,7 +31,7 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
-function getLocationText(reservation: Reservation): string {
+function getLocationText(reservation: IAppointmentWithRoomAndUser): string {
   const city = reservation.room?.address?.city ?? "";
   const bairro = reservation.room?.address?.bairro ?? "";
 
@@ -49,10 +46,9 @@ export function ReservationCard({
   onDeleteClick,
   onDetailsClick,
 }: ReservationCardProps) {
-  const roomImage =
-    reservation.room?.imageUrl
-      ? getRoomImageList(reservation.room.imageUrl)[0]
-      : undefined;
+  const roomImage = reservation.room.bannerUrl
+    ? reservation.room.photoUrls[0]
+    : undefined;
 
   const locationText = getLocationText(reservation);
   const capacity = reservation.room?.totalSpace;
@@ -79,14 +75,16 @@ export function ReservationCard({
             </div>
             <div className="flex items-center gap-1">
               <Users size={14} />{" "}
-              <span>{typeof capacity === "number" ? `${capacity} Pessoas` : "-"}</span>
+              <span>
+                {typeof capacity === "number" ? `${capacity} Pessoas` : "-"}
+              </span>
             </div>
           </div>
           <p className="text-xs text-gray-500 font-medium">
-            {formatDate(reservation.date)}{" "}
-            <span className="ml-2 font-bold text-gray-400">
-              {reservation.startTime} - {reservation.endTime}
-            </span>
+            {formatDate(reservation.startDateTime)}
+          </p>
+          <p className="text-xs text-gray-500 font-medium">
+            {formatDate(reservation.endDateTime)}
           </p>
         </div>
 
@@ -94,7 +92,7 @@ export function ReservationCard({
         <button
           onClick={(e) => {
             e.stopPropagation(); // Previne conflitos de clique
-            onDeleteClick(reservation.id);
+            onDeleteClick(reservation);
           }}
           className="absolute top-4 right-4 text-gray-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors border border-transparent hover:border-red-100"
           title="Cancelar Reserva"
@@ -107,15 +105,15 @@ export function ReservationCard({
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-[#E85D46]" />
-              <span className="capitalize">{formatDate(reservation.date)}</span>
+              {/* <span className="capitalize">{formatDate(reservation.date)}</span> */}
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <Clock size={16} className="text-[#E85D46]" />
               <span>
                 {reservation.startTime} - {reservation.endTime}
               </span>
-            </div>
+            </div> */}
           </div>
 
           {/* Badge de Status */}
@@ -156,3 +154,4 @@ export function ReservationCard({
     </div>
   );
 }
+

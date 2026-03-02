@@ -16,7 +16,8 @@ export function Navbar() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   function formatUserName(name: string) {
-    const splitted = name.split(" ");
+    const defaultName = "Usuário Padrão";
+    const splitted = name ? name.split(" ") : defaultName.split(" ");
     const firstName = splitted[0];
     const lastName = splitted[splitted.length - 1];
     return `${firstName} ${lastName}`;

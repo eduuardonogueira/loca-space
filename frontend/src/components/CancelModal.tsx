@@ -1,21 +1,24 @@
 "use client";
 
+import { IAppointmentWithRoomAndUser } from "@/types/appointment";
 import { X } from "lucide-react";
 
 interface CancelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (reservation: IAppointmentWithRoomAndUser) => Promise<void>;
   isLoading?: boolean;
+  reservation: IAppointmentWithRoomAndUser | null;
 }
 
 export function CancelModal({
+  reservation,
   isOpen,
   onClose,
   onConfirm,
   isLoading = false,
 }: CancelModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen || !reservation) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity animate-in fade-in duration-200">
@@ -53,7 +56,7 @@ export function CancelModal({
               Cancelar
             </button>
             <button
-              onClick={onConfirm}
+              onClick={() => onConfirm(reservation)}
               disabled={isLoading}
               className="px-4 py-2 text-sm font-bold text-white bg-[#E85D46] border border-[#E85D46] rounded-lg hover:bg-[#d14d38] transition-colors shadow-sm focus:ring-2 focus:ring-red-200"
             >
@@ -65,3 +68,4 @@ export function CancelModal({
     </div>
   );
 }
+

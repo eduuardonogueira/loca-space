@@ -15,7 +15,6 @@ import { AppointmentService } from './appointment.service';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
-  DeleteAppointmentDto,
 } from './dto/appointment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -36,6 +35,12 @@ export class AppointmentController {
   @ApiOperation({ summary: 'Listar todos os agendamentos' })
   findAll() {
     return this.service.findAll();
+  }
+
+  @Get('/user')
+  @ApiOperation({ summary: 'Listar todos os agendamentos' })
+  findByUser(@Req() req: any) {
+    return this.service.findByUserId(req.user.userId);
   }
 
   @Get(':id')

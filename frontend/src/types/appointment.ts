@@ -1,3 +1,6 @@
+import { IRoom } from "./room";
+import { IUser } from "./user";
+
 export type AppointmentStatus = "PENDING" | "CONFIRMED" | "CANCELLED";
 
 export enum EnumAppointmentStatus {
@@ -6,29 +9,32 @@ export enum EnumAppointmentStatus {
   CANCELLED = "CANCELLED",
 }
 
-export interface ICreateAppointment {
-  order: number;
+export interface CreateAppointmentPayload {
   status: AppointmentStatus;
-  date: string;
-  startTime: string;
-  endTime: string;
+  startDateTime: string;
+  endDateTime: string;
   details: string;
   title: string;
-  userId: number;
   roomId: number;
+  price: number;
+  totalValue: number;
 }
 
 export interface IAppointment {
-  order: number;
+  id: number;
   status: AppointmentStatus;
-  date: string;
-  startTime: string;
-  endTime: string;
+  startDateTime: string;
+  endDateTime: string;
   details: string;
   title: string;
   userId: number;
   roomId: number;
+  price: number;
+  totalValue: number;
 }
 
-// export interface IUserAppointmentsDetails
+export interface IAppointmentWithRoomAndUser extends IAppointment {
+  user: IUser;
+  room: IRoom;
+}
 

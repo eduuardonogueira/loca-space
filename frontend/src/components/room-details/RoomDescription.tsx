@@ -4,7 +4,7 @@ import { IAvailability } from "@/types/availability";
 import { IRoomDetails } from "@/types/room";
 import { formatRoomAddress } from "@/utils/formatRoomAddress";
 import { getWeekdayLabel } from "@/utils/getWeekdayLabel";
-import { MapPin, Building2, Clock } from "lucide-react";
+import { MapPin, Building2, Clock, Users, Ruler } from "lucide-react";
 import { useMemo } from "react";
 
 type RoomDescriptionProps = {
@@ -31,7 +31,7 @@ export function RoomDescription({ roomDetails }: RoomDescriptionProps) {
   }, [roomDetails.availability]);
 
   return (
-    <div className="rounded-2xl border border-[#e7e7eb] bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
+    <div className="flex flex-col w-full rounded-2xl border border-[#e7e7eb] bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.06)]">
       <h2 className="text-lg font-semibold text-[#222]">Descrição do imóvel</h2>
 
       <p className="mt-4 text-sm leading-relaxed text-[#555]">
@@ -57,18 +57,36 @@ export function RoomDescription({ roomDetails }: RoomDescriptionProps) {
           <p className="mt-1 text-[#666]">{roomDetails.room.type}</p>
         </div>
 
+        <div>
+          <div className="flex items-center gap-2 font-semibold text-[#333]">
+            <Ruler size={16} strokeWidth={1.8} />
+            <span>Tamanho da Sala (m²)</span>
+          </div>
+          <p className="mt-1 text-[#666]">{roomDetails.room.size} m²</p>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-2 font-semibold text-[#333]">
+            <Users size={16} strokeWidth={1.8} />
+            <span>Capacidade (Pessoas)</span>
+          </div>
+          <p className="mt-1 text-[#666]">
+            {roomDetails.room.totalSpace} pessoas
+          </p>
+        </div>
+
         {/* DISPONIBILIDADE */}
-        <div className="mt-5">
-          <p className="text-sm font-semibold text-[#333] mb-2">
+        <div className="col-span-2 mt-5">
+          <p className="text-sm font-semibold text-[#333] mb-3">
             Horários disponíveis
           </p>
 
           {Object.keys(availabilityByDay).length === 0 ? (
             <p className="text-xs text-[#777]">Nenhum horário cadastrado</p>
           ) : (
-            <div className="space-y-3">
+            <div className="flex gap-2 space-y-3 w-full">
               {Object.entries(availabilityByDay).map(([day, slots]) => (
-                <div key={day}>
+                <div key={day} className="flex-col w-max">
                   <p className="text-xs font-medium text-[#555] mb-1">{day}</p>
 
                   <div className="flex flex-wrap gap-2">
@@ -82,7 +100,8 @@ export function RoomDescription({ roomDetails }: RoomDescriptionProps) {
                   text-[#444]
                 "
                       >
-                        {slot.startTime} - {slot.endTime}
+                        {slot.startTime.slice(0, 5)} às{" "}
+                        {slot.endTime.slice(0, 5)}
                       </span>
                     ))}
                   </div>
@@ -93,10 +112,10 @@ export function RoomDescription({ roomDetails }: RoomDescriptionProps) {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="flex flex-col w-full mt-6">
         <p className="mb-3 font-semibold text-[#333]">Recursos disponíveis</p>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap w-full gap-2">
           {roomDetails.room.amenities?.map((am) => (
             <span
               key={am.id}
