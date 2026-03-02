@@ -37,7 +37,7 @@ export function ChatSocketProvider({ children }: ChatSocketProviderProps) {
     const token = await getAuthToken();
     if (!token) return;
 
-    const apiUrl = process.env.BACKEND_URL || 'http://localhost:nao_encontrad';
+    const apiUrl = process.env.BACKEND_URL || 'https://loca-space.onrender.com';
 
     const newSocket = io(`${apiUrl}/chat`, {
       auth: { token },
