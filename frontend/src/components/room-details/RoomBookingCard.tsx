@@ -174,8 +174,20 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
         </div>
       </div>
 
+      <div className="flex flex-col items-start gap-2 py-1 mt-2 text-gray-700">
+        <div className="flex w-full justify-between">
+          <p>Nome:</p>
+          <p>{roomDetails.room.advertise.name}</p>
+        </div>
+        <div className="flex w-full justify-between">
+          <p>Email:</p>
+          <p>{roomDetails.room.advertise.email}</p>
+        </div>
+      </div>
+
       {/* DETALHES */}
       <div className="mt-4 flex flex-col gap-3">
+        <Label>Título para seu agendamento:</Label>
         <Input
           type="text"
           placeholder="Título do agendamento"
@@ -183,6 +195,7 @@ export function RoomBookingCard({ roomDetails }: IRoomBookingCardProps) {
           onChange={(e) => setTitle(e.target.value)}
           className="w-full rounded border px-3 py-2"
         />
+        <Label>Descrição do seu agendamento:</Label>
         <Textarea
           placeholder="Detalhes do agendamento"
           value={details}
