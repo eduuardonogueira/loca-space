@@ -47,8 +47,8 @@ import { ChatModule } from '../chat/chat.module';
         return {
           transport: {
             host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
+            port: 587,
+            secure: false,
             auth: {
               user: smtpUser,
               pass: smtpPassword,
